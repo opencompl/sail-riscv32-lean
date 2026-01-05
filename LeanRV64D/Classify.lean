@@ -219,8 +219,8 @@ def num_of_float_class (arg_ : float_class) : Int :=
   | float_class_snan => 8
   | float_class_qnan => 9
 
-/-- Type quantifiers: k_ex646674_ : Nat, k_ex646674_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex646674_)) : SailM float_class := do
+/-- Type quantifiers: k_ex639485_ : Nat, k_ex639485_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex639485_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else
