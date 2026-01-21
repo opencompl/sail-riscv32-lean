@@ -58,6 +58,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -88,6 +89,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -146,6 +148,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -156,6 +159,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -168,6 +172,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -240,7 +245,7 @@ def ones {n : _} : (BitVec n) :=
 def trunc {m : _} (v : (BitVec k_n)) : (BitVec m) :=
   (Sail.BitVec.truncate v m)
 
-/-- Type quantifiers: k_ex639502_ : Bool -/
+/-- Type quantifiers: k_ex739518_ : Bool -/
 def bool_bit_forwards (arg_ : Bool) : (BitVec 1) :=
   match arg_ with
   | true => 1#1
@@ -251,7 +256,7 @@ def bool_bit_backwards (arg_ : (BitVec 1)) : Bool :=
   | 1 => true
   | _ => false
 
-/-- Type quantifiers: k_ex639503_ : Bool -/
+/-- Type quantifiers: k_ex739519_ : Bool -/
 def bool_bit_forwards_matches (arg_ : Bool) : Bool :=
   match arg_ with
   | true => true
@@ -263,30 +268,7 @@ def bool_bit_backwards_matches (arg_ : (BitVec 1)) : Bool :=
   | 0 => true
   | _ => false
 
-/-- Type quantifiers: k_ex639504_ : Bool -/
-def bool_bits_forwards (arg_ : Bool) : (BitVec 1) :=
-  match arg_ with
-  | true => 1#1
-  | false => 0#1
-
-def bool_bits_backwards (arg_ : (BitVec 1)) : Bool :=
-  match arg_ with
-  | 1 => true
-  | _ => false
-
-/-- Type quantifiers: k_ex639505_ : Bool -/
-def bool_bits_forwards_matches (arg_ : Bool) : Bool :=
-  match arg_ with
-  | true => true
-  | false => true
-
-def bool_bits_backwards_matches (arg_ : (BitVec 1)) : Bool :=
-  match arg_ with
-  | 1 => true
-  | 0 => true
-  | _ => false
-
-/-- Type quantifiers: k_ex639506_ : Bool -/
+/-- Type quantifiers: k_ex739520_ : Bool -/
 def bool_int_forwards (arg_ : Bool) : Int :=
   match arg_ with
   | false => 0
@@ -298,7 +280,7 @@ def bool_int_backwards (arg_ : Nat) : Bool :=
   | 0 => false
   | _ => true
 
-/-- Type quantifiers: k_ex639510_ : Bool -/
+/-- Type quantifiers: k_ex739524_ : Bool -/
 def bool_int_forwards_matches (arg_ : Bool) : Bool :=
   match arg_ with
   | false => true
@@ -311,25 +293,12 @@ def bool_int_backwards_matches (arg_ : Nat) : Bool :=
   | 1 => true
   | _ => false
 
-/-- Type quantifiers: k_ex639512_ : Bool -/
+/-- Type quantifiers: k_ex739526_ : Bool -/
 def bool_to_bit (x : Bool) : (BitVec 1) :=
   (bool_bit_forwards x)
 
 def bit_to_bool (x : (BitVec 1)) : Bool :=
   (bool_bit_backwards x)
-
-/-- Type quantifiers: k_ex639514_ : Bool -/
-def bool_to_bits (x : Bool) : (BitVec 1) :=
-  (bool_bits_forwards x)
-
-def bits_to_bool (x : (BitVec 1)) : Bool :=
-  (bool_bits_backwards x)
-
-def bit_to_bits (x : (BitVec 1)) : (BitVec 1) :=
-  (bool_bits_forwards (bit_to_bool x))
-
-def bits_to_bit (x : (BitVec 1)) : (BitVec 1) :=
-  (bool_to_bit (bits_to_bool x))
 
 /-- Type quantifiers: l : Nat, l ≥ 0, n : Nat, l ≥ 0 ∧ 0 ≤ n ∧ n < (2 ^ l) -/
 def to_bits {l : _} (n : Nat) : (BitVec l) :=
@@ -411,7 +380,7 @@ def zopz0zIzJ_u (x : (BitVec k_n)) (y : (BitVec k_n)) : Bool :=
 def zopz0zKzJ_u (x : (BitVec k_n)) (y : (BitVec k_n)) : Bool :=
   ((BitVec.toNatInt x) ≥b (BitVec.toNatInt y))
 
-/-- Type quantifiers: k_ex639594_ : Bool, k_ex639593_ : Bool -/
+/-- Type quantifiers: k_ex739600_ : Bool, k_ex739599_ : Bool -/
 def zopz0zJzJzK (x : Bool) (y : Bool) : Bool :=
   ((not x) || y)
 

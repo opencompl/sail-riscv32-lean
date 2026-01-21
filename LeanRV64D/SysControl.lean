@@ -11,8 +11,10 @@ import LeanRV64D.SysRegs
 import LeanRV64D.SysExceptions
 import LeanRV64D.PmpRegs
 import LeanRV64D.PmpControl
+import LeanRV64D.StateenRegs
 import LeanRV64D.VextRegs
 import LeanRV64D.ZicfilpRegs
+import LeanRV64D.StateenAccessChecks
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -71,6 +73,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -101,6 +104,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -159,6 +163,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -169,6 +174,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -181,6 +187,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -198,8 +205,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def effectivePrivilege (access_type : (MemoryAccessType Unit)) (m : (BitVec 64)) (priv : Privilege) : SailM Privilege := do
-  if (((bne access_type (InstructionFetch ())) && ((_get_Mstatus_MPRV m) == 1#1)) : Bool)
+def effectivePrivilege (access : (MemoryAccessType mem_payload)) (m : (BitVec 64)) (priv : Privilege) : SailM Privilege := do
+  if (((bne access (InstructionFetch ())) && ((_get_Mstatus_MPRV m) == 1#1)) : Bool)
   then (privLevel_bits_forwards ((_get_Mstatus_MPP m), 0#1))
   else (pure priv)
 
@@ -313,7 +320,35 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                           | (0x322, g__98, g__99) => (currentlyEnabled Ext_Smcntrpmf)
                           | (0x722, g__100, g__101) =>
                             (pure ((← (currentlyEnabled Ext_Smcntrpmf)) && (xlen == 32)))
-                          | (0x180, g__72, g__102) =>
+                          | (0x30C, g__102, g__103) => (pure (is_mstateen_accessible ()))
+                          | (0x30D, g__104, g__105) => (pure (is_mstateen_accessible ()))
+                          | (0x30E, g__106, g__107) => (pure (is_mstateen_accessible ()))
+                          | (0x30F, g__108, g__109) => (pure (is_mstateen_accessible ()))
+                          | (0x31C, g__110, g__111) =>
+                            (pure ((is_mstateen_accessible ()) && (xlen == 32)))
+                          | (0x31D, g__112, g__113) =>
+                            (pure ((is_mstateen_accessible ()) && (xlen == 32)))
+                          | (0x31E, g__114, g__115) =>
+                            (pure ((is_mstateen_accessible ()) && (xlen == 32)))
+                          | (0x31F, g__116, g__117) =>
+                            (pure ((is_mstateen_accessible ()) && (xlen == 32)))
+                          | (0x60C, g__118, g__119) => (is_hstateen_accessible ())
+                          | (0x60D, g__120, g__121) => (is_hstateen_accessible ())
+                          | (0x60E, g__122, g__123) => (is_hstateen_accessible ())
+                          | (0x60F, g__124, g__125) => (is_hstateen_accessible ())
+                          | (0x61C, g__126, g__127) =>
+                            (pure ((xlen == 32) && (← (is_hstateen_accessible ()))))
+                          | (0x61D, g__128, g__129) =>
+                            (pure ((xlen == 32) && (← (is_hstateen_accessible ()))))
+                          | (0x61E, g__130, g__131) =>
+                            (pure ((xlen == 32) && (← (is_hstateen_accessible ()))))
+                          | (0x61F, g__132, g__133) =>
+                            (pure ((xlen == 32) && (← (is_hstateen_accessible ()))))
+                          | (0x10C, g__134, g__135) => (is_sstateen_accessible ())
+                          | (0x10D, g__136, g__137) => (is_sstateen_accessible ())
+                          | (0x10E, g__138, g__139) => (is_sstateen_accessible ())
+                          | (0x10F, g__140, g__141) => (is_sstateen_accessible ())
+                          | (0x180, g__72, g__142) =>
                             (pure ((← (currentlyEnabled Ext_S)) && (not
                                   ((g__72 == Supervisor) && ((_get_Mstatus_TVM (← readReg mstatus)) == 1#1)))))
                           | (0x015, g__72, g__73) =>
@@ -330,7 +365,7 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                                     | VirtualUser =>
                                       (internal_error "extensions/K/zkr_control.sail" 53
                                         "Hypervisor extension not supported")))))
-                          | (v__3738, g__103, g__104) =>
+                          | (v__3738, g__143, g__144) =>
                             (do
                               if ((((Sail.BitVec.extractLsb v__3738 11 5) == (0b0011001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
                                      (Sail.BitVec.extractLsb v__3738 4 0)
@@ -360,7 +395,7 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                                                 (Sail.BitVec.extractLsb v__3738 4 0)
                                               (pure ((← (currentlyEnabled Ext_Zihpm)) && ((← (currentlyEnabled
                                                         Ext_U)) && (← (counter_enabled
-                                                        (BitVec.toNatInt index) g__103))))))
+                                                        (BitVec.toNatInt index) g__143))))))
                                           else
                                             (do
                                               if ((((Sail.BitVec.extractLsb v__3738 11 5) == (0b1100100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
@@ -372,7 +407,7 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                                                     (Sail.BitVec.extractLsb v__3738 4 0)
                                                   (pure ((← (currentlyEnabled Ext_Zihpm)) && ((← (currentlyEnabled
                                                             Ext_U)) && ((xlen == 32) && (← (counter_enabled
-                                                              (BitVec.toNatInt index) g__103)))))))
+                                                              (BitVec.toNatInt index) g__143)))))))
                                               else
                                                 (do
                                                   if ((((Sail.BitVec.extractLsb v__3738 11 5) == (0b0111001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
@@ -382,49 +417,51 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                                                     (pure ((← (currentlyEnabled Ext_Sscofpmf)) && (xlen == 32)))
                                                   else
                                                     (do
-                                                      match (v__3738, g__103, g__104) with
-                                                      | (0xDA0, g__105, g__106) =>
+                                                      match (v__3738, g__143, g__144) with
+                                                      | (0xDA0, g__145, g__146) =>
                                                         (pure ((← (currentlyEnabled Ext_Sscofpmf)) && (← (currentlyEnabled
                                                                 Ext_S))))
-                                                      | (0x14D, g__103, g__107) =>
+                                                      | (0x14D, g__143, g__147) =>
                                                         (pure ((← (currentlyEnabled Ext_S)) && ((← (currentlyEnabled
                                                                   Ext_Sstc)) && (← (sstc_CSRs_accessible
-                                                                  g__103)))))
-                                                      | (0x15D, g__103, g__108) =>
+                                                                  g__143)))))
+                                                      | (0x15D, g__143, g__148) =>
                                                         (pure ((← (currentlyEnabled Ext_S)) && ((← (currentlyEnabled
                                                                   Ext_Sstc)) && ((xlen == 32) && (← (sstc_CSRs_accessible
-                                                                    g__103))))))
-                                                      | (0xC00, g__103, g__109) =>
+                                                                    g__143))))))
+                                                      | (0xC00, g__143, g__149) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && (← (counter_enabled
-                                                                0 g__103))))
-                                                      | (0xC01, g__103, g__110) =>
+                                                                0 g__143))))
+                                                      | (0xC01, g__143, g__150) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && (← (counter_enabled
-                                                                1 g__103))))
-                                                      | (0xC02, g__103, g__111) =>
+                                                                1 g__143))))
+                                                      | (0xC02, g__143, g__151) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && (← (counter_enabled
-                                                                2 g__103))))
-                                                      | (0xC80, g__103, g__112) =>
+                                                                2 g__143))))
+                                                      | (0xC80, g__143, g__152) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && ((xlen == 32) && (← (counter_enabled
-                                                                  0 g__103)))))
-                                                      | (0xC81, g__103, g__113) =>
+                                                                  0 g__143)))))
+                                                      | (0xC81, g__143, g__153) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && ((xlen == 32) && (← (counter_enabled
-                                                                  1 g__103)))))
-                                                      | (0xC82, g__103, g__114) =>
+                                                                  1 g__143)))))
+                                                      | (0xC82, g__143, g__154) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && ((xlen == 32) && (← (counter_enabled
-                                                                  2 g__103)))))
-                                                      | (0xB00, g__115, g__116) =>
+                                                                  2 g__143)))))
+                                                      | (0xB00, g__155, g__156) =>
                                                         (currentlyEnabled Ext_Zicntr)
-                                                      | (0xB02, g__117, g__118) =>
+                                                      | (0xB02, g__157, g__158) =>
                                                         (currentlyEnabled Ext_Zicntr)
-                                                      | (0xB80, g__119, g__120) =>
+                                                      | (0xB80, g__159, g__160) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && (xlen == 32)))
-                                                      | (0xB82, g__121, g__122) =>
+                                                      | (0xB82, g__161, g__162) =>
                                                         (pure ((← (currentlyEnabled Ext_Zicntr)) && (xlen == 32)))
+                                                      | (0x181, g__163, g__164) =>
+                                                        (currentlyEnabled Ext_Ssqosid)
                                                       | _ => (pure false))))))))))))))
 
 def check_CSR (csr : (BitVec 12)) (p : Privilege) (access_type : CSRAccessType) : SailM Bool := do
-  (pure ((check_CSR_priv csr p) && ((check_CSR_access csr access_type) && (← (is_CSR_accessible
-            csr p access_type)))))
+  (pure ((check_CSR_priv csr p) && ((check_CSR_access csr access_type) && ((← (is_CSR_accessible
+              csr p access_type)) && (← (stateen_allows_CSR_access csr p access_type))))))
 
 def exception_delegatee (e : ExceptionType) (p : Privilege) : SailM Privilege := do
   let idx := (BitVec.toNatInt (exceptionType_bits_forwards e))
@@ -459,7 +496,7 @@ def findPendingInterrupt (ip : (BitVec 64)) : (Option InterruptType) :=
             else none)))))
 
 def getPendingSet (priv : Privilege) : SailM (Option ((BitVec 64) × Privilege)) := do
-  assert ((← (currentlyEnabled Ext_S)) || ((← readReg mideleg) == (zeros (n := 64)))) "sys/sys_control.sail:70.58-70.59"
+  assert ((← (currentlyEnabled Ext_S)) || ((← readReg mideleg) == (zeros (n := 64)))) "sys/sys_control.sail:71.58-71.59"
   let pending_m ← do
     (pure ((← readReg mip) &&& ((← readReg mie) &&& (Complement.complement (← readReg mideleg)))))
   let pending_s ← do (pure ((← readReg mip) &&& ((← readReg mie) &&& (← readReg mideleg))))
@@ -503,10 +540,10 @@ def track_trap (p : Privilege) : SailM Unit := do
       (csr_name_write_callback "scause" (← readReg scause))
       (csr_name_write_callback "stval" (← readReg stval))
       (csr_name_write_callback "sepc" (← readReg sepc)))
-  | User => (internal_error "sys/sys_control.sail" 148 "Invalid privilege level")
-  | VirtualUser => (internal_error "sys/sys_control.sail" 149 "Hypervisor extension not supported")
+  | User => (internal_error "sys/sys_control.sail" 149 "Invalid privilege level")
+  | VirtualUser => (internal_error "sys/sys_control.sail" 150 "Hypervisor extension not supported")
   | VirtualSupervisor =>
-    (internal_error "sys/sys_control.sail" 150 "Hypervisor extension not supported")
+    (internal_error "sys/sys_control.sail" 151 "Hypervisor extension not supported")
 
 def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 64)) (info : (Option (BitVec 64))) (ext : (Option Unit)) : SailM (BitVec 64) := do
   let is_interrupt := (trapCause_is_interrupt c)
@@ -528,7 +565,7 @@ def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 64)) (info
   | Machine =>
     (do
       writeReg mcause (Sail.BitVec.updateSubrange (← readReg mcause) (64 -i 1) (64 -i 1)
-        (bool_to_bits is_interrupt))
+        (bool_to_bit is_interrupt))
       writeReg mcause (Sail.BitVec.updateSubrange (← readReg mcause) (64 -i 2) 0
         (zero_extend (m := (64 -i 1)) cause))
       writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 7 7
@@ -546,7 +583,7 @@ def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 64)) (info
     (do
       assert (← (currentlyEnabled Ext_S)) "no supervisor mode present for delegation"
       writeReg scause (Sail.BitVec.updateSubrange (← readReg scause) (64 -i 1) (64 -i 1)
-        (bool_to_bits is_interrupt))
+        (bool_to_bit is_interrupt))
       writeReg scause (Sail.BitVec.updateSubrange (← readReg scause) (64 -i 2) 0
         (zero_extend (m := (64 -i 1)) cause))
       writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 5 5
@@ -558,21 +595,21 @@ def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 64)) (info
           | User => (pure 0#1)
           | Supervisor => (pure 1#1)
           | Machine =>
-            (internal_error "sys/sys_control.sail" 199 "invalid privilege for s-mode trap")
+            (internal_error "sys/sys_control.sail" 200 "invalid privilege for s-mode trap")
           | VirtualUser =>
-            (internal_error "sys/sys_control.sail" 200 "Hypervisor extension not supported")
+            (internal_error "sys/sys_control.sail" 201 "Hypervisor extension not supported")
           | VirtualSupervisor =>
-            (internal_error "sys/sys_control.sail" 201 "Hypervisor extension not supported")))
+            (internal_error "sys/sys_control.sail" 202 "Hypervisor extension not supported")))
       writeReg stval (tval info)
       writeReg sepc pc
       writeReg cur_privilege del_priv
       let _ : Unit := (handle_trap_extension del_priv pc ext)
       (track_trap del_priv)
       (prepare_trap_vector del_priv (← readReg scause)))
-  | User => (internal_error "sys/sys_control.sail" 214 "Invalid privilege level")
-  | VirtualUser => (internal_error "sys/sys_control.sail" 215 "Hypervisor extension not supported")
+  | User => (internal_error "sys/sys_control.sail" 215 "Invalid privilege level")
+  | VirtualUser => (internal_error "sys/sys_control.sail" 216 "Hypervisor extension not supported")
   | VirtualSupervisor =>
-    (internal_error "sys/sys_control.sail" 216 "Hypervisor extension not supported")
+    (internal_error "sys/sys_control.sail" 217 "Hypervisor extension not supported")
 
 def exception_handler (cur_priv : Privilege) (ctl : ctl_result) (pc : (BitVec 64)) : SailM (BitVec 64) := do
   match ctl with
@@ -648,26 +685,31 @@ def exception_handler (cur_priv : Privilege) (ctl : ctl_result) (pc : (BitVec 64
 def xtval_exception_value (e : ExceptionType) (excinfo : (BitVec 64)) : (Option (BitVec 64)) :=
   if ((match e with
      | .E_Illegal_Instr () => illegal_instruction_writes_xtval
+     | .E_Virtual_Instr () => virtual_instruction_writes_xtval
      | .E_Breakpoint Brk_Software => software_breakpoint_writes_xtval
      | .E_Breakpoint Brk_Hardware => hardware_breakpoint_writes_xtval
      | .E_Load_Addr_Align () => misaligned_load_writes_xtval
      | .E_Load_Access_Fault () => load_access_fault_writes_xtval
      | .E_Load_Page_Fault () => load_page_fault_writes_xtval
+     | .E_Load_GPage_Fault () => load_guest_page_fault_writes_xtval
      | .E_SAMO_Addr_Align () => misaligned_samo_writes_xtval
      | .E_SAMO_Access_Fault () => samo_access_fault_writes_xtval
      | .E_SAMO_Page_Fault () => samo_page_fault_writes_xtval
+     | .E_SAMO_GPage_Fault () => samo_guest_page_fault_writes_xtval
      | .E_Fetch_Addr_Align () => misaligned_fetch_writes_xtval
      | .E_Fetch_Access_Fault () => fetch_access_fault_writes_xtval
      | .E_Fetch_Page_Fault () => fetch_page_fault_writes_xtval
+     | .E_Fetch_GPage_Fault () => fetch_guest_page_fault_writes_xtval
      | .E_Software_Check () => software_check_fault_writes_xtval
      | .E_U_EnvCall () => false
      | .E_S_EnvCall () => false
+     | .E_VS_EnvCall () => false
      | .E_M_EnvCall () => false
      | .E_Extension _ => true
-     | .E_Reserved_10 () => reserved_exceptions_write_xtval
      | .E_Reserved_14 () => reserved_exceptions_write_xtval
      | .E_Reserved_16 () => reserved_exceptions_write_xtval
-     | .E_Reserved_17 () => reserved_exceptions_write_xtval) : Bool)
+     | .E_Reserved_17 () => reserved_exceptions_write_xtval
+     | .E_Reserved_19 () => reserved_exceptions_write_xtval) : Bool)
   then (some excinfo)
   else none
 
@@ -683,29 +725,29 @@ def handle_interrupt (i : InterruptType) (del_priv : Privilege) : SailM Unit := 
 
 def reset_misa (_ : Unit) : SailM Unit := do
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 0 0
-    (bool_to_bits (hartSupports Ext_A)))
+    (bool_to_bit (hartSupports Ext_A)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 2 2
-    (bool_to_bits (hartSupports Ext_C)))
+    (bool_to_bit (hartSupports Ext_C)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 1 1
-    (bool_to_bits (hartSupports Ext_B)))
+    (bool_to_bit (hartSupports Ext_B)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 12 12
-    (bool_to_bits (hartSupports Ext_M)))
+    (bool_to_bit (hartSupports Ext_M)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 20 20
-    (bool_to_bits (hartSupports Ext_U)))
+    (bool_to_bit (hartSupports Ext_U)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 18 18
-    (bool_to_bits (hartSupports Ext_S)))
+    (bool_to_bit (hartSupports Ext_S)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 21 21
-    (bool_to_bits (hartSupports Ext_V)))
-  writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 4 4 (bool_to_bits base_E_enabled))
+    (bool_to_bit (hartSupports Ext_V)))
+  writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 4 4 (bool_to_bit base_E_enabled))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 8 8
     (Complement.complement (_get_Misa_E (← readReg misa))))
   if (((hartSupports Ext_F) && (hartSupports Ext_Zfinx)) : Bool)
-  then (internal_error "sys/sys_control.sail" 325 "F and Zfinx cannot both be enabled!")
+  then (internal_error "sys/sys_control.sail" 331 "F and Zfinx cannot both be enabled!")
   else (pure ())
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 5 5
-    (bool_to_bits (hartSupports Ext_F)))
+    (bool_to_bit (hartSupports Ext_F)))
   writeReg misa (Sail.BitVec.updateSubrange (← readReg misa) 3 3
-    (bool_to_bits (hartSupports Ext_D)))
+    (bool_to_bit (hartSupports Ext_D)))
   (csr_name_write_callback "misa" (← readReg misa))
 
 def set_pc_reset_address (addr : (BitVec 64)) : SailM Unit := do
@@ -724,12 +766,13 @@ def reset_sys (_ : Unit) : SailM Unit := do
   (csr_name_write_callback "mcause" (← readReg mcause))
   (reset_pmp ())
   writeReg mseccfg (Sail.BitVec.updateSubrange (← readReg mseccfg) 9 9
-    (bool_to_bits (false : Bool)))
+    (bool_to_bit (false : Bool)))
   writeReg mseccfg (Sail.BitVec.updateSubrange (← readReg mseccfg) 8 8
-    (bool_to_bits (false : Bool)))
+    (bool_to_bit (false : Bool)))
   if ((hartSupports Ext_Zicfilp) : Bool)
   then writeReg mseccfg (Sail.BitVec.updateSubrange (← readReg mseccfg) 10 10 0#1)
   else (pure ())
+  (reset_stateen ())
   writeReg vstart (zeros (n := 64))
   writeReg vl (zeros (n := 64))
   writeReg vcsr (Sail.BitVec.updateSubrange (← readReg vcsr) 2 1 0b00#2)

@@ -66,6 +66,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -96,6 +97,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -154,6 +156,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -164,6 +167,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -176,6 +180,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -672,9 +677,9 @@ def get_fixed_rounding_incr (vec_elem : (BitVec k_m)) (shift_amount : Nat) : Sai
       let rounding_mode ← do (pure (_get_Vcsr_vxrm (← readReg vcsr)))
       assert (shift_amount <b (Sail.BitVec.length vec_elem)) "extensions/V/vext_utils_insts.sail:492.28-492.29"
       match rounding_mode with
-      | 0b00 => (pure (bit_to_bits (BitVec.access vec_elem (shift_amount -i 1))))
+      | 0b00 => (pure (BitVec.access vec_elem (shift_amount -i 1)))
       | 0b01 =>
-        (pure (bool_to_bits
+        (pure (bool_to_bit
             (((BitVec.access vec_elem (shift_amount -i 1)) == 1#1) && ((if ((shift_amount == 1) : Bool)
                 then false
                 else
@@ -683,7 +688,7 @@ def get_fixed_rounding_incr (vec_elem : (BitVec k_m)) (shift_amount : Nat) : Sai
                     shift_amount) == 1#1)))))
       | 0b10 => (pure 0#1)
       | _ =>
-        (pure (bool_to_bits
+        (pure (bool_to_bit
             (((BitVec.access vec_elem shift_amount) != 1#1) && ((Sail.BitVec.extractLsb vec_elem
                   (shift_amount -i 1) 0) != (zeros (n := (((shift_amount -i 1) -i 0) +i 1))))))))
 

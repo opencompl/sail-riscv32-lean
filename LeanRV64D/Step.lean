@@ -78,6 +78,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -108,6 +109,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -166,6 +168,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -176,6 +179,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -188,6 +192,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -205,7 +210,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex730431_ : Bool, _step_no : Int -/
+/-- Type quantifiers: k_ex854363_ : Bool, _step_no : Int -/
 def run_hart_waiting (_step_no : Int) (wr : WaitReason) (instbits : (BitVec 32)) (exit_wait : Bool) : SailM Step := do
   if ((← (shouldWakeForInterrupt ())) : Bool)
   then
@@ -382,7 +387,7 @@ def wait_is_nop (wr : WaitReason) : Bool :=
   | WAIT_WRS_STO => false
   | WAIT_WRS_NTO => false
 
-/-- Type quantifiers: k_ex730481_ : Bool, step_no : Nat, 0 ≤ step_no -/
+/-- Type quantifiers: k_ex854413_ : Bool, step_no : Nat, 0 ≤ step_no -/
 def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   let _ : Unit := (ext_pre_step_hook ())
   writeReg minstret_increment (← (should_inc_minstret (← readReg cur_privilege)))
@@ -409,10 +414,12 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   | .Step_Execute (.Memory_Exception (vaddr, e), _) => (handle_exception (bits_of_virtaddr vaddr) e)
   | .Step_Execute (.Illegal_Instruction (), instbits) =>
     (handle_exception (zero_extend (m := 64) instbits) (E_Illegal_Instr ()))
+  | .Step_Execute (.Virtual_Instruction (), instbits) =>
+    (handle_exception (zero_extend (m := 64) instbits) (E_Virtual_Instr ()))
   | .Step_Execute (.Enter_Wait wr, instbits) =>
     (do
       if ((wait_is_nop wr) : Bool)
-      then assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:220.41-220.42"
+      then assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:222.41-222.42"
       else
         (do
           if ((get_config_print_instr ()) : Bool)

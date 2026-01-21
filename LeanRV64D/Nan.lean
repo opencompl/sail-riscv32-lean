@@ -57,6 +57,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -87,6 +88,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -145,6 +147,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -155,6 +158,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -167,6 +171,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -184,18 +189,18 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex639042_ : Nat, k_ex639042_ ∈ {16, 32, 64, 128} -/
-def float_is_nan (op : (BitVec k_ex639042_)) : Bool :=
+/-- Type quantifiers: k_ex739054_ : Nat, k_ex739054_ ∈ {16, 32, 64, 128} -/
+def float_is_nan (op : (BitVec k_ex739054_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (! (is_all_zeros mantissa)))
 
-/-- Type quantifiers: k_ex639059_ : Nat, k_ex639059_ ∈ {16, 32, 64, 128} -/
-def float_is_snan (op : (BitVec k_ex639059_)) : Bool :=
+/-- Type quantifiers: k_ex739071_ : Nat, k_ex739071_ ∈ {16, 32, 64, 128} -/
+def float_is_snan (op : (BitVec k_ex739071_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_zero mantissa))
 
-/-- Type quantifiers: k_ex639066_ : Nat, k_ex639066_ ∈ {16, 32, 64, 128} -/
-def float_is_qnan (op : (BitVec k_ex639066_)) : Bool :=
+/-- Type quantifiers: k_ex739078_ : Nat, k_ex739078_ ∈ {16, 32, 64, 128} -/
+def float_is_qnan (op : (BitVec k_ex739078_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_one mantissa))
 

@@ -57,6 +57,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -87,6 +88,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -145,6 +147,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -155,6 +158,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -167,6 +171,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -318,6 +323,26 @@ def csr_name_map_forwards_matches (arg_ : (BitVec 12)) : Bool :=
   | 0x721 => true
   | 0x322 => true
   | 0x722 => true
+  | 0x30C => true
+  | 0x30D => true
+  | 0x30E => true
+  | 0x30F => true
+  | 0x31C => true
+  | 0x31D => true
+  | 0x31E => true
+  | 0x31F => true
+  | 0x60C => true
+  | 0x60D => true
+  | 0x60E => true
+  | 0x60F => true
+  | 0x61C => true
+  | 0x61D => true
+  | 0x61E => true
+  | 0x61F => true
+  | 0x10C => true
+  | 0x10D => true
+  | 0x10E => true
+  | 0x10F => true
   | 0x180 => true
   | 0x015 => true
   | 0xC03 => true
@@ -507,6 +532,7 @@ def csr_name_map_forwards_matches (arg_ : (BitVec 12)) : Bool :=
   | 0xB02 => true
   | 0xB80 => true
   | 0xB82 => true
+  | 0x181 => true
   | reg => true
 
 def csr_name_map_backwards_matches (arg_ : String) : SailM Bool := do
@@ -644,6 +670,26 @@ def csr_name_map_backwards_matches (arg_ : String) : SailM Bool := do
   | "mcyclecfgh" => (some true)
   | "minstretcfg" => (some true)
   | "minstretcfgh" => (some true)
+  | "mstateen0" => (some true)
+  | "mstateen1" => (some true)
+  | "mstateen2" => (some true)
+  | "mstateen3" => (some true)
+  | "mstateen0h" => (some true)
+  | "mstateen1h" => (some true)
+  | "mstateen2h" => (some true)
+  | "mstateen3h" => (some true)
+  | "hstateen0" => (some true)
+  | "hstateen1" => (some true)
+  | "hstateen2" => (some true)
+  | "hstateen3" => (some true)
+  | "hstateen0h" => (some true)
+  | "hstateen1h" => (some true)
+  | "hstateen2h" => (some true)
+  | "hstateen3h" => (some true)
+  | "sstateen0" => (some true)
+  | "sstateen1" => (some true)
+  | "sstateen2" => (some true)
+  | "sstateen3" => (some true)
   | "satp" => (some true)
   | "seed" => (some true)
   | "hpmcounter3" => (some true)
@@ -833,6 +879,7 @@ def csr_name_map_backwards_matches (arg_ : String) : SailM Bool := do
   | "minstret" => (some true)
   | "mcycleh" => (some true)
   | "minstreth" => (some true)
+  | "srmcfg" => (some true)
   | mapping0_ =>
     (if ((hex_bits_12_backwards_matches mapping0_) : Bool)
     then

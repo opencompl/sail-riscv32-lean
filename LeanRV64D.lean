@@ -18,6 +18,7 @@ import LeanRV64D.VmemTlb
 import LeanRV64D.Vmem
 import LeanRV64D.ZicsrInsts
 import LeanRV64D.Zihpm
+import LeanRV64D.Ssqosid
 import LeanRV64D.Step
 import LeanRV64D.Main
 
@@ -78,6 +79,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -108,6 +110,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -166,6 +169,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -176,6 +180,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -188,6 +193,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -354,6 +360,7 @@ def initialize_registers (_ : Unit) : SailM Unit := do
   writeReg satp (← (undefined_bitvector 64))
   writeReg mhpmevent (← (undefined_vector 32 (← (undefined_HpmEvent ()))))
   writeReg mhpmcounter (← (undefined_vector 32 (← (undefined_bitvector 64))))
+  writeReg srmcfg (← (undefined_Srmcfg ()))
 
 def sail_model_init (x_0 : Unit) : SailM Unit := do
   writeReg fp_rounding_global fp_rounding_default
@@ -367,6 +374,18 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
     (if (((xlen != 32) && (hartSupports Ext_U)) : Bool)
     then mxl
     else (zeros (n := 2)))))
+  writeReg hstateen0 (Mk_Hstateen0 (zeros (n := 64)))
+  writeReg hstateen1 (Mk_Hstateen1 (zeros (n := 64)))
+  writeReg hstateen2 (Mk_Hstateen2 (zeros (n := 64)))
+  writeReg hstateen3 (Mk_Hstateen3 (zeros (n := 64)))
+  writeReg mstateen0 (Mk_Mstateen0 (zeros (n := 64)))
+  writeReg mstateen1 (Mk_Mstateen1 (zeros (n := 64)))
+  writeReg mstateen2 (Mk_Mstateen2 (zeros (n := 64)))
+  writeReg mstateen3 (Mk_Mstateen3 (zeros (n := 64)))
+  writeReg sstateen0 (Mk_Sstateen0 (zeros (n := 32)))
+  writeReg sstateen1 (Mk_Sstateen1 (zeros (n := 32)))
+  writeReg sstateen2 (Mk_Sstateen2 (zeros (n := 32)))
+  writeReg sstateen3 (Mk_Sstateen3 (zeros (n := 32)))
   writeReg senvcfg (← (legalize_senvcfg (Mk_SEnvcfg (zeros (n := 64))) (zeros (n := 64))))
   writeReg mseccfg (← (legalize_mseccfg (Mk_Seccfg (zeros (n := 64))) (zeros (n := 64))))
   writeReg menvcfg (← (legalize_menvcfg (Mk_MEnvcfg (zeros (n := 64))) (zeros (n := 64))))

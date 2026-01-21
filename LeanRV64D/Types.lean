@@ -59,6 +59,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -89,6 +90,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -147,6 +149,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -157,6 +160,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -169,6 +173,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -283,6 +288,30 @@ def privLevel_to_bits (p : Privilege) : (BitVec 2) :=
   let (p, _) := (privLevel_bits_backwards p)
   p
 
+def privLevel_to_virt_bit (p : Privilege) : (BitVec 1) :=
+  let (_, v) := (privLevel_bits_backwards p)
+  v
+
+def privLevel_is_virtual (p : Privilege) : Bool :=
+  ((p == VirtualSupervisor) || (p == VirtualUser))
+
+/-- Type quantifiers: k_a : Type -/
+def is_load_store (access : (MemoryAccessType k_a)) : Bool :=
+  match access with
+  | .Load _ => true
+  | .Store _ => true
+  | .LoadReserved _ => true
+  | .StoreConditional _ => true
+  | .Atomic _ => true
+  | .InstructionFetch _ => false
+  | .CacheAccess _ => true
+
+/-- Type quantifiers: k_a : Type -/
+def is_prefetch_access (access : (MemoryAccessType k_a)) : Bool :=
+  match access with
+  | .CacheAccess (.CB_prefetch _) => true
+  | _ => false
+
 def undefined_CSRAccessType (_ : Unit) : SailM CSRAccessType := do
   (internal_pick [CSRRead, CSRWrite, CSRReadWrite])
 
@@ -299,66 +328,74 @@ def num_of_CSRAccessType (arg_ : CSRAccessType) : Int :=
   | CSRWrite => 1
   | CSRReadWrite => 2
 
-/-- Type quantifiers: k_a : Type -/
-def is_load_store (ac : (MemoryAccessType k_a)) : Bool :=
-  match ac with
-  | .Load _ => true
-  | .Store _ => true
-  | .LoadStore _ => true
-  | .InstructionFetch _ => false
-
 def undefined_InterruptType (_ : Unit) : SailM InterruptType := do
   (internal_pick
-    [I_U_Software, I_S_Software, I_M_Software, I_U_Timer, I_S_Timer, I_M_Timer, I_U_External, I_S_External, I_M_External])
+    [I_Reserved_0, I_S_Software, I_VS_Software, I_M_Software, I_Reserved_4, I_S_Timer, I_VS_Timer, I_M_Timer, I_Reserved_8, I_S_External, I_VS_External, I_M_External, I_SG_External])
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 8 -/
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 12 -/
 def InterruptType_of_num (arg_ : Nat) : InterruptType :=
   match arg_ with
-  | 0 => I_U_Software
+  | 0 => I_Reserved_0
   | 1 => I_S_Software
-  | 2 => I_M_Software
-  | 3 => I_U_Timer
-  | 4 => I_S_Timer
-  | 5 => I_M_Timer
-  | 6 => I_U_External
-  | 7 => I_S_External
-  | _ => I_M_External
+  | 2 => I_VS_Software
+  | 3 => I_M_Software
+  | 4 => I_Reserved_4
+  | 5 => I_S_Timer
+  | 6 => I_VS_Timer
+  | 7 => I_M_Timer
+  | 8 => I_Reserved_8
+  | 9 => I_S_External
+  | 10 => I_VS_External
+  | 11 => I_M_External
+  | _ => I_SG_External
 
 def num_of_InterruptType (arg_ : InterruptType) : Int :=
   match arg_ with
-  | I_U_Software => 0
+  | I_Reserved_0 => 0
   | I_S_Software => 1
-  | I_M_Software => 2
-  | I_U_Timer => 3
-  | I_S_Timer => 4
-  | I_M_Timer => 5
-  | I_U_External => 6
-  | I_S_External => 7
-  | I_M_External => 8
+  | I_VS_Software => 2
+  | I_M_Software => 3
+  | I_Reserved_4 => 4
+  | I_S_Timer => 5
+  | I_VS_Timer => 6
+  | I_M_Timer => 7
+  | I_Reserved_8 => 8
+  | I_S_External => 9
+  | I_VS_External => 10
+  | I_M_External => 11
+  | I_SG_External => 12
 
 def interruptType_bits_forwards (arg_ : InterruptType) : (BitVec 6) :=
   match arg_ with
-  | I_U_Software => 0b000000#6
+  | I_Reserved_0 => 0b000000#6
   | I_S_Software => 0b000001#6
+  | I_VS_Software => 0b000010#6
   | I_M_Software => 0b000011#6
-  | I_U_Timer => 0b000100#6
+  | I_Reserved_4 => 0b000100#6
   | I_S_Timer => 0b000101#6
+  | I_VS_Timer => 0b000110#6
   | I_M_Timer => 0b000111#6
-  | I_U_External => 0b001000#6
+  | I_Reserved_8 => 0b001000#6
   | I_S_External => 0b001001#6
+  | I_VS_External => 0b001010#6
   | I_M_External => 0b001011#6
+  | I_SG_External => 0b001100#6
 
 def interruptType_bits_backwards (arg_ : (BitVec 6)) : SailM InterruptType := do
   match arg_ with
-  | 0b000000 => (pure I_U_Software)
+  | 0b000000 => (pure I_Reserved_0)
   | 0b000001 => (pure I_S_Software)
+  | 0b000010 => (pure I_VS_Software)
   | 0b000011 => (pure I_M_Software)
-  | 0b000100 => (pure I_U_Timer)
+  | 0b000100 => (pure I_Reserved_4)
   | 0b000101 => (pure I_S_Timer)
+  | 0b000110 => (pure I_VS_Timer)
   | 0b000111 => (pure I_M_Timer)
-  | 0b001000 => (pure I_U_External)
+  | 0b001000 => (pure I_Reserved_8)
   | 0b001001 => (pure I_S_External)
+  | 0b001010 => (pure I_VS_External)
   | 0b001011 => (pure I_M_External)
+  | 0b001100 => (pure I_SG_External)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -366,27 +403,35 @@ def interruptType_bits_backwards (arg_ : (BitVec 6)) : SailM InterruptType := do
 
 def interruptType_bits_forwards_matches (arg_ : InterruptType) : Bool :=
   match arg_ with
-  | I_U_Software => true
+  | I_Reserved_0 => true
   | I_S_Software => true
+  | I_VS_Software => true
   | I_M_Software => true
-  | I_U_Timer => true
+  | I_Reserved_4 => true
   | I_S_Timer => true
+  | I_VS_Timer => true
   | I_M_Timer => true
-  | I_U_External => true
+  | I_Reserved_8 => true
   | I_S_External => true
+  | I_VS_External => true
   | I_M_External => true
+  | I_SG_External => true
 
 def interruptType_bits_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
   | 0b000000 => true
   | 0b000001 => true
+  | 0b000010 => true
   | 0b000011 => true
   | 0b000100 => true
   | 0b000101 => true
+  | 0b000110 => true
   | 0b000111 => true
   | 0b001000 => true
   | 0b001001 => true
+  | 0b001010 => true
   | 0b001011 => true
+  | 0b001100 => true
   | _ => false
 
 def undefined_breakpoint_cause (_ : Unit) : SailM breakpoint_cause := do
@@ -414,7 +459,7 @@ def exceptionType_bits_forwards (arg_ : ExceptionType) : (BitVec 6) :=
   | .E_SAMO_Access_Fault () => 0b000111#6
   | .E_U_EnvCall () => 0b001000#6
   | .E_S_EnvCall () => 0b001001#6
-  | .E_Reserved_10 () => 0b001010#6
+  | .E_VS_EnvCall () => 0b001010#6
   | .E_M_EnvCall () => 0b001011#6
   | .E_Fetch_Page_Fault () => 0b001100#6
   | .E_Load_Page_Fault () => 0b001101#6
@@ -423,6 +468,11 @@ def exceptionType_bits_forwards (arg_ : ExceptionType) : (BitVec 6) :=
   | .E_Reserved_16 () => 0b010000#6
   | .E_Reserved_17 () => 0b010001#6
   | .E_Software_Check () => 0b010010#6
+  | .E_Reserved_19 () => 0b010011#6
+  | .E_Fetch_GPage_Fault () => 0b010100#6
+  | .E_Load_GPage_Fault () => 0b010101#6
+  | .E_Virtual_Instr () => 0b010110#6
+  | .E_SAMO_GPage_Fault () => 0b010111#6
   | .E_Breakpoint Brk_Software => 0b000011#6
   | .E_Breakpoint Brk_Hardware => 0b000011#6
   | .E_Extension e => (ext_exc_type_bits_forwards e)
@@ -440,7 +490,7 @@ def exceptionType_bits_backwards (arg_ : (BitVec 6)) : SailM ExceptionType := do
     | 0b000111 => (pure (some (E_SAMO_Access_Fault ())))
     | 0b001000 => (pure (some (E_U_EnvCall ())))
     | 0b001001 => (pure (some (E_S_EnvCall ())))
-    | 0b001010 => (pure (some (E_Reserved_10 ())))
+    | 0b001010 => (pure (some (E_VS_EnvCall ())))
     | 0b001011 => (pure (some (E_M_EnvCall ())))
     | 0b001100 => (pure (some (E_Fetch_Page_Fault ())))
     | 0b001101 => (pure (some (E_Load_Page_Fault ())))
@@ -449,6 +499,11 @@ def exceptionType_bits_backwards (arg_ : (BitVec 6)) : SailM ExceptionType := do
     | 0b010000 => (pure (some (E_Reserved_16 ())))
     | 0b010001 => (pure (some (E_Reserved_17 ())))
     | 0b010010 => (pure (some (E_Software_Check ())))
+    | 0b010011 => (pure (some (E_Reserved_19 ())))
+    | 0b010100 => (pure (some (E_Fetch_GPage_Fault ())))
+    | 0b010101 => (pure (some (E_Load_GPage_Fault ())))
+    | 0b010110 => (pure (some (E_Virtual_Instr ())))
+    | 0b010111 => (pure (some (E_SAMO_GPage_Fault ())))
     | 0b000011 => (pure (some (E_Breakpoint Brk_Software)))
     | mapping0_ =>
       (do
@@ -475,7 +530,7 @@ def exceptionType_bits_forwards_matches (arg_ : ExceptionType) : Bool :=
   | .E_SAMO_Access_Fault () => true
   | .E_U_EnvCall () => true
   | .E_S_EnvCall () => true
-  | .E_Reserved_10 () => true
+  | .E_VS_EnvCall () => true
   | .E_M_EnvCall () => true
   | .E_Fetch_Page_Fault () => true
   | .E_Load_Page_Fault () => true
@@ -484,6 +539,11 @@ def exceptionType_bits_forwards_matches (arg_ : ExceptionType) : Bool :=
   | .E_Reserved_16 () => true
   | .E_Reserved_17 () => true
   | .E_Software_Check () => true
+  | .E_Reserved_19 () => true
+  | .E_Fetch_GPage_Fault () => true
+  | .E_Load_GPage_Fault () => true
+  | .E_Virtual_Instr () => true
+  | .E_SAMO_GPage_Fault () => true
   | .E_Breakpoint Brk_Software => true
   | .E_Breakpoint Brk_Hardware => true
   | .E_Extension e => true
@@ -510,6 +570,11 @@ def exceptionType_bits_backwards_matches (arg_ : (BitVec 6)) : SailM Bool := do
     | 0b010000 => (pure (some true))
     | 0b010001 => (pure (some true))
     | 0b010010 => (pure (some true))
+    | 0b010011 => (pure (some true))
+    | 0b010100 => (pure (some true))
+    | 0b010101 => (pure (some true))
+    | 0b010110 => (pure (some true))
+    | 0b010111 => (pure (some true))
     | 0b000011 => (pure (some true))
     | mapping0_ =>
       (do

@@ -5,6 +5,7 @@ import LeanRV64D.HexBitsSigned
 import LeanRV64D.DecBits
 import LeanRV64D.Prelude
 import LeanRV64D.Errors
+import LeanRV64D.AextTypes
 import LeanRV64D.Xlen
 import LeanRV64D.Flen
 import LeanRV64D.Vlen
@@ -66,6 +67,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -96,6 +98,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -154,6 +157,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -164,6 +168,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -176,6 +181,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -209,6 +215,8 @@ def plat_insns_per_tick : nat1 := 2
 
 def illegal_instruction_writes_xtval : Bool := true
 
+def virtual_instruction_writes_xtval : Bool := false
+
 def software_breakpoint_writes_xtval : Bool := true
 
 def hardware_breakpoint_writes_xtval : Bool := true
@@ -219,11 +227,15 @@ def load_access_fault_writes_xtval : Bool := true
 
 def load_page_fault_writes_xtval : Bool := true
 
+def load_guest_page_fault_writes_xtval : Bool := false
+
 def misaligned_samo_writes_xtval : Bool := true
 
 def samo_access_fault_writes_xtval : Bool := true
 
 def samo_page_fault_writes_xtval : Bool := true
+
+def samo_guest_page_fault_writes_xtval : Bool := false
 
 def misaligned_fetch_writes_xtval : Bool := true
 
@@ -231,33 +243,35 @@ def fetch_access_fault_writes_xtval : Bool := true
 
 def fetch_page_fault_writes_xtval : Bool := true
 
+def fetch_guest_page_fault_writes_xtval : Bool := false
+
 def software_check_fault_writes_xtval : Bool := true
 
 def reserved_exceptions_write_xtval : Bool := false
 
 def undefined_AmocasOddRegisterReservedBehavior (_ : Unit) : SailM AmocasOddRegisterReservedBehavior := do
-  (internal_pick [Fatal, Illegal])
+  (internal_pick [AMOCAS_Fatal, AMOCAS_Illegal])
 
 /-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
 def AmocasOddRegisterReservedBehavior_of_num (arg_ : Nat) : AmocasOddRegisterReservedBehavior :=
   match arg_ with
-  | 0 => Fatal
-  | _ => Illegal
+  | 0 => AMOCAS_Fatal
+  | _ => AMOCAS_Illegal
 
 def num_of_AmocasOddRegisterReservedBehavior (arg_ : AmocasOddRegisterReservedBehavior) : Int :=
   match arg_ with
-  | Fatal => 0
-  | Illegal => 1
+  | AMOCAS_Fatal => 0
+  | AMOCAS_Illegal => 1
 
 def AmocasOddRegisterReservedBehavior_str_forwards (arg_ : AmocasOddRegisterReservedBehavior) : String :=
   match arg_ with
-  | Fatal => "Fatal"
-  | Illegal => "Illegal"
+  | AMOCAS_Fatal => "AMOCAS_Fatal"
+  | AMOCAS_Illegal => "AMOCAS_Illegal"
 
 def AmocasOddRegisterReservedBehavior_str_backwards (arg_ : String) : SailM AmocasOddRegisterReservedBehavior := do
   match arg_ with
-  | "Fatal" => (pure Fatal)
-  | "Illegal" => (pure Illegal)
+  | "AMOCAS_Fatal" => (pure AMOCAS_Fatal)
+  | "AMOCAS_Illegal" => (pure AMOCAS_Illegal)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -265,21 +279,61 @@ def AmocasOddRegisterReservedBehavior_str_backwards (arg_ : String) : SailM Amoc
 
 def AmocasOddRegisterReservedBehavior_str_forwards_matches (arg_ : AmocasOddRegisterReservedBehavior) : Bool :=
   match arg_ with
-  | Fatal => true
-  | Illegal => true
+  | AMOCAS_Fatal => true
+  | AMOCAS_Illegal => true
 
 def AmocasOddRegisterReservedBehavior_str_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
-  | "Fatal" => true
-  | "Illegal" => true
+  | "AMOCAS_Fatal" => true
+  | "AMOCAS_Illegal" => true
   | _ => false
 
-def accessType_to_str (a : (MemoryAccessType Unit)) : String :=
-  match a with
-  | .Load _ => "R"
-  | .Store _ => "W"
-  | .LoadStore (_, _) => "RW"
+def PmpWriteOnlyReservedBehavior_str_backwards (arg_ : String) : SailM PmpWriteOnlyReservedBehavior := do
+  match arg_ with
+  | "PMP_Fatal" => (pure PMP_Fatal)
+  | "PMP_ClearPermissions" => (pure PMP_ClearPermissions)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def PmpWriteOnlyReservedBehavior_str_forwards (arg_ : PmpWriteOnlyReservedBehavior) : String :=
+  match arg_ with
+  | PMP_Fatal => "PMP_Fatal"
+  | PMP_ClearPermissions => "PMP_ClearPermissions"
+
+def XenvcfgCbieReservedBehavior_str_backwards (arg_ : String) : SailM XenvcfgCbieReservedBehavior := do
+  match arg_ with
+  | "Xenvcfg_Fatal" => (pure Xenvcfg_Fatal)
+  | "Xenvcfg_ClearPermissions" => (pure Xenvcfg_ClearPermissions)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def XenvcfgCbieReservedBehavior_str_forwards (arg_ : XenvcfgCbieReservedBehavior) : String :=
+  match arg_ with
+  | Xenvcfg_Fatal => "Xenvcfg_Fatal"
+  | Xenvcfg_ClearPermissions => "Xenvcfg_ClearPermissions"
+
+def mem_payload_str_forwards (arg_ : mem_payload) : String :=
+  match arg_ with
+  | Data => ""
+
+def sp : regidx := (Regidx (zero_extend (m := 5) 0b10#2))
+
+def accessType_to_str (access : (MemoryAccessType mem_payload)) : String :=
+  match access with
+  | .Load p => (HAppend.hAppend "R" (mem_payload_str_forwards p))
+  | .LoadReserved p => (HAppend.hAppend "R" (mem_payload_str_forwards p))
+  | .Store p => (HAppend.hAppend "W" (mem_payload_str_forwards p))
+  | .StoreConditional p => (HAppend.hAppend "W" (mem_payload_str_forwards p))
+  | .Atomic (_, lp, sp) =>
+    (HAppend.hAppend "R"
+      (HAppend.hAppend (mem_payload_str_forwards lp)
+        (HAppend.hAppend "W" (mem_payload_str_forwards sp))))
   | .InstructionFetch () => "X"
+  | .CacheAccess _ => "C"
 
 def atomic_support_str_backwards (arg_ : String) : SailM AtomicSupport := do
   match arg_ with
@@ -439,6 +493,26 @@ def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   | 0x721 => (pure "mcyclecfgh")
   | 0x322 => (pure "minstretcfg")
   | 0x722 => (pure "minstretcfgh")
+  | 0x30C => (pure "mstateen0")
+  | 0x30D => (pure "mstateen1")
+  | 0x30E => (pure "mstateen2")
+  | 0x30F => (pure "mstateen3")
+  | 0x31C => (pure "mstateen0h")
+  | 0x31D => (pure "mstateen1h")
+  | 0x31E => (pure "mstateen2h")
+  | 0x31F => (pure "mstateen3h")
+  | 0x60C => (pure "hstateen0")
+  | 0x60D => (pure "hstateen1")
+  | 0x60E => (pure "hstateen2")
+  | 0x60F => (pure "hstateen3")
+  | 0x61C => (pure "hstateen0h")
+  | 0x61D => (pure "hstateen1h")
+  | 0x61E => (pure "hstateen2h")
+  | 0x61F => (pure "hstateen3h")
+  | 0x10C => (pure "sstateen0")
+  | 0x10D => (pure "sstateen1")
+  | 0x10E => (pure "sstateen2")
+  | 0x10F => (pure "sstateen3")
   | 0x180 => (pure "satp")
   | 0x015 => (pure "seed")
   | 0xC03 => (pure "hpmcounter3")
@@ -628,6 +702,7 @@ def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   | 0xB02 => (pure "minstret")
   | 0xB80 => (pure "mcycleh")
   | 0xB82 => (pure "minstreth")
+  | 0x181 => (pure "srmcfg")
   | reg => (hex_bits_12_forwards reg)
 
 def csr_name (csr : (BitVec 12)) : SailM String := do
@@ -647,7 +722,7 @@ def exceptionType_to_str (e : ExceptionType) : String :=
   | .E_SAMO_Access_Fault () => "store/amo-access-fault"
   | .E_U_EnvCall () => "u-call"
   | .E_S_EnvCall () => "s-call"
-  | .E_Reserved_10 () => "reserved-0"
+  | .E_VS_EnvCall () => "vs-call"
   | .E_M_EnvCall () => "m-call"
   | .E_Fetch_Page_Fault () => "fetch-page-fault"
   | .E_Load_Page_Fault () => "load-page-fault"
@@ -656,6 +731,11 @@ def exceptionType_to_str (e : ExceptionType) : String :=
   | .E_Reserved_16 () => "reserved-2"
   | .E_Reserved_17 () => "reserved-3"
   | .E_Software_Check () => "software-check-fault"
+  | .E_Reserved_19 () => "reserved-19"
+  | .E_Fetch_GPage_Fault () => "fetch-guest-page-fault"
+  | .E_Load_GPage_Fault () => "load-guest-page-fault"
+  | .E_Virtual_Instr () => "virtual-instruction"
+  | .E_SAMO_GPage_Fault () => "store/amo-guest-page-fault"
   | .E_Breakpoint Brk_Software => "software-breakpoint"
   | .E_Breakpoint Brk_Hardware => "hardware-breakpoint"
   | .E_Extension e => (ext_exc_type_to_str e)
@@ -1222,6 +1302,7 @@ def hartSupports (merge_var : extension) : Bool :=
   | Ext_Zvksc => ((hartSupports Ext_Zvks) && (hartSupports Ext_Zvbc))
   | Ext_Zvksg => ((hartSupports Ext_Zvks) && (hartSupports Ext_Zvkg))
   | Ext_Sscofpmf => true
+  | Ext_Ssstateen => true
   | Ext_Sstc => true
   | Ext_Sstvala => true
   | Ext_Sstvecd => (hartSupports Ext_S)
@@ -1236,6 +1317,8 @@ def hartSupports (merge_var : extension) : Bool :=
   | Ext_Svpbmt => false
   | Ext_Svrsw60t59b => true
   | Ext_Smcntrpmf => true
+  | Ext_Smstateen => true
+  | Ext_Ssqosid => true
 termination_by let ext := merge_var; ((hartSupports_measure ext)).toNat
 
 def freg_or_reg_name_forwards (arg_ : fregidx) : SailM String := do
@@ -1369,14 +1452,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-def maybe_aqrl_forwards (arg_ : (Bool × Bool)) : String :=
-  match arg_ with
-  | (true, true) => ".aqrl"
-  | (true, false) => ".aq"
-  | (false, true) => ".rl"
-  | (false, false) => ""
-
-/-- Type quantifiers: k_ex640807_ : Bool -/
+/-- Type quantifiers: k_ex740845_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -2054,8 +2130,6 @@ def zicond_mnemonic_forwards (arg_ : zicondop) : String :=
   match arg_ with
   | CZERO_EQZ => "czero.eqz"
   | CZERO_NEZ => "czero.nez"
-
-def sp : regidx := (Regidx (zero_extend (m := 5) 0b10#2))
 
 def zreg : regidx := (Regidx (zero_extend (m := 5) 0b00#2))
 
@@ -5107,19 +5181,18 @@ def currentlyEnabled_measure (ext : extension) : Int :=
   | Ext_Zaamo => 1
   | Ext_Zalrsc => 1
   | Ext_Zca => 1
-  | Ext_Zfinx => 1
   | Ext_Zicntr => 1
   | Ext_Zihpm => 1
   | Ext_Zve32x => 1
+  | Ext_Smstateen => 1
+  | Ext_Ssstateen => 1
   | Ext_Sv39 => 2
   | Ext_Zfh => 2
-  | Ext_Zhinx => 2
   | Ext_Zvbb => 2
   | Ext_Zve32f => 2
   | Ext_Zve64x => 2
   | Ext_Svrsw60t59b => 3
   | Ext_Zfhmin => 3
-  | Ext_Zhinxmin => 3
   | Ext_Zicfilp => 3
   | Ext_Zvbc => 3
   | Ext_Zve64f => 3
@@ -5132,6 +5205,10 @@ def currentlyEnabled_measure (ext : extension) : Int :=
   | Ext_Zvfh => 4
   | Ext_V => 5
   | Ext_Zvfhmin => 5
+  | Ext_Zfinx => 9
+  | Ext_Zdinx => 10
+  | Ext_Zhinx => 10
+  | Ext_Zhinxmin => 11
   | _ => 2
 
 def Mk_MEnvcfg (v : (BitVec 64)) : (BitVec 64) :=
@@ -5172,6 +5249,17 @@ def _update_MEnvcfg_LPE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
 
 def _update_MEnvcfg_STCE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 63 63 x)
+
+def xenvcfg_cbie_reserved_behavior : XenvcfgCbieReservedBehavior := Xenvcfg_ClearPermissions
+
+def legalize_xenvcfg_cbie (cbie : (BitVec 2)) : SailM (BitVec 2) := do
+  if ((cbie != 0b10#2) : Bool)
+  then (pure cbie)
+  else
+    (do
+      match xenvcfg_cbie_reserved_behavior with
+      | Xenvcfg_Fatal => (reserved_behavior "xenvcfg.CBIE = 0b10")
+      | Xenvcfg_ClearPermissions => (pure 0b00#2))
 
 def sys_enable_writable_fiom : Bool := true
 
@@ -5229,8 +5317,80 @@ def _update_SEnvcfg_FIOM (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
 def _update_SEnvcfg_LPE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 2 2 x)
 
+def Mk_Hstateen0 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Hstateen1 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Hstateen2 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Hstateen3 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Mstateen0 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Mstateen1 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Mstateen2 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def Mk_Mstateen3 (v : (BitVec 64)) : (BitVec 64) :=
+  v
+
+def is_mstateen_accessible (_ : Unit) : Bool :=
+  (hartSupports Ext_Smstateen)
+
+/-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
+def get_mstateen (idx : Nat) : SailM (BitVec 64) := do
+  if ((not (is_mstateen_accessible ())) : Bool)
+  then (pure (ones (n := 64)))
+  else
+    (do
+      match idx with
+      | 0 => readReg mstateen0
+      | 1 => readReg mstateen1
+      | 2 => readReg mstateen2
+      | _ => readReg mstateen3)
+
+def Mk_Sstateen0 (v : (BitVec 32)) : (BitVec 32) :=
+  v
+
+def Mk_Sstateen1 (v : (BitVec 32)) : (BitVec 32) :=
+  v
+
+def Mk_Sstateen2 (v : (BitVec 32)) : (BitVec 32) :=
+  v
+
+def Mk_Sstateen3 (v : (BitVec 32)) : (BitVec 32) :=
+  v
+
+def stateen_bit_index_forwards (arg_ : stateen_bit) : Nat :=
+  match arg_ with
+  | STATEEN_SE => 63
+  | STATEEN_ENVCFG => 62
+  | STATEEN_SRMCFG => 55
+  | STATEEN_FCSR => 1
+
 
 mutual
+/-- Type quantifiers: stateen_reg : Nat, 0 ≤ stateen_reg ∧ stateen_reg ≤ 3 -/
+def check_stateen_bit (priv : Privilege) (bit_idx : stateen_bit) (stateen_reg : Nat) : SailM Bool := do
+  let mask ← (( do
+    match priv with
+    | Machine => (pure (ones (n := 64)))
+    | Supervisor => (get_mstateen stateen_reg)
+    | User => (pure ((← (get_mstateen stateen_reg)) &&& (← (get_sstateen stateen_reg))))
+    | VirtualSupervisor =>
+      (pure ((← (get_mstateen stateen_reg)) &&& (← (get_hstateen stateen_reg))))
+    | VirtualUser =>
+      (pure ((← (get_mstateen stateen_reg)) &&& ((← (get_hstateen stateen_reg)) &&& (← (get_sstateen
+                stateen_reg))))) ) : SailM (BitVec 64) )
+  (pure ((BitVec.access mask (stateen_bit_index_forwards bit_idx)) == 1#1))
+termination_by let (_, _, _) := (priv, bit_idx, stateen_reg); (7).toNat
 def currentlyEnabled (merge_var : extension) : SailM Bool := do
   match merge_var with
   | Ext_Zic64b => (pure (hartSupports Ext_Zic64b))
@@ -5257,6 +5417,8 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Sv48 => (pure ((hartSupports Ext_Sv48) && (← (currentlyEnabled Ext_S))))
   | Ext_Sv57 => (pure ((hartSupports Ext_Sv57) && (← (currentlyEnabled Ext_S))))
   | Ext_Sstvecd => (pure ((hartSupports Ext_Sstvecd) && (← (currentlyEnabled Ext_S))))
+  | Ext_Smstateen => (pure ((hartSupports Ext_Smstateen) && (← (currentlyEnabled Ext_Zicsr))))
+  | Ext_Ssstateen => (pure ((hartSupports Ext_Ssstateen) && (← (currentlyEnabled Ext_Zicsr))))
   | Ext_F =>
     (pure ((hartSupports Ext_F) && (((_get_Misa_F (← readReg misa)) == 1#1) && (((_get_Mstatus_FS
                 (← readReg mstatus)) != 0b00#2) && (← (currentlyEnabled Ext_Zicsr))))))
@@ -5264,7 +5426,9 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
     (pure ((hartSupports Ext_D) && (((_get_Misa_D (← readReg misa)) == 1#1) && (((_get_Mstatus_FS
                 (← readReg mstatus)) != 0b00#2) && ((flen ≥b 64) && (← (currentlyEnabled
                   Ext_Zicsr)))))))
-  | Ext_Zfinx => (pure ((hartSupports Ext_Zfinx) && (← (currentlyEnabled Ext_Zicsr))))
+  | Ext_Zfinx =>
+    (pure ((hartSupports Ext_Zfinx) && ((← (currentlyEnabled Ext_Zicsr)) && (← (is_zfinx_enabled_by_stateen
+              ())))))
   | Ext_Zvl32b => (pure (hartSupports Ext_Zvl32b))
   | Ext_Zvl64b => (pure (hartSupports Ext_Zvl64b))
   | Ext_Zvl128b => (pure (hartSupports Ext_Zvl128b))
@@ -5372,6 +5536,7 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zicbom => (pure (hartSupports Ext_Zicbom))
   | Ext_Zicboz => (pure (hartSupports Ext_Zicboz))
   | Ext_Zifencei => (pure (hartSupports Ext_Zifencei))
+  | Ext_Ssqosid => (pure ((hartSupports Ext_Ssqosid) && (← (currentlyEnabled Ext_Zicsr))))
   | Ext_Zfbfmin => (pure ((hartSupports Ext_Zfbfmin) && (← (currentlyEnabled Ext_F))))
   | Ext_Zvfbfmin => (pure ((hartSupports Ext_Zvfbfmin) && (← (currentlyEnabled Ext_Zve32f))))
   | Ext_Zvfbfwma =>
@@ -5380,20 +5545,56 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zimop => (pure (hartSupports Ext_Zimop))
   | Ext_Zcmop => (pure ((hartSupports Ext_Zcmop) && (← (currentlyEnabled Ext_Zca))))
 termination_by let ext := merge_var; ((currentlyEnabled_measure ext)).toNat
+/-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
+def get_hstateen (idx : Nat) : SailM (BitVec 64) := do
+  if ((not (← (is_hstateen_accessible ()))) : Bool)
+  then (pure (ones (n := 64)))
+  else
+    (do
+      match idx with
+      | 0 => readReg hstateen0
+      | 1 => readReg hstateen1
+      | 2 => readReg hstateen2
+      | _ => readReg hstateen3)
+termination_by let _ := idx; (6).toNat
+/-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
+def get_sstateen (idx : Nat) : SailM (BitVec 64) := do
+  (pure (0xFFFFFFFF#32 ++ (← do
+        if ((not (← (is_sstateen_accessible ()))) : Bool)
+        then (pure (ones (n := (64 -i 32))))
+        else
+          (do
+            match idx with
+            | 0 => readReg sstateen0
+            | 1 => readReg sstateen1
+            | 2 => readReg sstateen2
+            | _ => readReg sstateen3))))
+termination_by let _ := idx; (3).toNat
 def get_xLPE (p : Privilege) : SailM Bool := do
   match p with
-  | Machine => (pure (bool_bits_backwards (_get_Seccfg_MLPE (← readReg mseccfg))))
-  | Supervisor => (pure (bool_bits_backwards (_get_MEnvcfg_LPE (← readReg menvcfg))))
+  | Machine => (pure (bool_bit_backwards (_get_Seccfg_MLPE (← readReg mseccfg))))
+  | Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_LPE (← readReg menvcfg))))
   | User =>
     (do
       if ((← (currentlyEnabled Ext_S)) : Bool)
-      then (pure (bool_bits_backwards (_get_SEnvcfg_LPE (← readReg senvcfg))))
-      else (pure (bool_bits_backwards (_get_MEnvcfg_LPE (← readReg menvcfg)))))
+      then (pure (bool_bit_backwards (_get_SEnvcfg_LPE (← readReg senvcfg))))
+      else (pure (bool_bit_backwards (_get_MEnvcfg_LPE (← readReg menvcfg)))))
   | VirtualSupervisor =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 31 "Hypervisor extension not supported")
   | VirtualUser =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 32 "Hypervisor extension not supported")
 termination_by let _ := p; (2).toNat
+def is_hstateen_accessible (_ : Unit) : SailM Bool := do
+  (pure ((← (currentlyEnabled Ext_H)) && ((← (currentlyEnabled Ext_Smstateen)) || (← (currentlyEnabled
+            Ext_Ssstateen)))))
+termination_by let () := (); (5).toNat
+def is_sstateen_accessible (_ : Unit) : SailM Bool := do
+  (pure ((← (currentlyEnabled Ext_S)) && ((← (currentlyEnabled Ext_Smstateen)) || (← (currentlyEnabled
+            Ext_Ssstateen)))))
+termination_by let () := (); (2).toNat
+def is_zfinx_enabled_by_stateen (_ : Unit) : SailM Bool := do
+  (check_stateen_bit (← readReg cur_privilege) STATEEN_FCSR 0)
+termination_by let () := (); (8).toNat
 def virtual_memory_supported (_ : Unit) : SailM Bool := do
   (pure ((← (currentlyEnabled Ext_Sv32)) || ((← (currentlyEnabled Ext_Sv39)) || ((← (currentlyEnabled
               Ext_Sv48)) || (← (currentlyEnabled Ext_Sv57))))))
@@ -5424,10 +5625,7 @@ def legalize_menvcfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := 
             else (pure 0#1)))
         (← do
           if ((← (currentlyEnabled Ext_Zicbom)) : Bool)
-          then
-            (if (((_get_MEnvcfg_CBIE v) != 0b10#2) : Bool)
-            then (pure (_get_MEnvcfg_CBIE v))
-            else (pure 0b00#2))
+          then (legalize_xenvcfg_cbie (_get_MEnvcfg_CBIE v))
           else (pure 0b00#2)))
       (← do
         if ((← (currentlyEnabled Ext_Sstc)) : Bool)
@@ -5478,13 +5676,10 @@ def legalize_senvcfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := 
           else (pure 0#1)))
       (← do
         if ((← (currentlyEnabled Ext_Zicbom)) : Bool)
-        then
-          (if (((_get_SEnvcfg_CBIE v) != 0b10#2) : Bool)
-          then (pure (_get_SEnvcfg_CBIE v))
-          else (pure 0b00#2))
+        then (legalize_xenvcfg_cbie (_get_SEnvcfg_CBIE v))
         else (pure 0b00#2))))
 
-def amocas_odd_register_reserved_behavior : AmocasOddRegisterReservedBehavior := Illegal
+def amocas_odd_register_reserved_behavior : AmocasOddRegisterReservedBehavior := AMOCAS_Illegal
 
 /-- Type quantifiers: width : Nat, width ∈ {1, 2, 4, 8, 16} -/
 def amo_encoding_valid (width : Nat) (op : amoop) (typ_2 : regidx) (typ_3 : regidx) : SailM Bool := do
@@ -5502,8 +5697,8 @@ def amo_encoding_valid (width : Nat) (op : amoop) (typ_2 : regidx) (typ_3 : regi
                   then
                     (do
                       match amocas_odd_register_reserved_behavior with
-                      | Fatal => (reserved_behavior "AMOCAS.D/Q used odd-numbered register")
-                      | Illegal => (pure false))
+                      | AMOCAS_Fatal => (reserved_behavior "AMOCAS.D/Q used odd-numbered register")
+                      | AMOCAS_Illegal => (pure false))
                   else (pure true))))))))
 
 def encdec_amoop_forwards (arg_ : amoop) : (BitVec 5) :=
@@ -6203,7 +6398,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex642805_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex742972_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -6470,7 +6665,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((valid_load_encdec width is_unsigned) : Bool)
       then
-        (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ ((bool_bits_forwards is_unsigned) ++ ((width_enc_forwards
+        (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ ((bool_bit_forwards is_unsigned) ++ ((width_enc_forwards
                     width) ++ ((encdec_reg_forwards rd) ++ 0b0000011#7))))))
       else
         (do
@@ -6532,7 +6727,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (amo_encoding_valid size op rs2 rd)) : Bool)
       then
-        (pure ((encdec_amoop_forwards op) ++ ((bool_bits_forwards aq) ++ ((bool_bits_forwards rl) ++ ((encdec_reg_forwards
+        (pure ((encdec_amoop_forwards op) ++ ((bool_bit_forwards aq) ++ ((bool_bit_forwards rl) ++ ((encdec_reg_forwards
                     rs2) ++ ((encdec_reg_forwards rs1) ++ ((width_enc_wide_forwards size) ++ ((encdec_reg_forwards
                           rd) ++ 0b0101111#7))))))))
       else
@@ -6543,7 +6738,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zalrsc)) && (lrsc_width_valid width)) : Bool)
       then
-        (pure (0b00010#5 ++ ((bool_bits_forwards aq) ++ ((bool_bits_forwards rl) ++ (0b00000#5 ++ ((encdec_reg_forwards
+        (pure (0b00010#5 ++ ((bool_bit_forwards aq) ++ ((bool_bit_forwards rl) ++ (0b00000#5 ++ ((encdec_reg_forwards
                       rs1) ++ (0#1 ++ ((width_enc_forwards width) ++ ((encdec_reg_forwards rd) ++ 0b0101111#7)))))))))
       else
         (do
@@ -6553,7 +6748,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zalrsc)) && (lrsc_width_valid width)) : Bool)
       then
-        (pure (0b00011#5 ++ ((bool_bits_forwards aq) ++ ((bool_bits_forwards rl) ++ ((encdec_reg_forwards
+        (pure (0b00011#5 ++ ((bool_bit_forwards aq) ++ ((bool_bit_forwards rl) ++ ((encdec_reg_forwards
                     rs2) ++ ((encdec_reg_forwards rs1) ++ (0#1 ++ ((width_enc_forwards width) ++ ((encdec_reg_forwards
                             rd) ++ 0b0101111#7)))))))))
       else
@@ -6574,7 +6769,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_M)) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b10#2 ++ ((bool_bits_forwards
+        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b10#2 ++ ((bool_bit_forwards
                       is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
       else
         (do
@@ -6584,7 +6779,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_M)) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b11#2 ++ ((bool_bits_forwards
+        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b11#2 ++ ((bool_bit_forwards
                       is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
       else
         (do
@@ -6604,7 +6799,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((xlen == 64) && (← (currentlyEnabled Ext_M))) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b10#2 ++ ((bool_bits_forwards
+        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b10#2 ++ ((bool_bit_forwards
                       is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0111011#7)))))))
       else
         (do
@@ -6614,7 +6809,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((xlen == 64) && (← (currentlyEnabled Ext_M))) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b11#2 ++ ((bool_bits_forwards
+        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b11#2 ++ ((bool_bit_forwards
                       is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0111011#7)))))))
       else
         (do
@@ -10250,15 +10445,19 @@ def instruction_to_str (insn : instruction) : SailM String := do
 
 def interruptType_to_str (i : InterruptType) : String :=
   match i with
-  | I_U_Software => "user-software-interrupt"
+  | I_Reserved_0 => "reserved-interrupt-0"
   | I_S_Software => "supervisor-software-interrupt"
+  | I_VS_Software => "virtual-supervisor-software-interrupt"
   | I_M_Software => "machine-software-interrupt"
-  | I_U_Timer => "user-timer-interrupt"
+  | I_Reserved_4 => "reserved-interrupt-4"
   | I_S_Timer => "supervisor-timer-interrupt"
+  | I_VS_Timer => "virtual-supervisor-timer-interrupt"
   | I_M_Timer => "machine-timer-interrupt"
-  | I_U_External => "user-external-interrupt"
+  | I_Reserved_8 => "reserved-interrupt-8"
   | I_S_External => "supervisor-external-interrupt"
+  | I_VS_External => "virtual-supervisor-external-interrupt"
   | I_M_External => "machine-external-interrupt"
+  | I_SG_External => "supervisor guest-external-interrupt"
 
 def misaligned_fault_str_backwards (arg_ : String) : SailM misaligned_fault := do
   match arg_ with
@@ -10377,4 +10576,56 @@ def wait_name_forwards (arg_ : WaitReason) : String :=
   | WAIT_WFI => "WAIT-WFI"
   | WAIT_WRS_STO => "WAIT-WRS-STO"
   | WAIT_WRS_NTO => "WAIT-WRS-NTO"
+
+def undefined_PmpWriteOnlyReservedBehavior (_ : Unit) : SailM PmpWriteOnlyReservedBehavior := do
+  (internal_pick [PMP_Fatal, PMP_ClearPermissions])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def PmpWriteOnlyReservedBehavior_of_num (arg_ : Nat) : PmpWriteOnlyReservedBehavior :=
+  match arg_ with
+  | 0 => PMP_Fatal
+  | _ => PMP_ClearPermissions
+
+def num_of_PmpWriteOnlyReservedBehavior (arg_ : PmpWriteOnlyReservedBehavior) : Int :=
+  match arg_ with
+  | PMP_Fatal => 0
+  | PMP_ClearPermissions => 1
+
+def PmpWriteOnlyReservedBehavior_str_forwards_matches (arg_ : PmpWriteOnlyReservedBehavior) : Bool :=
+  match arg_ with
+  | PMP_Fatal => true
+  | PMP_ClearPermissions => true
+
+def PmpWriteOnlyReservedBehavior_str_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "PMP_Fatal" => true
+  | "PMP_ClearPermissions" => true
+  | _ => false
+
+def undefined_XenvcfgCbieReservedBehavior (_ : Unit) : SailM XenvcfgCbieReservedBehavior := do
+  (internal_pick [Xenvcfg_Fatal, Xenvcfg_ClearPermissions])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def XenvcfgCbieReservedBehavior_of_num (arg_ : Nat) : XenvcfgCbieReservedBehavior :=
+  match arg_ with
+  | 0 => Xenvcfg_Fatal
+  | _ => Xenvcfg_ClearPermissions
+
+def num_of_XenvcfgCbieReservedBehavior (arg_ : XenvcfgCbieReservedBehavior) : Int :=
+  match arg_ with
+  | Xenvcfg_Fatal => 0
+  | Xenvcfg_ClearPermissions => 1
+
+def XenvcfgCbieReservedBehavior_str_forwards_matches (arg_ : XenvcfgCbieReservedBehavior) : Bool :=
+  match arg_ with
+  | Xenvcfg_Fatal => true
+  | Xenvcfg_ClearPermissions => true
+
+def XenvcfgCbieReservedBehavior_str_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "Xenvcfg_Fatal" => true
+  | "Xenvcfg_ClearPermissions" => true
+  | _ => false
+
+def pmp_write_only_reserved_behavior : PmpWriteOnlyReservedBehavior := PMP_ClearPermissions
 

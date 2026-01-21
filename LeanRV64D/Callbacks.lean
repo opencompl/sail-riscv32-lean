@@ -59,6 +59,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -89,6 +90,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -147,6 +149,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -157,6 +160,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -169,6 +173,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -216,7 +221,7 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 64)
 def redirect_callback (x_0 : (BitVec 64)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex651029_ : Bool -/
+/-- Type quantifiers: k_ex751214_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
@@ -355,6 +360,26 @@ def csr_name_map_backwards (arg_ : String) : SailM (BitVec 12) := do
   | "mcyclecfgh" => (some 0x721#12)
   | "minstretcfg" => (some 0x322#12)
   | "minstretcfgh" => (some 0x722#12)
+  | "mstateen0" => (some 0x30C#12)
+  | "mstateen1" => (some 0x30D#12)
+  | "mstateen2" => (some 0x30E#12)
+  | "mstateen3" => (some 0x30F#12)
+  | "mstateen0h" => (some 0x31C#12)
+  | "mstateen1h" => (some 0x31D#12)
+  | "mstateen2h" => (some 0x31E#12)
+  | "mstateen3h" => (some 0x31F#12)
+  | "hstateen0" => (some 0x60C#12)
+  | "hstateen1" => (some 0x60D#12)
+  | "hstateen2" => (some 0x60E#12)
+  | "hstateen3" => (some 0x60F#12)
+  | "hstateen0h" => (some 0x61C#12)
+  | "hstateen1h" => (some 0x61D#12)
+  | "hstateen2h" => (some 0x61E#12)
+  | "hstateen3h" => (some 0x61F#12)
+  | "sstateen0" => (some 0x10C#12)
+  | "sstateen1" => (some 0x10D#12)
+  | "sstateen2" => (some 0x10E#12)
+  | "sstateen3" => (some 0x10F#12)
   | "satp" => (some 0x180#12)
   | "seed" => (some 0x015#12)
   | "hpmcounter3" => (some 0xC03#12)
@@ -544,6 +569,7 @@ def csr_name_map_backwards (arg_ : String) : SailM (BitVec 12) := do
   | "minstret" => (some 0xB02#12)
   | "mcycleh" => (some 0xB80#12)
   | "minstreth" => (some 0xB82#12)
+  | "srmcfg" => (some 0x181#12)
   | mapping0_ =>
     (if ((hex_bits_12_backwards_matches mapping0_) : Bool)
     then

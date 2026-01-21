@@ -89,6 +89,18 @@ inductive exception where
   deriving Inhabited, BEq, Repr
   open exception
 
+inductive amoop where | AMOSWAP | AMOADD | AMOXOR | AMOAND | AMOOR | AMOMIN | AMOMAX | AMOMINU | AMOMAXU | AMOCAS
+  deriving BEq, Inhabited, Repr
+  open amoop
+
+inductive cbop_zicbom where | CBO_CLEAN | CBO_FLUSH | CBO_INVAL
+  deriving BEq, Inhabited, Repr
+  open cbop_zicbom
+
+inductive cbop_zicbop where | PREFETCH_I | PREFETCH_R | PREFETCH_W
+  deriving BEq, Inhabited, Repr
+  open cbop_zicbop
+
 abbrev xlen : Int := 64
 
 abbrev log2_xlen : Int := (if ( xlen = 32  : Bool) then 5 else 6)
@@ -156,20 +168,40 @@ abbrev RVFI_DII_Execution_Packet_V1 := (BitVec 704)
 
 abbrev RVFI_DII_Execution_PacketV2 := (BitVec 512)
 
-inductive AmocasOddRegisterReservedBehavior where | Fatal | Illegal
+inductive AmocasOddRegisterReservedBehavior where | AMOCAS_Fatal | AMOCAS_Illegal
   deriving BEq, Inhabited, Repr
   open AmocasOddRegisterReservedBehavior
+
+inductive PmpWriteOnlyReservedBehavior where | PMP_Fatal | PMP_ClearPermissions
+  deriving BEq, Inhabited, Repr
+  open PmpWriteOnlyReservedBehavior
+
+inductive XenvcfgCbieReservedBehavior where | Xenvcfg_Fatal | Xenvcfg_ClearPermissions
+  deriving BEq, Inhabited, Repr
+  open XenvcfgCbieReservedBehavior
+
+inductive mem_payload where | Data
+  deriving BEq, Inhabited, Repr
+  open mem_payload
+
+inductive cacheop where
+  | CB_manage (_ : cbop_zicbom)
+  | CB_zero (_ : Unit)
+  | CB_prefetch (_ : cbop_zicbop)
+  deriving Inhabited, BEq, Repr
+  open cacheop
 
 /-- Type quantifiers: k_a : Type -/
 inductive MemoryAccessType (k_a : Type) where
   | Load (_ : k_a)
   | Store (_ : k_a)
-  | LoadStore (_ : (k_a × k_a))
+  | LoadReserved (_ : k_a)
+  | StoreConditional (_ : k_a)
+  | Atomic (_ : (amoop × k_a × k_a))
   | InstructionFetch (_ : Unit)
+  | CacheAccess (_ : cacheop)
   deriving Inhabited, BEq, Repr
   open MemoryAccessType
-
-abbrev ext_access_type := Unit
 
 inductive AtomicSupport where | AMONone | AMOSwap | AMOLogical | AMOArithmetic | AMOCASW | AMOCASD | AMOCASQ
   deriving BEq, Inhabited, Repr
@@ -194,7 +226,7 @@ inductive ExceptionType where
   | E_SAMO_Access_Fault (_ : Unit)
   | E_U_EnvCall (_ : Unit)
   | E_S_EnvCall (_ : Unit)
-  | E_Reserved_10 (_ : Unit)
+  | E_VS_EnvCall (_ : Unit)
   | E_M_EnvCall (_ : Unit)
   | E_Fetch_Page_Fault (_ : Unit)
   | E_Load_Page_Fault (_ : Unit)
@@ -203,21 +235,18 @@ inductive ExceptionType where
   | E_Reserved_16 (_ : Unit)
   | E_Reserved_17 (_ : Unit)
   | E_Software_Check (_ : Unit)
+  | E_Reserved_19 (_ : Unit)
+  | E_Fetch_GPage_Fault (_ : Unit)
+  | E_Load_GPage_Fault (_ : Unit)
+  | E_Virtual_Instr (_ : Unit)
+  | E_SAMO_GPage_Fault (_ : Unit)
   | E_Extension (_ : ext_exc_type)
   deriving Inhabited, BEq, Repr
   open ExceptionType
 
-inductive amoop where | AMOSWAP | AMOADD | AMOXOR | AMOAND | AMOOR | AMOMIN | AMOMAX | AMOMINU | AMOMAXU | AMOCAS
-  deriving BEq, Inhabited, Repr
-  open amoop
-
 inductive bop where | BEQ | BNE | BLT | BGE | BLTU | BGEU
   deriving BEq, Inhabited, Repr
   open bop
-
-inductive cbop_zicbom where | CBO_CLEAN | CBO_FLUSH | CBO_INVAL
-  deriving BEq, Inhabited, Repr
-  open cbop_zicbom
 
 inductive fregidx where
   | Fregidx (_ : (BitVec 5))
@@ -342,7 +371,7 @@ inductive f_un_x_op_H where | FCLASS_H | FMV_X_H
   deriving BEq, Inhabited, Repr
   open f_un_x_op_H
 
-inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Sscofpmf | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Smcntrpmf
+inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Sscofpmf | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Smcntrpmf | Ext_Smstateen | Ext_Ssqosid
   deriving BEq, Inhabited, Repr
   open extension
 
@@ -459,10 +488,6 @@ inductive nxsfunct6 where | NXS_VNSRL | NXS_VNSRA
 inductive nxfunct6 where | NX_VNCLIPU | NX_VNCLIP
   deriving BEq, Inhabited, Repr
   open nxfunct6
-
-inductive cbop_zicbop where | PREFETCH_I | PREFETCH_R | PREFETCH_W
-  deriving BEq, Inhabited, Repr
-  open cbop_zicbop
 
 inductive rfvvfunct6 where | FVV_VFREDOSUM | FVV_VFREDUSUM | FVV_VFREDMAX | FVV_VFREDMIN
   deriving BEq, Inhabited, Repr
@@ -1065,9 +1090,37 @@ abbrev Seccfg := (BitVec 64)
 
 abbrev SEnvcfg := (BitVec 64)
 
+abbrev Hstateen0 := (BitVec 64)
+
+abbrev Hstateen1 := (BitVec 64)
+
+abbrev Hstateen2 := (BitVec 64)
+
+abbrev Hstateen3 := (BitVec 64)
+
+abbrev Mstateen0 := (BitVec 64)
+
+abbrev Mstateen1 := (BitVec 64)
+
+abbrev Mstateen2 := (BitVec 64)
+
+abbrev Mstateen3 := (BitVec 64)
+
+abbrev Sstateen0 := (BitVec 32)
+
+abbrev Sstateen1 := (BitVec 32)
+
+abbrev Sstateen2 := (BitVec 32)
+
+abbrev Sstateen3 := (BitVec 32)
+
+inductive stateen_bit where | STATEEN_FCSR | STATEEN_SRMCFG | STATEEN_ENVCFG | STATEEN_SE
+  deriving BEq, Inhabited, Repr
+  open stateen_bit
+
 abbrev Vtype := (BitVec 64)
 
-inductive InterruptType where | I_U_Software | I_S_Software | I_M_Software | I_U_Timer | I_S_Timer | I_M_Timer | I_U_External | I_S_External | I_M_External
+inductive InterruptType where | I_Reserved_0 | I_S_Software | I_VS_Software | I_M_Software | I_Reserved_4 | I_S_Timer | I_VS_Timer | I_M_Timer | I_Reserved_8 | I_S_External | I_VS_External | I_M_External | I_SG_External
   deriving BEq, Inhabited, Repr
   open InterruptType
 
@@ -1373,6 +1426,7 @@ inductive ExecutionResult where
   | ExecuteAs (_ : instruction)
   | Enter_Wait (_ : WaitReason)
   | Illegal_Instruction (_ : Unit)
+  | Virtual_Instruction (_ : Unit)
   | Trap (_ : (Privilege × ctl_result × xlenbits))
   | Memory_Exception (_ : (virtaddr × ExceptionType))
   | Ext_CSR_Check_Failure (_ : Unit)
@@ -1387,6 +1441,8 @@ inductive ExecutionResult where
 inductive seed_opst where | BIST | ES16 | WAIT | DEAD
   deriving BEq, Inhabited, Repr
   open seed_opst
+
+abbrev Srmcfg := (BitVec 64)
 
 abbrev HpmEvent := (BitVec 64)
 
@@ -1431,6 +1487,7 @@ inductive Register : Type where
   | hart_state
   | mhpmcounter
   | mhpmevent
+  | srmcfg
   | satp
   | tlb
   | pma_regions
@@ -1581,6 +1638,18 @@ inductive Register : Type where
   | menvcfg
   | mseccfg
   | senvcfg
+  | sstateen3
+  | sstateen2
+  | sstateen1
+  | sstateen0
+  | mstateen3
+  | mstateen2
+  | mstateen1
+  | mstateen0
+  | hstateen3
+  | hstateen2
+  | hstateen1
+  | hstateen0
   | mstatus
   | misa
   | cur_privilege
@@ -1599,6 +1668,7 @@ abbrev RegisterType : Register → Type
   | .hart_state => HartState
   | .mhpmcounter => (Vector (BitVec 64) 32)
   | .mhpmevent => (Vector (BitVec 64) 32)
+  | .srmcfg => (BitVec 64)
   | .satp => (BitVec 64)
   | .tlb => (Vector (Option TLB_Entry) (2 ^ 6))
   | .pma_regions => (List PMA_Region)
@@ -1749,6 +1819,18 @@ abbrev RegisterType : Register → Type
   | .menvcfg => (BitVec 64)
   | .mseccfg => (BitVec 64)
   | .senvcfg => (BitVec 64)
+  | .sstateen3 => (BitVec 32)
+  | .sstateen2 => (BitVec 32)
+  | .sstateen1 => (BitVec 32)
+  | .sstateen0 => (BitVec 32)
+  | .mstateen3 => (BitVec 64)
+  | .mstateen2 => (BitVec 64)
+  | .mstateen1 => (BitVec 64)
+  | .mstateen0 => (BitVec 64)
+  | .hstateen3 => (BitVec 64)
+  | .hstateen2 => (BitVec 64)
+  | .hstateen1 => (BitVec 64)
+  | .hstateen0 => (BitVec 64)
   | .mstatus => (BitVec 64)
   | .misa => (BitVec 64)
   | .cur_privilege => Privilege
@@ -1774,7 +1856,7 @@ instance : Inhabited (RegisterRef RegisterType (BitVec 192)) where
 instance : Inhabited (RegisterRef RegisterType (BitVec 3)) where
   default := .Reg vcsr
 instance : Inhabited (RegisterRef RegisterType (BitVec 32)) where
-  default := .Reg scounteren
+  default := .Reg sstateen0
 instance : Inhabited (RegisterRef RegisterType (BitVec 320)) where
   default := .Reg rvfi_int_data
 instance : Inhabited (RegisterRef RegisterType (BitVec 4)) where

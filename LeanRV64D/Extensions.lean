@@ -63,6 +63,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -93,6 +94,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -151,6 +153,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -161,6 +164,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -173,6 +177,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -282,6 +287,7 @@ def extensionName_forwards (arg_ : extension) : String :=
   | Ext_Zvksc => "zvksc"
   | Ext_Zvksg => "zvksg"
   | Ext_Sscofpmf => "sscofpmf"
+  | Ext_Ssstateen => "ssstateen"
   | Ext_Sstc => "sstc"
   | Ext_Sstvala => "sstvala"
   | Ext_Sstvecd => "sstvecd"
@@ -296,6 +302,8 @@ def extensionName_forwards (arg_ : extension) : String :=
   | Ext_Svpbmt => "svpbmt"
   | Ext_Svrsw60t59b => "svrsw60t59b"
   | Ext_Smcntrpmf => "smcntrpmf"
+  | Ext_Smstateen => "smstateen"
+  | Ext_Ssqosid => "ssqosid"
 
 def extensionName_backwards (arg_ : String) : SailM extension := do
   match arg_ with
@@ -389,6 +397,7 @@ def extensionName_backwards (arg_ : String) : SailM extension := do
   | "zvksc" => (pure Ext_Zvksc)
   | "zvksg" => (pure Ext_Zvksg)
   | "sscofpmf" => (pure Ext_Sscofpmf)
+  | "ssstateen" => (pure Ext_Ssstateen)
   | "sstc" => (pure Ext_Sstc)
   | "sstvala" => (pure Ext_Sstvala)
   | "sstvecd" => (pure Ext_Sstvecd)
@@ -403,6 +412,8 @@ def extensionName_backwards (arg_ : String) : SailM extension := do
   | "svpbmt" => (pure Ext_Svpbmt)
   | "svrsw60t59b" => (pure Ext_Svrsw60t59b)
   | "smcntrpmf" => (pure Ext_Smcntrpmf)
+  | "smstateen" => (pure Ext_Smstateen)
+  | "ssqosid" => (pure Ext_Ssqosid)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -500,6 +511,7 @@ def extensionName_forwards_matches (arg_ : extension) : Bool :=
   | Ext_Zvksc => true
   | Ext_Zvksg => true
   | Ext_Sscofpmf => true
+  | Ext_Ssstateen => true
   | Ext_Sstc => true
   | Ext_Sstvala => true
   | Ext_Sstvecd => true
@@ -514,6 +526,8 @@ def extensionName_forwards_matches (arg_ : extension) : Bool :=
   | Ext_Svpbmt => true
   | Ext_Svrsw60t59b => true
   | Ext_Smcntrpmf => true
+  | Ext_Smstateen => true
+  | Ext_Ssqosid => true
 
 def extensionName_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -607,6 +621,7 @@ def extensionName_backwards_matches (arg_ : String) : Bool :=
   | "zvksc" => true
   | "zvksg" => true
   | "sscofpmf" => true
+  | "ssstateen" => true
   | "sstc" => true
   | "sstvala" => true
   | "sstvecd" => true
@@ -621,8 +636,10 @@ def extensionName_backwards_matches (arg_ : String) : Bool :=
   | "svpbmt" => true
   | "svrsw60t59b" => true
   | "smcntrpmf" => true
+  | "smstateen" => true
+  | "ssqosid" => true
   | _ => false
 
 def extensions_ordered_for_isa_string :=
-  #v[Ext_Smcntrpmf, Ext_Svrsw60t59b, Ext_Svpbmt, Ext_Svnapot, Ext_Svinval, Ext_Ssu64xl, Ext_Sstvecd, Ext_Sstvala, Ext_Sstc, Ext_Sscofpmf, Ext_Zvl1024b, Ext_Zvl512b, Ext_Zvl256b, Ext_Zvl128b, Ext_Zvl64b, Ext_Zvl32b, Ext_Zvkt, Ext_Zvksh, Ext_Zvksg, Ext_Zvksed, Ext_Zvksc, Ext_Zvks, Ext_Zvknhb, Ext_Zvknha, Ext_Zvkng, Ext_Zvkned, Ext_Zvknc, Ext_Zvkn, Ext_Zvkg, Ext_Zvkb, Ext_Zvfhmin, Ext_Zvfh, Ext_Zvfbfwma, Ext_Zvfbfmin, Ext_Zve64x, Ext_Zve64f, Ext_Zve64d, Ext_Zve32x, Ext_Zve32f, Ext_Zvbc, Ext_Zvbb, Ext_Zkt, Ext_Zksh, Ext_Zksed, Ext_Zkr, Ext_Zknh, Ext_Zkne, Ext_Zknd, Ext_Zbs, Ext_Zbkx, Ext_Zbkc, Ext_Zbkb, Ext_Zbc, Ext_Zbb, Ext_Zba, Ext_Zcmop, Ext_Zcf, Ext_Zcd, Ext_Zcb, Ext_Zca, Ext_Zhinxmin, Ext_Zhinx, Ext_Zdinx, Ext_Zfinx, Ext_Zfhmin, Ext_Zfh, Ext_Zfbfmin, Ext_Zfa, Ext_Zawrs, Ext_Zalrsc, Ext_Zacas, Ext_Zabha, Ext_Zaamo, Ext_Za64rs, Ext_Za128rs, Ext_Zmmul, Ext_Zimop, Ext_Zihpm, Ext_Zihintpause, Ext_Zihintntl, Ext_Zifencei, Ext_Zicsr, Ext_Zicond, Ext_Zicntr, Ext_Zicfilp, Ext_Zicboz, Ext_Zicbop, Ext_Zicbom, Ext_H, Ext_V, Ext_B, Ext_C, Ext_D, Ext_F, Ext_A, Ext_M]
+  #v[Ext_Smstateen, Ext_Smcntrpmf, Ext_Svrsw60t59b, Ext_Svpbmt, Ext_Svnapot, Ext_Svinval, Ext_Ssu64xl, Ext_Sstvecd, Ext_Sstvala, Ext_Sstc, Ext_Ssqosid, Ext_Ssstateen, Ext_Sscofpmf, Ext_Zvl1024b, Ext_Zvl512b, Ext_Zvl256b, Ext_Zvl128b, Ext_Zvl64b, Ext_Zvl32b, Ext_Zvkt, Ext_Zvksh, Ext_Zvksg, Ext_Zvksed, Ext_Zvksc, Ext_Zvks, Ext_Zvknhb, Ext_Zvknha, Ext_Zvkng, Ext_Zvkned, Ext_Zvknc, Ext_Zvkn, Ext_Zvkg, Ext_Zvkb, Ext_Zvfhmin, Ext_Zvfh, Ext_Zvfbfwma, Ext_Zvfbfmin, Ext_Zve64x, Ext_Zve64f, Ext_Zve64d, Ext_Zve32x, Ext_Zve32f, Ext_Zvbc, Ext_Zvbb, Ext_Zkt, Ext_Zksh, Ext_Zksed, Ext_Zkr, Ext_Zknh, Ext_Zkne, Ext_Zknd, Ext_Zbs, Ext_Zbkx, Ext_Zbkc, Ext_Zbkb, Ext_Zbc, Ext_Zbb, Ext_Zba, Ext_Zcmop, Ext_Zcf, Ext_Zcd, Ext_Zcb, Ext_Zca, Ext_Zhinxmin, Ext_Zhinx, Ext_Zdinx, Ext_Zfinx, Ext_Zfhmin, Ext_Zfh, Ext_Zfbfmin, Ext_Zfa, Ext_Zawrs, Ext_Zalrsc, Ext_Zacas, Ext_Zabha, Ext_Zaamo, Ext_Za64rs, Ext_Za128rs, Ext_Zmmul, Ext_Zimop, Ext_Zihpm, Ext_Zihintpause, Ext_Zihintntl, Ext_Zifencei, Ext_Zicsr, Ext_Zicond, Ext_Zicntr, Ext_Zicfilp, Ext_Zicboz, Ext_Zicbop, Ext_Zicbom, Ext_H, Ext_V, Ext_B, Ext_C, Ext_D, Ext_F, Ext_A, Ext_M]
 

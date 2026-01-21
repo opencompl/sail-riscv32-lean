@@ -63,6 +63,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -93,6 +94,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -151,6 +153,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -161,6 +164,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -173,6 +177,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -249,43 +254,59 @@ def pte_is_invalid (pte_flags : (BitVec 8)) (pte_ext : (BitVec 10)) : SailM Bool
                     pte_ext) != (zeros (n := 2))) && (not (← (currentlyEnabled Ext_Svrsw60t59b)))) || ((_get_PTE_Ext_reserved
                   pte_ext) != (zeros (n := 5)))))))))
 
-/-- Type quantifiers: k_ex655332_ : Bool, k_ex655331_ : Bool -/
-def check_PTE_permission (ac : (MemoryAccessType Unit)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := do
-  let pte_U := (bits_to_bool (_get_PTE_Flags_U pte_flags))
-  let pte_R := (bits_to_bool (_get_PTE_Flags_R pte_flags))
-  let pte_W := (bits_to_bool (_get_PTE_Flags_W pte_flags))
-  let pte_X := (bits_to_bool (_get_PTE_Flags_X pte_flags))
+/-- Type quantifiers: k_ex755551_ : Bool, k_ex755550_ : Bool -/
+def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := do
+  let pte_U := (bit_to_bool (_get_PTE_Flags_U pte_flags))
+  let pte_R := (bit_to_bool (_get_PTE_Flags_R pte_flags))
+  let pte_W := (bit_to_bool (_get_PTE_Flags_W pte_flags))
+  let pte_X := (bit_to_bool (_get_PTE_Flags_X pte_flags))
+  assert (zopz0zJzJzK pte_W pte_R) "sys/vmem_pte.sail:131.24-131.25"
   let priv_ok ← (( do
     match priv with
     | User => (pure pte_U)
-    | Supervisor => (pure ((not pte_U) || (do_sum && (is_load_store ac))))
-    | Machine => (internal_error "sys/vmem_pte.sail" 133 "m-mode mem perm check")
-    | VirtualUser => (internal_error "sys/vmem_pte.sail" 134 "Hypervisor extension not supported")
+    | Supervisor => (pure ((not pte_U) || (do_sum && (is_load_store access))))
+    | Machine => (internal_error "sys/vmem_pte.sail" 139 "m-mode mem perm check")
+    | VirtualUser => (internal_error "sys/vmem_pte.sail" 140 "Hypervisor extension not supported")
     | VirtualSupervisor =>
-      (internal_error "sys/vmem_pte.sail" 135 "Hypervisor extension not supported") ) : SailM Bool )
+      (internal_error "sys/vmem_pte.sail" 141 "Hypervisor extension not supported") ) : SailM Bool )
   if ((not priv_ok) : Bool)
   then (pure (PTE_Check_Failure ((), (PTE_No_Permission ()))))
   else
-    (let access_ok : Bool :=
-      match ac with
-      | .Load _ => (pte_R || (pte_X && mxr))
+    (let pte_R := (pte_R || (pte_X && mxr))
+    let access_ok : Bool :=
+      match access with
+      | .Load _ => pte_R
+      | .LoadReserved _ => pte_R
       | .Store _ => pte_W
-      | .LoadStore (_, _) => (pte_W && (pte_R || (pte_X && mxr)))
+      | .StoreConditional _ => pte_W
+      | .Atomic (_, _, _) => (pte_W && pte_R)
       | .InstructionFetch _ => pte_X
+      | .CacheAccess (.CB_zero ()) => pte_W
+      | .CacheAccess (.CB_prefetch p) =>
+        (match p with
+        | PREFETCH_R => pte_R
+        | PREFETCH_W => pte_W
+        | PREFETCH_I => pte_X)
+      | .CacheAccess (.CB_manage _) => (pte_R || pte_W)
     if ((not access_ok) : Bool)
     then (pure (PTE_Check_Failure ((), (PTE_No_Permission ()))))
     else (pure (PTE_Check_Success ())))
 
 /-- Type quantifiers: k_pte_size : Nat, k_pte_size ≥ 0, k_pte_size ∈ {32, 64} -/
-def update_PTE_Bits (pte : (BitVec k_pte_size)) (a : (MemoryAccessType Unit)) : (Option (BitVec k_pte_size)) :=
+def update_PTE_Bits (pte : (BitVec k_pte_size)) (access : (MemoryAccessType mem_payload)) : (Option (BitVec k_pte_size)) :=
   let pte_flags := (Mk_PTE_Flags (Sail.BitVec.extractLsb pte 7 0))
   let update_d : Bool :=
-    (((_get_PTE_Flags_D pte_flags) == 0#1) && (match a with
+    (((_get_PTE_Flags_D pte_flags) == 0#1) && (match access with
       | .InstructionFetch () => false
       | .Load _ => false
+      | .LoadReserved _ => false
       | .Store _ => true
-      | .LoadStore (_, _) => true : Bool))
-  let update_a := ((_get_PTE_Flags_A pte_flags) == 0#1)
+      | .StoreConditional _ => true
+      | .Atomic (_, _, _) => true
+      | .CacheAccess (.CB_manage _) => false
+      | .CacheAccess (.CB_zero ()) => true
+      | .CacheAccess (.CB_prefetch _) => false : Bool))
+  let update_a := (((_get_PTE_Flags_A pte_flags) == 0#1) && (not (is_prefetch_access access)))
   if ((update_d || update_a) : Bool)
   then
     (let pte_flags :=

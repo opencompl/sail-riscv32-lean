@@ -57,6 +57,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -87,6 +88,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -145,6 +147,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -155,6 +158,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -167,6 +171,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -197,7 +202,7 @@ def ext_handle_control_check_error (_err : Unit) : Unit :=
   ()
 
 /-- Type quantifiers: _width : Nat, 1 ≤ _width ∧ _width ≤ 4096 -/
-def ext_data_get_addr (base : regidx) (offset : (BitVec 64)) (_acc : (MemoryAccessType Unit)) (_width : Nat) : SailM (Ext_DataAddr_Check Unit) := do
+def ext_data_get_addr (base : regidx) (offset : (BitVec 64)) (_access : (MemoryAccessType mem_payload)) (_width : Nat) : SailM (Ext_DataAddr_Check Unit) := do
   let addr ← do (pure (Virtaddr ((← (rX_bits base)) + offset)))
   (pure (Ext_DataAddr_OK addr))
 

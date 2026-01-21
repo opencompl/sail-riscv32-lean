@@ -64,6 +64,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -94,6 +95,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -152,6 +154,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -162,6 +165,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -174,6 +178,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -491,7 +496,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex731086_ : Bool -/
+/-- Type quantifiers: k_ex855018_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -587,44 +592,55 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
           "The Zvfbfwma extension is enabled but either Zfbfmin or Zvfbfmin is disabled: supporting Zvfbfwma requires Zfbfmin and Zvfbfmin.")
       valid)
     else valid
-  if ((hartSupports Ext_Sstvala) : Bool)
+  let valid : Bool :=
+    if ((hartSupports Ext_Sstvala) : Bool)
+    then
+      (let valid : Bool :=
+        if ((not (hartSupports Ext_S)) : Bool)
+        then
+          (let valid : Bool := false
+          let _ : Unit :=
+            (print_endline
+              "The Sstvala extension writes `stval` which requires supervisor mode (S) but supervisor mode is not enabled.")
+          valid)
+        else valid
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "load page-faults" load_page_fault_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "load access-faults" load_access_fault_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "misaligned load exceptions"
+            misaligned_load_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "store/AMO page-faults"
+            samo_page_fault_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "store/AMO access-faults"
+            samo_access_fault_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "misaligned store/AMO exceptions"
+            misaligned_samo_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "fetch page-faults" fetch_page_fault_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "fetch access-faults"
+            fetch_access_fault_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "misaligned fetch exceptions"
+            misaligned_fetch_writes_xtval))
+      let valid : Bool :=
+        (valid && (check_required_sstvala_option "hardware breakpoint exceptions"
+            hardware_breakpoint_writes_xtval))
+      (valid && (check_required_sstvala_option "illegal instruction exceptions"
+          illegal_instruction_writes_xtval)))
+    else valid
+  if (((hartSupports Ext_Ssqosid) && (not (hartSupports Ext_Zicsr))) : Bool)
   then
-    (let valid : Bool :=
-      if ((not (hartSupports Ext_S)) : Bool)
-      then
-        (let valid : Bool := false
-        let _ : Unit :=
-          (print_endline
-            "The Sstvala extension writes `stval` which requires supervisor mode (S) but supervisor mode is not enabled.")
-        valid)
-      else valid
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "load page-faults" load_page_fault_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "load access-faults" load_access_fault_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "misaligned load exceptions"
-          misaligned_load_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "store/AMO page-faults" samo_page_fault_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "store/AMO access-faults"
-          samo_access_fault_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "misaligned store/AMO exceptions"
-          misaligned_samo_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "fetch page-faults" fetch_page_fault_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "fetch access-faults" fetch_access_fault_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "misaligned fetch exceptions"
-          misaligned_fetch_writes_xtval))
-    let valid : Bool :=
-      (valid && (check_required_sstvala_option "hardware breakpoint exceptions"
-          hardware_breakpoint_writes_xtval))
-    (valid && (check_required_sstvala_option "illegal instruction exceptions"
-        illegal_instruction_writes_xtval)))
+    (let valid : Bool := false
+    let _ : Unit :=
+      (print_endline
+        "The Ssqosid extensions is enabled but Zicsr is disabled: supporting Ssqosid requires Zicsr.")
+    valid)
   else valid
 
 def check_extension_param_constraints (_ : Unit) : Bool :=
@@ -651,8 +667,31 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
     valid)
   else valid
 
+def check_stateen_config (_ : Unit) : Bool :=
+  if (((not (hartSupports Ext_Smstateen)) && (not (hartSupports Ext_Ssstateen))) : Bool)
+  then true
+  else
+    (let valid : Bool := true
+    let valid : Bool :=
+      if (((false : Bool) && (hartSupports Ext_H)) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "Stateen SE0_readonly_zero is true but H extension is supported: SE0 must be writable when H is implemented.")
+        valid)
+      else valid
+    if (((false : Bool) && ((hartSupports Ext_Zfinx) || (not (true : Bool)))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "Stateen SE0_readonly_zero is true but sstateen0 has writable bits (FCSR due to Zfinx support or C due to disabled C_readonly_zero): SE0 must be writable.")
+      valid)
+    else valid)
+
 def config_is_valid (_ : Unit) : SailM Bool := do
   (pure ((check_privs ()) && ((check_mmu_config ()) && ((← (check_mem_layout ())) && ((check_vlen_elen
               ()) && ((check_vext_config ()) && ((check_pmp ()) && ((check_misc_extension_dependencies
-                    ()) && (check_extension_param_constraints ())))))))))
+                    ()) && ((check_extension_param_constraints ()) && (check_stateen_config ()))))))))))
 

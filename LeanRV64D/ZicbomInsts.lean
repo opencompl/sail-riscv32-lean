@@ -2,7 +2,6 @@ import LeanRV64D.Arith
 import LeanRV64D.Prelude
 import LeanRV64D.Errors
 import LeanRV64D.PlatformConfig
-import LeanRV64D.VmemTypes
 import LeanRV64D.Regs
 import LeanRV64D.SysRegs
 import LeanRV64D.AddrChecks
@@ -68,6 +67,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -98,6 +98,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -156,6 +157,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -166,6 +168,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -178,6 +181,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -325,40 +329,25 @@ def cbop_priv_check (p : Privilege) : SailM checked_cbop := do
   | (User, _, CBIE_EXEC_FLUSH) => (pure CBOP_INVAL_FLUSH)
   | _ => (pure CBOP_INVAL_INVAL)
 
-def process_clean_inval (rs1 : regidx) (_cbop : cbop_zicbom) : SailM ExecutionResult := do
+def process_clean_inval (rs1 : regidx) (cbop : cbop_zicbom) : SailM ExecutionResult := do
   let rs1_val ← do (rX_bits rs1)
   let cache_block_size := (2 ^i plat_cache_block_size_exp)
+  let access : (MemoryAccessType mem_payload) := (CacheAccess (CB_manage cbop))
   let negative_offset :=
     ((rs1_val &&& (Complement.complement
           (zero_extend (m := 64) (ones (n := plat_cache_block_size_exp))))) - rs1_val)
-  match (← (ext_data_get_addr rs1 negative_offset (Load Data) cache_block_size)) with
+  match (← (ext_data_get_addr rs1 negative_offset access cache_block_size)) with
   | .Ext_DataAddr_Error e => (pure (Ext_DataAddr_Check_Failure e))
   | .Ext_DataAddr_OK vaddr =>
     (do
-      let res ← (( do
-        match (← (translateAddr vaddr (Load Data))) with
-        | .Ok (paddr, _) =>
-          (do
-            let ep ← do
-              (effectivePrivilege (Load Data) (← readReg mstatus) (← readReg cur_privilege))
-            let exc_read ← do (phys_access_check (Load Data) ep paddr cache_block_size false)
-            let exc_write ← do (phys_access_check (Store Data) ep paddr cache_block_size false)
-            match (exc_read, exc_write) with
-            | (.some _exc_read, .some exc_write) => (pure (some exc_write))
-            | _ => (pure none))
-        | .Err (e, _) => (pure (some e)) ) : SailM (Option ExceptionType) )
-      match res with
-      | none => (pure RETIRE_SUCCESS)
-      | .some e =>
+      let vaddr_for_error := (sub_virtaddr_xlenbits vaddr negative_offset)
+      match (← (translateAddr vaddr access)) with
+      | .Ok (paddr, _) =>
         (do
-          let e ← (( do
-            match e with
-            | .E_Load_Access_Fault () => (pure (E_SAMO_Access_Fault ()))
-            | .E_SAMO_Access_Fault () => (pure (E_SAMO_Access_Fault ()))
-            | .E_Load_Page_Fault () => (pure (E_SAMO_Page_Fault ()))
-            | .E_SAMO_Page_Fault () => (pure (E_SAMO_Page_Fault ()))
-            | _ =>
-              (internal_error "extensions/Zicbom/zicbom_insts.sail" 127
-                "unexpected exception for cmo.clean/inval") ) : SailM ExceptionType )
-          (pure (Memory_Exception ((sub_virtaddr_xlenbits vaddr negative_offset), e)))))
+          let ep ← do
+            (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
+          match (← (phys_access_check access ep paddr cache_block_size false)) with
+          | .some e => (pure (Memory_Exception (vaddr_for_error, e)))
+          | none => (pure RETIRE_SUCCESS))
+      | .Err (e, _) => (pure (Memory_Exception (vaddr_for_error, e))))
 

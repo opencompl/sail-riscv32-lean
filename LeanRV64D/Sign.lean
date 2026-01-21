@@ -57,6 +57,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -87,6 +88,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -145,6 +147,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -155,6 +158,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -167,6 +171,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -184,11 +189,11 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex639080_ : Nat, k_ex639080_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex639080_)) : Bool :=
+/-- Type quantifiers: k_ex739092_ : Nat, k_ex739092_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex739092_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex639082_ : Nat, k_ex639082_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex639082_)) : Bool :=
+/-- Type quantifiers: k_ex739094_ : Nat, k_ex739094_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex739094_)) : Bool :=
   (is_highest_one op)
 

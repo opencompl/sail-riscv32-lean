@@ -1,6 +1,8 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
+import LeanRV64D.Errors
 import LeanRV64D.Xlen
+import LeanRV64D.PlatformConfig
 import LeanRV64D.SysRegs
 
 set_option maxHeartbeats 1_000_000_000
@@ -60,6 +62,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -90,6 +93,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -148,6 +152,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -158,6 +163,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -170,6 +176,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -283,24 +290,31 @@ def pmpLocked (cfg : (BitVec 8)) : Bool :=
 def pmpTORLocked (cfg : (BitVec 8)) : Bool :=
   (((_get_Pmpcfg_ent_L cfg) == 1#1) && ((pmpAddrMatchType_encdec_backwards (_get_Pmpcfg_ent_A cfg)) == TOR))
 
-def pmpWriteCfg (cfg : (BitVec 8)) (v : (BitVec 8)) : (BitVec 8) :=
+def pmpWriteCfg (cfg : (BitVec 8)) (v : (BitVec 8)) : SailM (BitVec 8) := do
   if ((pmpLocked cfg) : Bool)
-  then cfg
+  then (pure cfg)
   else
-    (let cfg := (Mk_Pmpcfg_ent (v &&& 0x9F#8))
-    let cfg :=
-      if ((((_get_Pmpcfg_ent_W cfg) == 1#1) && ((_get_Pmpcfg_ent_R cfg) == 0#1)) : Bool)
-      then (_update_Pmpcfg_ent_R (_update_Pmpcfg_ent_W (_update_Pmpcfg_ent_X cfg 0#1) 0#1) 0#1)
-      else cfg
-    let mode_supported : Bool :=
-      match (pmpAddrMatchType_encdec_backwards (_get_Pmpcfg_ent_A cfg)) with
-      | OFF => true
-      | TOR => true
-      | NA4 => ((true : Bool) && (sys_pmp_grain == 0))
-      | NAPOT => true
-    if (mode_supported : Bool)
-    then cfg
-    else (_update_Pmpcfg_ent_A cfg (pmpAddrMatchType_encdec_forwards OFF)))
+    (do
+      let cfg := (Mk_Pmpcfg_ent (v &&& 0x9F#8))
+      let cfg ← do
+        if ((((_get_Pmpcfg_ent_W cfg) == 1#1) && ((_get_Pmpcfg_ent_R cfg) == 0#1)) : Bool)
+        then
+          (do
+            match pmp_write_only_reserved_behavior with
+            | PMP_Fatal => (reserved_behavior "pmpcfg with R=0,W=1")
+            | PMP_ClearPermissions =>
+              (pure (_update_Pmpcfg_ent_R (_update_Pmpcfg_ent_W (_update_Pmpcfg_ent_X cfg 0#1) 0#1)
+                  0#1)))
+        else (pure cfg)
+      let mode_supported : Bool :=
+        match (pmpAddrMatchType_encdec_backwards (_get_Pmpcfg_ent_A cfg)) with
+        | OFF => true
+        | TOR => true
+        | NA4 => ((true : Bool) && (sys_pmp_grain == 0))
+        | NAPOT => true
+      if (mode_supported : Bool)
+      then (pure cfg)
+      else (pure (_update_Pmpcfg_ent_A cfg (pmpAddrMatchType_encdec_forwards OFF))))
 
 /-- Type quantifiers: n : Nat, 0 ≤ n ∧ n ≤ 15 -/
 def pmpWriteCfgReg (n : Nat) (v : (BitVec 64)) : SailM Unit := do
@@ -315,12 +329,12 @@ def pmpWriteCfgReg (n : Nat) (v : (BitVec 64)) : SailM Unit := do
       if ((idx <b sys_pmp_usable_count) : Bool)
       then
         writeReg pmpcfg_n (vectorUpdate (← readReg pmpcfg_n) idx
-          (pmpWriteCfg (GetElem?.getElem! (← readReg pmpcfg_n) idx)
-            (Sail.BitVec.extractLsb v ((8 *i i) +i 7) (8 *i i))))
+          (← (pmpWriteCfg (GetElem?.getElem! (← readReg pmpcfg_n) idx)
+              (Sail.BitVec.extractLsb v ((8 *i i) +i 7) (8 *i i)))))
       else (pure ())
   (pure loop_vars)
 
-/-- Type quantifiers: k_ex651334_ : Bool, k_ex651333_ : Bool -/
+/-- Type quantifiers: k_ex751531_ : Bool, k_ex751530_ : Bool -/
 def pmpWriteAddr (locked : Bool) (tor_locked : Bool) (reg : (BitVec 64)) (v : (BitVec 64)) : (BitVec 64) :=
   if ((locked || tor_locked) : Bool)
   then reg

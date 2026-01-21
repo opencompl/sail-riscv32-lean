@@ -63,6 +63,7 @@ open vfnunary0
 open vextfunct6
 open vector_support
 open uop
+open stateen_bit
 open sopw
 open sop
 open seed_opst
@@ -93,6 +94,7 @@ open mvvmafunct6
 open mvvfunct6
 open mmfunct6
 open misaligned_fault
+open mem_payload
 open maskfunct3
 open landing_pad_expectation
 open iop
@@ -151,6 +153,7 @@ open cfregidx
 open cbop_zicbop
 open cbop_zicbom
 open cbie
+open cacheop
 open bropw_zbb
 open brop_zbs
 open brop_zbkb
@@ -161,6 +164,7 @@ open biop_zbs
 open barrier_kind
 open amoop
 open agtype
+open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
 open TrapVectorMode
@@ -173,6 +177,7 @@ open SATPMode
 open Reservability
 open Register
 open Privilege
+open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
@@ -190,7 +195,34 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def Data : ext_access_type := ()
+def undefined_mem_payload (_ : Unit) : SailM mem_payload := do
+  (internal_pick [Data])
 
-def default_write_acc : ext_access_type := Data
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 0 -/
+def mem_payload_of_num (arg_ : Nat) : mem_payload :=
+  match arg_ with
+  | _ => Data
+
+def num_of_mem_payload (arg_ : mem_payload) : Int :=
+  match arg_ with
+  | Data => 0
+
+def mem_payload_str_backwards (arg_ : String) : SailM mem_payload := do
+  match arg_ with
+  | "" => (pure Data)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def mem_payload_str_forwards_matches (arg_ : mem_payload) : Bool :=
+  match arg_ with
+  | Data => true
+
+def mem_payload_str_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "" => true
+  | _ => false
+
+def default_write_acc : mem_payload := Data
 
