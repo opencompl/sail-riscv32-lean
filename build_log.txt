@@ -1,0 +1,5 @@
+✖ [0/0] Running job computation
+error: no such file or directory (error code: 2)
+  file: /__w/sail-riscv-lean/sail-riscv-lean/sail-riscv/build/model/Lean_RV64D/LeanRV64D/Sail/Sail.lean
+Some required targets logged failures:
+- job computation
