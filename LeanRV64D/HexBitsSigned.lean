@@ -1,6 +1,4 @@
-import LeanRV64D.Sail.Sail
-import LeanRV64D.Sail.BitVec
-import LeanRV64D.Sail.IntRange
+import Sail
 import LeanRV64D.Defs
 import LeanRV64D.Specialization
 import LeanRV64D.FakeReal
@@ -211,8 +209,8 @@ def hex_bits_signed_forwards_matches (x_0 : (BitVec k_n)) : Bool :=
 /-- Type quantifiers: tuple_0.1 : Nat, tuple_0.1 ≥ 0, tuple_0.1 > 0 -/
 def hex_bits_signed_backwards (tuple_0 : (Nat × String)) : (BitVec tuple_0.1) :=
   let (n, str) := tuple_0
-  if (((String.take str 1) == "-") : Bool)
-  then ((BitVec.zero n) - (parse_hex_bits n (String.drop str 1)))
+  if (((String.takeStr str 1) == "-") : Bool)
+  then ((BitVec.zero n) - (parse_hex_bits n (String.dropStr str 1)))
   else
     (let parsed := (parse_hex_bits n str)
     if (((BitVec.access parsed (n -i 1)) == 0#1) : Bool)
@@ -222,8 +220,8 @@ def hex_bits_signed_backwards (tuple_0 : (Nat × String)) : (BitVec tuple_0.1) :
 /-- Type quantifiers: tuple_0.1 : Nat, tuple_0.1 ≥ 0, tuple_0.1 > 0 -/
 def hex_bits_signed_backwards_matches (tuple_0 : (Nat × String)) : Bool :=
   let (n, str) := tuple_0
-  if (((String.take str 1) == "-") : Bool)
-  then (valid_hex_bits n (String.drop str 1))
+  if (((String.takeStr str 1) == "-") : Bool)
+  then (valid_hex_bits n (String.dropStr str 1))
   else
     (if ((valid_hex_bits n str) : Bool)
     then
@@ -247,9 +245,14 @@ def hex_bits_signed_1_forwards (arg_ : (BitVec 1)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_1_backwards (arg_ : String) : (BitVec 1) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (1, s))
+def hex_bits_signed_1_backwards (arg_ : String) : SailM (BitVec 1) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (1, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (1, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_1_forwards_matches (arg_ : (BitVec 1)) : SailM Bool := do
   let head_exp_ := arg_
@@ -267,8 +270,10 @@ def hex_bits_signed_1_forwards_matches (arg_ : (BitVec 1)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_1_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (1, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_2_forwards (arg_ : (BitVec 2)) : SailM String := do
   let head_exp_ := arg_
@@ -286,9 +291,14 @@ def hex_bits_signed_2_forwards (arg_ : (BitVec 2)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_2_backwards (arg_ : String) : (BitVec 2) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (2, s))
+def hex_bits_signed_2_backwards (arg_ : String) : SailM (BitVec 2) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (2, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (2, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_2_forwards_matches (arg_ : (BitVec 2)) : SailM Bool := do
   let head_exp_ := arg_
@@ -306,8 +316,10 @@ def hex_bits_signed_2_forwards_matches (arg_ : (BitVec 2)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_2_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (2, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_3_forwards (arg_ : (BitVec 3)) : SailM String := do
   let head_exp_ := arg_
@@ -325,9 +337,14 @@ def hex_bits_signed_3_forwards (arg_ : (BitVec 3)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_3_backwards (arg_ : String) : (BitVec 3) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (3, s))
+def hex_bits_signed_3_backwards (arg_ : String) : SailM (BitVec 3) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (3, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (3, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_3_forwards_matches (arg_ : (BitVec 3)) : SailM Bool := do
   let head_exp_ := arg_
@@ -345,8 +362,10 @@ def hex_bits_signed_3_forwards_matches (arg_ : (BitVec 3)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_3_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (3, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_4_forwards (arg_ : (BitVec 4)) : SailM String := do
   let head_exp_ := arg_
@@ -364,9 +383,14 @@ def hex_bits_signed_4_forwards (arg_ : (BitVec 4)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_4_backwards (arg_ : String) : (BitVec 4) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (4, s))
+def hex_bits_signed_4_backwards (arg_ : String) : SailM (BitVec 4) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (4, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (4, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_4_forwards_matches (arg_ : (BitVec 4)) : SailM Bool := do
   let head_exp_ := arg_
@@ -384,8 +408,10 @@ def hex_bits_signed_4_forwards_matches (arg_ : (BitVec 4)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_4_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (4, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_5_forwards (arg_ : (BitVec 5)) : SailM String := do
   let head_exp_ := arg_
@@ -403,9 +429,14 @@ def hex_bits_signed_5_forwards (arg_ : (BitVec 5)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_5_backwards (arg_ : String) : (BitVec 5) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (5, s))
+def hex_bits_signed_5_backwards (arg_ : String) : SailM (BitVec 5) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (5, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (5, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_5_forwards_matches (arg_ : (BitVec 5)) : SailM Bool := do
   let head_exp_ := arg_
@@ -423,8 +454,10 @@ def hex_bits_signed_5_forwards_matches (arg_ : (BitVec 5)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_5_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (5, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_6_forwards (arg_ : (BitVec 6)) : SailM String := do
   let head_exp_ := arg_
@@ -442,9 +475,14 @@ def hex_bits_signed_6_forwards (arg_ : (BitVec 6)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_6_backwards (arg_ : String) : (BitVec 6) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (6, s))
+def hex_bits_signed_6_backwards (arg_ : String) : SailM (BitVec 6) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (6, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (6, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_6_forwards_matches (arg_ : (BitVec 6)) : SailM Bool := do
   let head_exp_ := arg_
@@ -462,8 +500,10 @@ def hex_bits_signed_6_forwards_matches (arg_ : (BitVec 6)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_6_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (6, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_7_forwards (arg_ : (BitVec 7)) : SailM String := do
   let head_exp_ := arg_
@@ -481,9 +521,14 @@ def hex_bits_signed_7_forwards (arg_ : (BitVec 7)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_7_backwards (arg_ : String) : (BitVec 7) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (7, s))
+def hex_bits_signed_7_backwards (arg_ : String) : SailM (BitVec 7) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (7, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (7, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_7_forwards_matches (arg_ : (BitVec 7)) : SailM Bool := do
   let head_exp_ := arg_
@@ -501,8 +546,10 @@ def hex_bits_signed_7_forwards_matches (arg_ : (BitVec 7)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_7_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (7, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_8_forwards (arg_ : (BitVec 8)) : SailM String := do
   let head_exp_ := arg_
@@ -520,9 +567,14 @@ def hex_bits_signed_8_forwards (arg_ : (BitVec 8)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_8_backwards (arg_ : String) : (BitVec 8) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (8, s))
+def hex_bits_signed_8_backwards (arg_ : String) : SailM (BitVec 8) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (8, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (8, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_8_forwards_matches (arg_ : (BitVec 8)) : SailM Bool := do
   let head_exp_ := arg_
@@ -540,8 +592,10 @@ def hex_bits_signed_8_forwards_matches (arg_ : (BitVec 8)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_8_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (8, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_9_forwards (arg_ : (BitVec 9)) : SailM String := do
   let head_exp_ := arg_
@@ -559,9 +613,14 @@ def hex_bits_signed_9_forwards (arg_ : (BitVec 9)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_9_backwards (arg_ : String) : (BitVec 9) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (9, s))
+def hex_bits_signed_9_backwards (arg_ : String) : SailM (BitVec 9) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (9, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (9, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_9_forwards_matches (arg_ : (BitVec 9)) : SailM Bool := do
   let head_exp_ := arg_
@@ -579,8 +638,10 @@ def hex_bits_signed_9_forwards_matches (arg_ : (BitVec 9)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_9_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (9, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_10_forwards (arg_ : (BitVec 10)) : SailM String := do
   let head_exp_ := arg_
@@ -598,9 +659,14 @@ def hex_bits_signed_10_forwards (arg_ : (BitVec 10)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_10_backwards (arg_ : String) : (BitVec 10) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (10, s))
+def hex_bits_signed_10_backwards (arg_ : String) : SailM (BitVec 10) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (10, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (10, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_10_forwards_matches (arg_ : (BitVec 10)) : SailM Bool := do
   let head_exp_ := arg_
@@ -618,8 +684,10 @@ def hex_bits_signed_10_forwards_matches (arg_ : (BitVec 10)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_10_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (10, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_11_forwards (arg_ : (BitVec 11)) : SailM String := do
   let head_exp_ := arg_
@@ -637,9 +705,14 @@ def hex_bits_signed_11_forwards (arg_ : (BitVec 11)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_11_backwards (arg_ : String) : (BitVec 11) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (11, s))
+def hex_bits_signed_11_backwards (arg_ : String) : SailM (BitVec 11) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (11, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (11, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_11_forwards_matches (arg_ : (BitVec 11)) : SailM Bool := do
   let head_exp_ := arg_
@@ -657,8 +730,10 @@ def hex_bits_signed_11_forwards_matches (arg_ : (BitVec 11)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_11_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (11, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_12_forwards (arg_ : (BitVec 12)) : SailM String := do
   let head_exp_ := arg_
@@ -676,9 +751,14 @@ def hex_bits_signed_12_forwards (arg_ : (BitVec 12)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_12_backwards (arg_ : String) : (BitVec 12) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (12, s))
+def hex_bits_signed_12_backwards (arg_ : String) : SailM (BitVec 12) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (12, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (12, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_12_forwards_matches (arg_ : (BitVec 12)) : SailM Bool := do
   let head_exp_ := arg_
@@ -696,8 +776,10 @@ def hex_bits_signed_12_forwards_matches (arg_ : (BitVec 12)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_12_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (12, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_13_forwards (arg_ : (BitVec 13)) : SailM String := do
   let head_exp_ := arg_
@@ -715,9 +797,14 @@ def hex_bits_signed_13_forwards (arg_ : (BitVec 13)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_13_backwards (arg_ : String) : (BitVec 13) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (13, s))
+def hex_bits_signed_13_backwards (arg_ : String) : SailM (BitVec 13) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (13, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (13, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_13_forwards_matches (arg_ : (BitVec 13)) : SailM Bool := do
   let head_exp_ := arg_
@@ -735,8 +822,10 @@ def hex_bits_signed_13_forwards_matches (arg_ : (BitVec 13)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_13_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (13, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_14_forwards (arg_ : (BitVec 14)) : SailM String := do
   let head_exp_ := arg_
@@ -754,9 +843,14 @@ def hex_bits_signed_14_forwards (arg_ : (BitVec 14)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_14_backwards (arg_ : String) : (BitVec 14) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (14, s))
+def hex_bits_signed_14_backwards (arg_ : String) : SailM (BitVec 14) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (14, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (14, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_14_forwards_matches (arg_ : (BitVec 14)) : SailM Bool := do
   let head_exp_ := arg_
@@ -774,8 +868,10 @@ def hex_bits_signed_14_forwards_matches (arg_ : (BitVec 14)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_14_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (14, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_15_forwards (arg_ : (BitVec 15)) : SailM String := do
   let head_exp_ := arg_
@@ -793,9 +889,14 @@ def hex_bits_signed_15_forwards (arg_ : (BitVec 15)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_15_backwards (arg_ : String) : (BitVec 15) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (15, s))
+def hex_bits_signed_15_backwards (arg_ : String) : SailM (BitVec 15) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (15, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (15, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_15_forwards_matches (arg_ : (BitVec 15)) : SailM Bool := do
   let head_exp_ := arg_
@@ -813,8 +914,10 @@ def hex_bits_signed_15_forwards_matches (arg_ : (BitVec 15)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_15_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (15, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_16_forwards (arg_ : (BitVec 16)) : SailM String := do
   let head_exp_ := arg_
@@ -832,9 +935,14 @@ def hex_bits_signed_16_forwards (arg_ : (BitVec 16)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_16_backwards (arg_ : String) : (BitVec 16) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (16, s))
+def hex_bits_signed_16_backwards (arg_ : String) : SailM (BitVec 16) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (16, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (16, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_16_forwards_matches (arg_ : (BitVec 16)) : SailM Bool := do
   let head_exp_ := arg_
@@ -852,8 +960,10 @@ def hex_bits_signed_16_forwards_matches (arg_ : (BitVec 16)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_16_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (16, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_17_forwards (arg_ : (BitVec 17)) : SailM String := do
   let head_exp_ := arg_
@@ -871,9 +981,14 @@ def hex_bits_signed_17_forwards (arg_ : (BitVec 17)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_17_backwards (arg_ : String) : (BitVec 17) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (17, s))
+def hex_bits_signed_17_backwards (arg_ : String) : SailM (BitVec 17) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (17, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (17, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_17_forwards_matches (arg_ : (BitVec 17)) : SailM Bool := do
   let head_exp_ := arg_
@@ -891,8 +1006,10 @@ def hex_bits_signed_17_forwards_matches (arg_ : (BitVec 17)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_17_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (17, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_18_forwards (arg_ : (BitVec 18)) : SailM String := do
   let head_exp_ := arg_
@@ -910,9 +1027,14 @@ def hex_bits_signed_18_forwards (arg_ : (BitVec 18)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_18_backwards (arg_ : String) : (BitVec 18) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (18, s))
+def hex_bits_signed_18_backwards (arg_ : String) : SailM (BitVec 18) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (18, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (18, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_18_forwards_matches (arg_ : (BitVec 18)) : SailM Bool := do
   let head_exp_ := arg_
@@ -930,8 +1052,10 @@ def hex_bits_signed_18_forwards_matches (arg_ : (BitVec 18)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_18_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (18, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_19_forwards (arg_ : (BitVec 19)) : SailM String := do
   let head_exp_ := arg_
@@ -949,9 +1073,14 @@ def hex_bits_signed_19_forwards (arg_ : (BitVec 19)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_19_backwards (arg_ : String) : (BitVec 19) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (19, s))
+def hex_bits_signed_19_backwards (arg_ : String) : SailM (BitVec 19) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (19, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (19, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_19_forwards_matches (arg_ : (BitVec 19)) : SailM Bool := do
   let head_exp_ := arg_
@@ -969,8 +1098,10 @@ def hex_bits_signed_19_forwards_matches (arg_ : (BitVec 19)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_19_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (19, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_20_forwards (arg_ : (BitVec 20)) : SailM String := do
   let head_exp_ := arg_
@@ -988,9 +1119,14 @@ def hex_bits_signed_20_forwards (arg_ : (BitVec 20)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_20_backwards (arg_ : String) : (BitVec 20) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (20, s))
+def hex_bits_signed_20_backwards (arg_ : String) : SailM (BitVec 20) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (20, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (20, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_20_forwards_matches (arg_ : (BitVec 20)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1008,8 +1144,10 @@ def hex_bits_signed_20_forwards_matches (arg_ : (BitVec 20)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_20_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (20, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_21_forwards (arg_ : (BitVec 21)) : SailM String := do
   let head_exp_ := arg_
@@ -1027,9 +1165,14 @@ def hex_bits_signed_21_forwards (arg_ : (BitVec 21)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_21_backwards (arg_ : String) : (BitVec 21) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (21, s))
+def hex_bits_signed_21_backwards (arg_ : String) : SailM (BitVec 21) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (21, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (21, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_21_forwards_matches (arg_ : (BitVec 21)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1047,8 +1190,10 @@ def hex_bits_signed_21_forwards_matches (arg_ : (BitVec 21)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_21_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (21, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_22_forwards (arg_ : (BitVec 22)) : SailM String := do
   let head_exp_ := arg_
@@ -1066,9 +1211,14 @@ def hex_bits_signed_22_forwards (arg_ : (BitVec 22)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_22_backwards (arg_ : String) : (BitVec 22) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (22, s))
+def hex_bits_signed_22_backwards (arg_ : String) : SailM (BitVec 22) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (22, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (22, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_22_forwards_matches (arg_ : (BitVec 22)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1086,8 +1236,10 @@ def hex_bits_signed_22_forwards_matches (arg_ : (BitVec 22)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_22_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (22, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_23_forwards (arg_ : (BitVec 23)) : SailM String := do
   let head_exp_ := arg_
@@ -1105,9 +1257,14 @@ def hex_bits_signed_23_forwards (arg_ : (BitVec 23)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_23_backwards (arg_ : String) : (BitVec 23) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (23, s))
+def hex_bits_signed_23_backwards (arg_ : String) : SailM (BitVec 23) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (23, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (23, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_23_forwards_matches (arg_ : (BitVec 23)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1125,8 +1282,10 @@ def hex_bits_signed_23_forwards_matches (arg_ : (BitVec 23)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_23_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (23, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_24_forwards (arg_ : (BitVec 24)) : SailM String := do
   let head_exp_ := arg_
@@ -1144,9 +1303,14 @@ def hex_bits_signed_24_forwards (arg_ : (BitVec 24)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_24_backwards (arg_ : String) : (BitVec 24) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (24, s))
+def hex_bits_signed_24_backwards (arg_ : String) : SailM (BitVec 24) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (24, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (24, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_24_forwards_matches (arg_ : (BitVec 24)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1164,8 +1328,10 @@ def hex_bits_signed_24_forwards_matches (arg_ : (BitVec 24)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_24_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (24, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_25_forwards (arg_ : (BitVec 25)) : SailM String := do
   let head_exp_ := arg_
@@ -1183,9 +1349,14 @@ def hex_bits_signed_25_forwards (arg_ : (BitVec 25)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_25_backwards (arg_ : String) : (BitVec 25) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (25, s))
+def hex_bits_signed_25_backwards (arg_ : String) : SailM (BitVec 25) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (25, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (25, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_25_forwards_matches (arg_ : (BitVec 25)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1203,8 +1374,10 @@ def hex_bits_signed_25_forwards_matches (arg_ : (BitVec 25)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_25_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (25, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_26_forwards (arg_ : (BitVec 26)) : SailM String := do
   let head_exp_ := arg_
@@ -1222,9 +1395,14 @@ def hex_bits_signed_26_forwards (arg_ : (BitVec 26)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_26_backwards (arg_ : String) : (BitVec 26) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (26, s))
+def hex_bits_signed_26_backwards (arg_ : String) : SailM (BitVec 26) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (26, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (26, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_26_forwards_matches (arg_ : (BitVec 26)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1242,8 +1420,10 @@ def hex_bits_signed_26_forwards_matches (arg_ : (BitVec 26)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_26_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (26, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_27_forwards (arg_ : (BitVec 27)) : SailM String := do
   let head_exp_ := arg_
@@ -1261,9 +1441,14 @@ def hex_bits_signed_27_forwards (arg_ : (BitVec 27)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_27_backwards (arg_ : String) : (BitVec 27) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (27, s))
+def hex_bits_signed_27_backwards (arg_ : String) : SailM (BitVec 27) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (27, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (27, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_27_forwards_matches (arg_ : (BitVec 27)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1281,8 +1466,10 @@ def hex_bits_signed_27_forwards_matches (arg_ : (BitVec 27)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_27_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (27, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_28_forwards (arg_ : (BitVec 28)) : SailM String := do
   let head_exp_ := arg_
@@ -1300,9 +1487,14 @@ def hex_bits_signed_28_forwards (arg_ : (BitVec 28)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_28_backwards (arg_ : String) : (BitVec 28) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (28, s))
+def hex_bits_signed_28_backwards (arg_ : String) : SailM (BitVec 28) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (28, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (28, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_28_forwards_matches (arg_ : (BitVec 28)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1320,8 +1512,10 @@ def hex_bits_signed_28_forwards_matches (arg_ : (BitVec 28)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_28_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (28, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_29_forwards (arg_ : (BitVec 29)) : SailM String := do
   let head_exp_ := arg_
@@ -1339,9 +1533,14 @@ def hex_bits_signed_29_forwards (arg_ : (BitVec 29)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_29_backwards (arg_ : String) : (BitVec 29) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (29, s))
+def hex_bits_signed_29_backwards (arg_ : String) : SailM (BitVec 29) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (29, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (29, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_29_forwards_matches (arg_ : (BitVec 29)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1359,8 +1558,10 @@ def hex_bits_signed_29_forwards_matches (arg_ : (BitVec 29)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_29_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (29, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_30_forwards (arg_ : (BitVec 30)) : SailM String := do
   let head_exp_ := arg_
@@ -1378,9 +1579,14 @@ def hex_bits_signed_30_forwards (arg_ : (BitVec 30)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_30_backwards (arg_ : String) : (BitVec 30) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (30, s))
+def hex_bits_signed_30_backwards (arg_ : String) : SailM (BitVec 30) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (30, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (30, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_30_forwards_matches (arg_ : (BitVec 30)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1398,8 +1604,10 @@ def hex_bits_signed_30_forwards_matches (arg_ : (BitVec 30)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_30_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (30, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_31_forwards (arg_ : (BitVec 31)) : SailM String := do
   let head_exp_ := arg_
@@ -1417,9 +1625,14 @@ def hex_bits_signed_31_forwards (arg_ : (BitVec 31)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_31_backwards (arg_ : String) : (BitVec 31) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (31, s))
+def hex_bits_signed_31_backwards (arg_ : String) : SailM (BitVec 31) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (31, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (31, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_31_forwards_matches (arg_ : (BitVec 31)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1437,8 +1650,10 @@ def hex_bits_signed_31_forwards_matches (arg_ : (BitVec 31)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_31_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (31, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_32_forwards (arg_ : (BitVec 32)) : SailM String := do
   let head_exp_ := arg_
@@ -1456,9 +1671,14 @@ def hex_bits_signed_32_forwards (arg_ : (BitVec 32)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_32_backwards (arg_ : String) : (BitVec 32) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (32, s))
+def hex_bits_signed_32_backwards (arg_ : String) : SailM (BitVec 32) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (32, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (32, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_32_forwards_matches (arg_ : (BitVec 32)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1476,8 +1696,10 @@ def hex_bits_signed_32_forwards_matches (arg_ : (BitVec 32)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_32_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (32, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_33_forwards (arg_ : (BitVec 33)) : SailM String := do
   let head_exp_ := arg_
@@ -1495,9 +1717,14 @@ def hex_bits_signed_33_forwards (arg_ : (BitVec 33)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_33_backwards (arg_ : String) : (BitVec 33) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (33, s))
+def hex_bits_signed_33_backwards (arg_ : String) : SailM (BitVec 33) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (33, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (33, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_33_forwards_matches (arg_ : (BitVec 33)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1515,8 +1742,10 @@ def hex_bits_signed_33_forwards_matches (arg_ : (BitVec 33)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_33_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (33, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_34_forwards (arg_ : (BitVec 34)) : SailM String := do
   let head_exp_ := arg_
@@ -1534,9 +1763,14 @@ def hex_bits_signed_34_forwards (arg_ : (BitVec 34)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_34_backwards (arg_ : String) : (BitVec 34) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (34, s))
+def hex_bits_signed_34_backwards (arg_ : String) : SailM (BitVec 34) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (34, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (34, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_34_forwards_matches (arg_ : (BitVec 34)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1554,8 +1788,10 @@ def hex_bits_signed_34_forwards_matches (arg_ : (BitVec 34)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_34_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (34, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_35_forwards (arg_ : (BitVec 35)) : SailM String := do
   let head_exp_ := arg_
@@ -1573,9 +1809,14 @@ def hex_bits_signed_35_forwards (arg_ : (BitVec 35)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_35_backwards (arg_ : String) : (BitVec 35) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (35, s))
+def hex_bits_signed_35_backwards (arg_ : String) : SailM (BitVec 35) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (35, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (35, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_35_forwards_matches (arg_ : (BitVec 35)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1593,8 +1834,10 @@ def hex_bits_signed_35_forwards_matches (arg_ : (BitVec 35)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_35_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (35, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_36_forwards (arg_ : (BitVec 36)) : SailM String := do
   let head_exp_ := arg_
@@ -1612,9 +1855,14 @@ def hex_bits_signed_36_forwards (arg_ : (BitVec 36)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_36_backwards (arg_ : String) : (BitVec 36) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (36, s))
+def hex_bits_signed_36_backwards (arg_ : String) : SailM (BitVec 36) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (36, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (36, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_36_forwards_matches (arg_ : (BitVec 36)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1632,8 +1880,10 @@ def hex_bits_signed_36_forwards_matches (arg_ : (BitVec 36)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_36_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (36, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_37_forwards (arg_ : (BitVec 37)) : SailM String := do
   let head_exp_ := arg_
@@ -1651,9 +1901,14 @@ def hex_bits_signed_37_forwards (arg_ : (BitVec 37)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_37_backwards (arg_ : String) : (BitVec 37) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (37, s))
+def hex_bits_signed_37_backwards (arg_ : String) : SailM (BitVec 37) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (37, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (37, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_37_forwards_matches (arg_ : (BitVec 37)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1671,8 +1926,10 @@ def hex_bits_signed_37_forwards_matches (arg_ : (BitVec 37)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_37_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (37, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_38_forwards (arg_ : (BitVec 38)) : SailM String := do
   let head_exp_ := arg_
@@ -1690,9 +1947,14 @@ def hex_bits_signed_38_forwards (arg_ : (BitVec 38)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_38_backwards (arg_ : String) : (BitVec 38) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (38, s))
+def hex_bits_signed_38_backwards (arg_ : String) : SailM (BitVec 38) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (38, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (38, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_38_forwards_matches (arg_ : (BitVec 38)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1710,8 +1972,10 @@ def hex_bits_signed_38_forwards_matches (arg_ : (BitVec 38)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_38_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (38, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_39_forwards (arg_ : (BitVec 39)) : SailM String := do
   let head_exp_ := arg_
@@ -1729,9 +1993,14 @@ def hex_bits_signed_39_forwards (arg_ : (BitVec 39)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_39_backwards (arg_ : String) : (BitVec 39) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (39, s))
+def hex_bits_signed_39_backwards (arg_ : String) : SailM (BitVec 39) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (39, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (39, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_39_forwards_matches (arg_ : (BitVec 39)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1749,8 +2018,10 @@ def hex_bits_signed_39_forwards_matches (arg_ : (BitVec 39)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_39_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (39, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_40_forwards (arg_ : (BitVec 40)) : SailM String := do
   let head_exp_ := arg_
@@ -1768,9 +2039,14 @@ def hex_bits_signed_40_forwards (arg_ : (BitVec 40)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_40_backwards (arg_ : String) : (BitVec 40) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (40, s))
+def hex_bits_signed_40_backwards (arg_ : String) : SailM (BitVec 40) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (40, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (40, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_40_forwards_matches (arg_ : (BitVec 40)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1788,8 +2064,10 @@ def hex_bits_signed_40_forwards_matches (arg_ : (BitVec 40)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_40_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (40, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_41_forwards (arg_ : (BitVec 41)) : SailM String := do
   let head_exp_ := arg_
@@ -1807,9 +2085,14 @@ def hex_bits_signed_41_forwards (arg_ : (BitVec 41)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_41_backwards (arg_ : String) : (BitVec 41) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (41, s))
+def hex_bits_signed_41_backwards (arg_ : String) : SailM (BitVec 41) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (41, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (41, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_41_forwards_matches (arg_ : (BitVec 41)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1827,8 +2110,10 @@ def hex_bits_signed_41_forwards_matches (arg_ : (BitVec 41)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_41_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (41, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_42_forwards (arg_ : (BitVec 42)) : SailM String := do
   let head_exp_ := arg_
@@ -1846,9 +2131,14 @@ def hex_bits_signed_42_forwards (arg_ : (BitVec 42)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_42_backwards (arg_ : String) : (BitVec 42) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (42, s))
+def hex_bits_signed_42_backwards (arg_ : String) : SailM (BitVec 42) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (42, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (42, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_42_forwards_matches (arg_ : (BitVec 42)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1866,8 +2156,10 @@ def hex_bits_signed_42_forwards_matches (arg_ : (BitVec 42)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_42_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (42, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_43_forwards (arg_ : (BitVec 43)) : SailM String := do
   let head_exp_ := arg_
@@ -1885,9 +2177,14 @@ def hex_bits_signed_43_forwards (arg_ : (BitVec 43)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_43_backwards (arg_ : String) : (BitVec 43) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (43, s))
+def hex_bits_signed_43_backwards (arg_ : String) : SailM (BitVec 43) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (43, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (43, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_43_forwards_matches (arg_ : (BitVec 43)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1905,8 +2202,10 @@ def hex_bits_signed_43_forwards_matches (arg_ : (BitVec 43)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_43_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (43, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_44_forwards (arg_ : (BitVec 44)) : SailM String := do
   let head_exp_ := arg_
@@ -1924,9 +2223,14 @@ def hex_bits_signed_44_forwards (arg_ : (BitVec 44)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_44_backwards (arg_ : String) : (BitVec 44) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (44, s))
+def hex_bits_signed_44_backwards (arg_ : String) : SailM (BitVec 44) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (44, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (44, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_44_forwards_matches (arg_ : (BitVec 44)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1944,8 +2248,10 @@ def hex_bits_signed_44_forwards_matches (arg_ : (BitVec 44)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_44_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (44, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_45_forwards (arg_ : (BitVec 45)) : SailM String := do
   let head_exp_ := arg_
@@ -1963,9 +2269,14 @@ def hex_bits_signed_45_forwards (arg_ : (BitVec 45)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_45_backwards (arg_ : String) : (BitVec 45) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (45, s))
+def hex_bits_signed_45_backwards (arg_ : String) : SailM (BitVec 45) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (45, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (45, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_45_forwards_matches (arg_ : (BitVec 45)) : SailM Bool := do
   let head_exp_ := arg_
@@ -1983,8 +2294,10 @@ def hex_bits_signed_45_forwards_matches (arg_ : (BitVec 45)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_45_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (45, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_46_forwards (arg_ : (BitVec 46)) : SailM String := do
   let head_exp_ := arg_
@@ -2002,9 +2315,14 @@ def hex_bits_signed_46_forwards (arg_ : (BitVec 46)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_46_backwards (arg_ : String) : (BitVec 46) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (46, s))
+def hex_bits_signed_46_backwards (arg_ : String) : SailM (BitVec 46) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (46, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (46, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_46_forwards_matches (arg_ : (BitVec 46)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2022,8 +2340,10 @@ def hex_bits_signed_46_forwards_matches (arg_ : (BitVec 46)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_46_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (46, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_47_forwards (arg_ : (BitVec 47)) : SailM String := do
   let head_exp_ := arg_
@@ -2041,9 +2361,14 @@ def hex_bits_signed_47_forwards (arg_ : (BitVec 47)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_47_backwards (arg_ : String) : (BitVec 47) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (47, s))
+def hex_bits_signed_47_backwards (arg_ : String) : SailM (BitVec 47) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (47, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (47, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_47_forwards_matches (arg_ : (BitVec 47)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2061,8 +2386,10 @@ def hex_bits_signed_47_forwards_matches (arg_ : (BitVec 47)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_47_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (47, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_48_forwards (arg_ : (BitVec 48)) : SailM String := do
   let head_exp_ := arg_
@@ -2080,9 +2407,14 @@ def hex_bits_signed_48_forwards (arg_ : (BitVec 48)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_48_backwards (arg_ : String) : (BitVec 48) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (48, s))
+def hex_bits_signed_48_backwards (arg_ : String) : SailM (BitVec 48) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (48, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (48, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_48_forwards_matches (arg_ : (BitVec 48)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2100,8 +2432,10 @@ def hex_bits_signed_48_forwards_matches (arg_ : (BitVec 48)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_48_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (48, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_49_forwards (arg_ : (BitVec 49)) : SailM String := do
   let head_exp_ := arg_
@@ -2119,9 +2453,14 @@ def hex_bits_signed_49_forwards (arg_ : (BitVec 49)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_49_backwards (arg_ : String) : (BitVec 49) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (49, s))
+def hex_bits_signed_49_backwards (arg_ : String) : SailM (BitVec 49) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (49, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (49, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_49_forwards_matches (arg_ : (BitVec 49)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2139,8 +2478,10 @@ def hex_bits_signed_49_forwards_matches (arg_ : (BitVec 49)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_49_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (49, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_50_forwards (arg_ : (BitVec 50)) : SailM String := do
   let head_exp_ := arg_
@@ -2158,9 +2499,14 @@ def hex_bits_signed_50_forwards (arg_ : (BitVec 50)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_50_backwards (arg_ : String) : (BitVec 50) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (50, s))
+def hex_bits_signed_50_backwards (arg_ : String) : SailM (BitVec 50) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (50, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (50, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_50_forwards_matches (arg_ : (BitVec 50)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2178,8 +2524,10 @@ def hex_bits_signed_50_forwards_matches (arg_ : (BitVec 50)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_50_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (50, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_51_forwards (arg_ : (BitVec 51)) : SailM String := do
   let head_exp_ := arg_
@@ -2197,9 +2545,14 @@ def hex_bits_signed_51_forwards (arg_ : (BitVec 51)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_51_backwards (arg_ : String) : (BitVec 51) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (51, s))
+def hex_bits_signed_51_backwards (arg_ : String) : SailM (BitVec 51) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (51, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (51, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_51_forwards_matches (arg_ : (BitVec 51)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2217,8 +2570,10 @@ def hex_bits_signed_51_forwards_matches (arg_ : (BitVec 51)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_51_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (51, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_52_forwards (arg_ : (BitVec 52)) : SailM String := do
   let head_exp_ := arg_
@@ -2236,9 +2591,14 @@ def hex_bits_signed_52_forwards (arg_ : (BitVec 52)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_52_backwards (arg_ : String) : (BitVec 52) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (52, s))
+def hex_bits_signed_52_backwards (arg_ : String) : SailM (BitVec 52) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (52, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (52, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_52_forwards_matches (arg_ : (BitVec 52)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2256,8 +2616,10 @@ def hex_bits_signed_52_forwards_matches (arg_ : (BitVec 52)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_52_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (52, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_53_forwards (arg_ : (BitVec 53)) : SailM String := do
   let head_exp_ := arg_
@@ -2275,9 +2637,14 @@ def hex_bits_signed_53_forwards (arg_ : (BitVec 53)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_53_backwards (arg_ : String) : (BitVec 53) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (53, s))
+def hex_bits_signed_53_backwards (arg_ : String) : SailM (BitVec 53) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (53, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (53, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_53_forwards_matches (arg_ : (BitVec 53)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2295,8 +2662,10 @@ def hex_bits_signed_53_forwards_matches (arg_ : (BitVec 53)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_53_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (53, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_54_forwards (arg_ : (BitVec 54)) : SailM String := do
   let head_exp_ := arg_
@@ -2314,9 +2683,14 @@ def hex_bits_signed_54_forwards (arg_ : (BitVec 54)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_54_backwards (arg_ : String) : (BitVec 54) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (54, s))
+def hex_bits_signed_54_backwards (arg_ : String) : SailM (BitVec 54) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (54, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (54, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_54_forwards_matches (arg_ : (BitVec 54)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2334,8 +2708,10 @@ def hex_bits_signed_54_forwards_matches (arg_ : (BitVec 54)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_54_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (54, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_55_forwards (arg_ : (BitVec 55)) : SailM String := do
   let head_exp_ := arg_
@@ -2353,9 +2729,14 @@ def hex_bits_signed_55_forwards (arg_ : (BitVec 55)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_55_backwards (arg_ : String) : (BitVec 55) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (55, s))
+def hex_bits_signed_55_backwards (arg_ : String) : SailM (BitVec 55) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (55, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (55, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_55_forwards_matches (arg_ : (BitVec 55)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2373,8 +2754,10 @@ def hex_bits_signed_55_forwards_matches (arg_ : (BitVec 55)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_55_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (55, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_56_forwards (arg_ : (BitVec 56)) : SailM String := do
   let head_exp_ := arg_
@@ -2392,9 +2775,14 @@ def hex_bits_signed_56_forwards (arg_ : (BitVec 56)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_56_backwards (arg_ : String) : (BitVec 56) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (56, s))
+def hex_bits_signed_56_backwards (arg_ : String) : SailM (BitVec 56) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (56, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (56, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_56_forwards_matches (arg_ : (BitVec 56)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2412,8 +2800,10 @@ def hex_bits_signed_56_forwards_matches (arg_ : (BitVec 56)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_56_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (56, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_57_forwards (arg_ : (BitVec 57)) : SailM String := do
   let head_exp_ := arg_
@@ -2431,9 +2821,14 @@ def hex_bits_signed_57_forwards (arg_ : (BitVec 57)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_57_backwards (arg_ : String) : (BitVec 57) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (57, s))
+def hex_bits_signed_57_backwards (arg_ : String) : SailM (BitVec 57) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (57, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (57, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_57_forwards_matches (arg_ : (BitVec 57)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2451,8 +2846,10 @@ def hex_bits_signed_57_forwards_matches (arg_ : (BitVec 57)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_57_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (57, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_58_forwards (arg_ : (BitVec 58)) : SailM String := do
   let head_exp_ := arg_
@@ -2470,9 +2867,14 @@ def hex_bits_signed_58_forwards (arg_ : (BitVec 58)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_58_backwards (arg_ : String) : (BitVec 58) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (58, s))
+def hex_bits_signed_58_backwards (arg_ : String) : SailM (BitVec 58) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (58, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (58, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_58_forwards_matches (arg_ : (BitVec 58)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2490,8 +2892,10 @@ def hex_bits_signed_58_forwards_matches (arg_ : (BitVec 58)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_58_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (58, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_59_forwards (arg_ : (BitVec 59)) : SailM String := do
   let head_exp_ := arg_
@@ -2509,9 +2913,14 @@ def hex_bits_signed_59_forwards (arg_ : (BitVec 59)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_59_backwards (arg_ : String) : (BitVec 59) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (59, s))
+def hex_bits_signed_59_backwards (arg_ : String) : SailM (BitVec 59) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (59, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (59, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_59_forwards_matches (arg_ : (BitVec 59)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2529,8 +2938,10 @@ def hex_bits_signed_59_forwards_matches (arg_ : (BitVec 59)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_59_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (59, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_60_forwards (arg_ : (BitVec 60)) : SailM String := do
   let head_exp_ := arg_
@@ -2548,9 +2959,14 @@ def hex_bits_signed_60_forwards (arg_ : (BitVec 60)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_60_backwards (arg_ : String) : (BitVec 60) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (60, s))
+def hex_bits_signed_60_backwards (arg_ : String) : SailM (BitVec 60) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (60, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (60, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_60_forwards_matches (arg_ : (BitVec 60)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2568,8 +2984,10 @@ def hex_bits_signed_60_forwards_matches (arg_ : (BitVec 60)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_60_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (60, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_61_forwards (arg_ : (BitVec 61)) : SailM String := do
   let head_exp_ := arg_
@@ -2587,9 +3005,14 @@ def hex_bits_signed_61_forwards (arg_ : (BitVec 61)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_61_backwards (arg_ : String) : (BitVec 61) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (61, s))
+def hex_bits_signed_61_backwards (arg_ : String) : SailM (BitVec 61) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (61, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (61, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_61_forwards_matches (arg_ : (BitVec 61)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2607,8 +3030,10 @@ def hex_bits_signed_61_forwards_matches (arg_ : (BitVec 61)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_61_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (61, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_62_forwards (arg_ : (BitVec 62)) : SailM String := do
   let head_exp_ := arg_
@@ -2626,9 +3051,14 @@ def hex_bits_signed_62_forwards (arg_ : (BitVec 62)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_62_backwards (arg_ : String) : (BitVec 62) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (62, s))
+def hex_bits_signed_62_backwards (arg_ : String) : SailM (BitVec 62) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (62, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (62, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_62_forwards_matches (arg_ : (BitVec 62)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2646,8 +3076,10 @@ def hex_bits_signed_62_forwards_matches (arg_ : (BitVec 62)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_62_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (62, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_63_forwards (arg_ : (BitVec 63)) : SailM String := do
   let head_exp_ := arg_
@@ -2665,9 +3097,14 @@ def hex_bits_signed_63_forwards (arg_ : (BitVec 63)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_63_backwards (arg_ : String) : (BitVec 63) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (63, s))
+def hex_bits_signed_63_backwards (arg_ : String) : SailM (BitVec 63) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (63, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (63, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_63_forwards_matches (arg_ : (BitVec 63)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2685,8 +3122,10 @@ def hex_bits_signed_63_forwards_matches (arg_ : (BitVec 63)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_63_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (63, s)) : Bool)
+  then true
+  else false
 
 def hex_bits_signed_64_forwards (arg_ : (BitVec 64)) : SailM String := do
   let head_exp_ := arg_
@@ -2704,9 +3143,14 @@ def hex_bits_signed_64_forwards (arg_ : (BitVec 64)) : SailM String := do
       assert false "Pattern match failure at unknown location"
       throw Error.Exit)
 
-def hex_bits_signed_64_backwards (arg_ : String) : (BitVec 64) :=
-  match arg_ with
-  | s => (hex_bits_signed_backwards (64, s))
+def hex_bits_signed_64_backwards (arg_ : String) : SailM (BitVec 64) := do
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (64, s)) : Bool)
+  then (pure (hex_bits_signed_backwards (64, s)))
+  else
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
 
 def hex_bits_signed_64_forwards_matches (arg_ : (BitVec 64)) : SailM Bool := do
   let head_exp_ := arg_
@@ -2724,6 +3168,8 @@ def hex_bits_signed_64_forwards_matches (arg_ : (BitVec 64)) : SailM Bool := do
     | _ => (pure false))
 
 def hex_bits_signed_64_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | s => true
+  let s := arg_
+  if ((hex_bits_signed_backwards_matches (64, s)) : Bool)
+  then true
+  else false
 

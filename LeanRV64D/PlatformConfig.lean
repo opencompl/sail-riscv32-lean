@@ -1452,7 +1452,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex740845_ : Bool -/
+/-- Type quantifiers: k_ex742125_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6398,7 +6398,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex742972_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex744252_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 

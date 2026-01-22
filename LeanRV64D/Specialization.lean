@@ -1,4 +1,4 @@
-import LeanRV64D.Sail.Sail
+import Sail
 import LeanRV64D.Defs
 
 namespace Sail

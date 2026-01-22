@@ -1,6 +1,4 @@
-import LeanRV64D.Sail.Sail
-import LeanRV64D.Sail.BitVec
-import LeanRV64D.Sail.IntRange
+import Sail
 import LeanRV64D.Defs
 import LeanRV64D.Specialization
 import LeanRV64D.FakeReal
@@ -195,7 +193,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex738419_ : Bool, k_ex738418_ : Bool -/
+/-- Type quantifiers: k_ex739443_ : Bool, k_ex739442_ : Bool -/
 def neq_bool (x : Bool) (y : Bool) : Bool :=
   (! (x == y))
 

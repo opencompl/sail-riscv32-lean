@@ -1,6 +1,4 @@
-import LeanRV64D.Sail.Sail
-import LeanRV64D.Sail.BitVec
-
+import Sail
 open PreSail
 
 set_option maxHeartbeats 1_000_000_000

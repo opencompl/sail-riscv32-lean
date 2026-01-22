@@ -261,7 +261,7 @@ def generate_dts_memories (pmas : (List PMA_Region)) : String :=
       let size_hi := (BitVec.toNatInt (shiftr pma.size 32))
       let size_lo := (BitVec.toNatInt (Sail.BitVec.extractLsb pma.size 31 0))
       (HAppend.hAppend "  memory@"
-        (HAppend.hAppend (String.drop (Int.toHex (BitVec.toNatInt pma.base)) 2)
+        (HAppend.hAppend (String.dropStr (Int.toHex (BitVec.toNatInt pma.base)) 2)
           (HAppend.hAppend " {
 "
             (HAppend.hAppend "    device_type = \"memory\";
@@ -400,7 +400,7 @@ def generate_dts (_ : Unit) : SailM String := do
                                                                                                         (HAppend.hAppend
                                                                                                           "    clint@"
                                                                                                           (HAppend.hAppend
-                                                                                                            (String.drop
+                                                                                                            (String.dropStr
                                                                                                               (Int.toHex
                                                                                                                 (BitVec.toNatInt
                                                                                                                   plat_clint_base))

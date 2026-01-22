@@ -1,6 +1,4 @@
-import LeanRV64D.Sail.Sail
-import LeanRV64D.Sail.BitVec
-import LeanRV64D.Sail.IntRange
+import Sail
 import LeanRV64D.Defs
 import LeanRV64D.Specialization
 import LeanRV64D.FakeReal
