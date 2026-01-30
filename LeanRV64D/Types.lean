@@ -313,6 +313,12 @@ def is_prefetch_access (access : (MemoryAccessType k_a)) : Bool :=
   | .CacheAccess (.CB_prefetch _) => true
   | _ => false
 
+/-- Type quantifiers: k_a : Type -/
+def is_store_conditional (access : (MemoryAccessType k_a)) : Bool :=
+  match access with
+  | .StoreConditional _ => true
+  | _ => false
+
 def undefined_CSRAccessType (_ : Unit) : SailM CSRAccessType := do
   (internal_pick [CSRRead, CSRWrite, CSRReadWrite])
 

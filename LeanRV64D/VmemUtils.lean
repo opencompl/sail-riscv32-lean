@@ -1,7 +1,9 @@
 import LeanRV64D.Prelude
 import LeanRV64D.MemAddrtype
 import LeanRV64D.PlatformConfig
+import LeanRV64D.Types
 import LeanRV64D.AddrChecks
+import LeanRV64D.SysControl
 import LeanRV64D.Mem
 import LeanRV64D.Vmem
 
@@ -253,7 +255,7 @@ def check_misaligned (vaddr : virtaddr) (width : Nat) : Bool :=
   then false
   else (not (is_aligned_vaddr vaddr width))
 
-/-- Type quantifiers: k_ex757320_ : Bool, k_ex757319_ : Bool, k_ex757318_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex757329_ : Bool, k_ex757328_ : Bool, k_ex757327_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_read_addr (vaddr : virtaddr) (offset : (BitVec 64)) (width : Nat) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result (BitVec (8 * width)) ExecutionResult) := SailME.run do
   if (res : Bool)
@@ -311,7 +313,7 @@ def vmem_read_addr (vaddr : virtaddr) (offset : (BitVec 64)) (width : Nat) (acce
     ((BitVec (8 * n * bytes)) × Bool × Nat) )
   (pure (Ok data))
 
-/-- Type quantifiers: k_ex757355_ : Bool, k_ex757354_ : Bool, k_ex757353_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex757364_ : Bool, k_ex757363_ : Bool, k_ex757362_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_write_addr (vaddr : virtaddr) (width : Nat) (data : (BitVec (8 * width))) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result Bool ExecutionResult) := SailME.run do
   if ((check_misaligned vaddr width) : Bool)
@@ -336,8 +338,16 @@ def vmem_write_addr (vaddr : virtaddr) (width : Nat) (data : (BitVec (8 * width)
                 SailME.throw ((Err (Memory_Exception ((Virtaddr vaddr), e))) : (Result Bool ExecutionResult))
               | .Ok (paddr, _) =>
                 (do
+                  assert (res == (is_store_conditional access)) "sys/vmem_utils.sail:207.50-207.51"
                   if ((res && (not (match_reservation (bits_of_physaddr paddr)))) : Bool)
-                  then (pure false)
+                  then
+                    (do
+                      let effPriv ← do
+                        (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
+                      match (← (phys_access_check access effPriv paddr bytes true)) with
+                      | .some e =>
+                        SailME.throw ((Err (Memory_Exception ((Virtaddr vaddr), e))) : (Result Bool ExecutionResult))
+                      | none => (pure false))
                   else
                     (do
                       match (← (mem_write_ea paddr bytes aq rl res)) with
@@ -365,7 +375,7 @@ def vmem_write_addr (vaddr : virtaddr) (width : Nat) (data : (BitVec (8 * width)
         (pure loop_vars) ) : SailME (Result Bool ExecutionResult) (Bool × Nat × Bool) )
       (pure (Ok write_success)))
 
-/-- Type quantifiers: k_ex757401_ : Bool, k_ex757400_ : Bool, k_ex757399_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex757411_ : Bool, k_ex757410_ : Bool, k_ex757409_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_read (rs : regidx) (offset : (BitVec 64)) (width : Nat) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result (BitVec (8 * width)) ExecutionResult) := SailME.run do
   let vaddr ← (( do
@@ -376,7 +386,7 @@ def vmem_read (rs : regidx) (offset : (BitVec 64)) (width : Nat) (access : (Memo
     ) : SailME (Result (BitVec (8 * width)) ExecutionResult) virtaddr )
   (vmem_read_addr vaddr offset width access aq rl res)
 
-/-- Type quantifiers: k_ex757411_ : Bool, k_ex757410_ : Bool, k_ex757409_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex757421_ : Bool, k_ex757420_ : Bool, k_ex757419_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_write (rs_addr : regidx) (offset : (BitVec 64)) (width : Nat) (data : (BitVec (8 * width))) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result Bool ExecutionResult) := SailME.run do
   let vaddr ← (( do
