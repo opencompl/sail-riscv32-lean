@@ -170,6 +170,10 @@ inductive AmocasOddRegisterReservedBehavior where | AMOCAS_Fatal | AMOCAS_Illega
   deriving BEq, Inhabited, Repr
   open AmocasOddRegisterReservedBehavior
 
+inductive FcsrRmReservedBehavior where | Fcsr_RM_Fatal | Fcsr_RM_Illegal
+  deriving BEq, Inhabited, Repr
+  open FcsrRmReservedBehavior
+
 inductive PmpWriteOnlyReservedBehavior where | PMP_Fatal | PMP_ClearPermissions
   deriving BEq, Inhabited, Repr
   open PmpWriteOnlyReservedBehavior

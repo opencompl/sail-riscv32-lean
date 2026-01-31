@@ -191,6 +191,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
 open ExecutionResult
@@ -288,6 +289,20 @@ def AmocasOddRegisterReservedBehavior_str_backwards_matches (arg_ : String) : Bo
   | "AMOCAS_Fatal" => true
   | "AMOCAS_Illegal" => true
   | _ => false
+
+def FcsrRmReservedBehavior_str_backwards (arg_ : String) : SailM FcsrRmReservedBehavior := do
+  match arg_ with
+  | "Fcsr_RM_Fatal" => (pure Fcsr_RM_Fatal)
+  | "Fcsr_RM_Illegal" => (pure Fcsr_RM_Illegal)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def FcsrRmReservedBehavior_str_forwards (arg_ : FcsrRmReservedBehavior) : String :=
+  match arg_ with
+  | Fcsr_RM_Fatal => "Fcsr_RM_Fatal"
+  | Fcsr_RM_Illegal => "Fcsr_RM_Illegal"
 
 def PmpWriteOnlyReservedBehavior_str_backwards (arg_ : String) : SailM PmpWriteOnlyReservedBehavior := do
   match arg_ with
@@ -1467,7 +1482,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex742163_ : Bool -/
+/-- Type quantifiers: k_ex742401_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -5712,7 +5727,12 @@ def amo_encoding_valid (width : Nat) (op : amoop) (typ_2 : regidx) (typ_3 : regi
                   then
                     (do
                       match amocas_odd_register_reserved_behavior with
-                      | AMOCAS_Fatal => (reserved_behavior "AMOCAS.D/Q used odd-numbered register")
+                      | AMOCAS_Fatal =>
+                        (reserved_behavior
+                          (HAppend.hAppend "AMOCAS.D/Q used an odd-numbered register (rs2 = "
+                            (HAppend.hAppend (Int.repr (BitVec.toNatInt rs2))
+                              (HAppend.hAppend ", rd = "
+                                (HAppend.hAppend (Int.repr (BitVec.toNatInt rd)) ").")))))
                       | AMOCAS_Illegal => (pure false))
                   else (pure true))))))))
 
@@ -6413,7 +6433,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex744290_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex744560_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -10592,6 +10612,31 @@ def wait_name_forwards (arg_ : WaitReason) : String :=
   | WAIT_WRS_STO => "WAIT-WRS-STO"
   | WAIT_WRS_NTO => "WAIT-WRS-NTO"
 
+def undefined_FcsrRmReservedBehavior (_ : Unit) : SailM FcsrRmReservedBehavior := do
+  (internal_pick [Fcsr_RM_Fatal, Fcsr_RM_Illegal])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def FcsrRmReservedBehavior_of_num (arg_ : Nat) : FcsrRmReservedBehavior :=
+  match arg_ with
+  | 0 => Fcsr_RM_Fatal
+  | _ => Fcsr_RM_Illegal
+
+def num_of_FcsrRmReservedBehavior (arg_ : FcsrRmReservedBehavior) : Int :=
+  match arg_ with
+  | Fcsr_RM_Fatal => 0
+  | Fcsr_RM_Illegal => 1
+
+def FcsrRmReservedBehavior_str_forwards_matches (arg_ : FcsrRmReservedBehavior) : Bool :=
+  match arg_ with
+  | Fcsr_RM_Fatal => true
+  | Fcsr_RM_Illegal => true
+
+def FcsrRmReservedBehavior_str_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "Fcsr_RM_Fatal" => true
+  | "Fcsr_RM_Illegal" => true
+  | _ => false
+
 def undefined_PmpWriteOnlyReservedBehavior (_ : Unit) : SailM PmpWriteOnlyReservedBehavior := do
   (internal_pick [PMP_Fatal, PMP_ClearPermissions])
 
@@ -10666,6 +10711,8 @@ def RV32ZdinxOddRegisterReservedBehavior_str_backwards_matches (arg_ : String) :
   | "Zdinx_Fatal" => true
   | "Zdinx_Illegal" => true
   | _ => false
+
+def fcsr_rm_reserved_behavior : FcsrRmReservedBehavior := Fcsr_RM_Illegal
 
 def pmp_write_only_reserved_behavior : PmpWriteOnlyReservedBehavior := PMP_ClearPermissions
 

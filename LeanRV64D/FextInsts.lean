@@ -1,5 +1,6 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
+import LeanRV64D.Errors
 import LeanRV64D.PlatformConfig
 import LeanRV64D.FdextRegs
 
@@ -184,6 +185,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
 open ExecutionResult
@@ -267,7 +269,15 @@ def select_instr_or_fcsr_rm (instr_rm : rounding_mode) : SailM (Option rounding_
       let fcsr_rm ← do (pure (_get_Fcsr_FRM (← readReg fcsr)))
       if (((valid_rounding_mode fcsr_rm) && (fcsr_rm != (encdec_rounding_mode_forwards RM_DYN))) : Bool)
       then (pure (some (← (encdec_rounding_mode_backwards fcsr_rm))))
-      else (pure none))
+      else
+        (do
+          match fcsr_rm_reserved_behavior with
+          | Fcsr_RM_Fatal =>
+            (reserved_behavior
+              (HAppend.hAppend
+                "Dynamic floating-point rounding mode reserved behavior: fcsr.FRM contains reserved value "
+                (BitVec.toFormatted fcsr_rm)))
+          | Fcsr_RM_Illegal => (pure none)))
   else (pure (some instr_rm))
 
 def nxFlag (_ : Unit) : (BitVec 5) :=
@@ -356,7 +366,7 @@ def feq_quiet_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) : (Bool × (BitVec 5)) :=
     else (zeros (n := 5))
   (result, fflags)
 
-/-- Type quantifiers: k_ex757650_ : Bool -/
+/-- Type quantifiers: k_ex757922_ : Bool -/
 def flt_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_S v1)
   let (s2, e2, m2) := (fsplit_S v2)
@@ -388,7 +398,7 @@ def flt_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) (is_quiet : Bool) : (Bool × (Bi
       else (zeros (n := 5)))
   (result, fflags)
 
-/-- Type quantifiers: k_ex757736_ : Bool -/
+/-- Type quantifiers: k_ex758008_ : Bool -/
 def fle_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_S v1)
   let (s2, e2, m2) := (fsplit_S v2)

@@ -181,6 +181,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
 open ExecutionResult
@@ -190,8 +191,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex740414_ : Nat, k_ex740414_ ∈ {16, 32, 64, 128} -/
-def float_is_zero (op : (BitVec k_ex740414_)) : Bool :=
+/-- Type quantifiers: k_ex740652_ : Nat, k_ex740652_ ∈ {16, 32, 64, 128} -/
+def float_is_zero (op : (BitVec k_ex740652_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (is_all_zeros mantissa))
 
