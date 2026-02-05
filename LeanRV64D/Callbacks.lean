@@ -20,6 +20,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -224,7 +226,7 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 64)
 def redirect_callback (x_0 : (BitVec 64)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex753277_ : Bool -/
+/-- Type quantifiers: k_ex788241_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 

@@ -1,6 +1,8 @@
-import LeanRV64D.Common
-import LeanRV64D.Nan
-import LeanRV64D.ArithInternal
+import Sail
+import LeanRV64D.Defs
+import LeanRV64D.Specialization
+import LeanRV64D.FakeReal
+import LeanRV64D.RiscvExtras
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -196,14 +198,31 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_n : Nat, k_n ≥ 0, is_fp_bits(k_n) -/
-def float_is_lt_quiet (op_0 : (BitVec k_n)) (op_1 : (BitVec k_n)) : (Bool × (BitVec 5)) :=
-  let is_nan := ((float_is_nan op_0) || (float_is_nan op_1))
-  let is_snan := ((float_is_snan op_0) || (float_is_snan op_1))
-  let flags :=
-    if (is_snan : Bool)
-    then fp_eflag_invalid
-    else fp_eflag_none
-  let is_lt := ((! is_nan) && (float_is_lt_internal op_0 op_1))
-  (is_lt, flags)
+def undefined_zvabd_vabd_func6 (_ : Unit) : SailM zvabd_vabd_func6 := do
+  (internal_pick [VV_VABD, VV_VABDU])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def zvabd_vabd_func6_of_num (arg_ : Nat) : zvabd_vabd_func6 :=
+  match arg_ with
+  | 0 => VV_VABD
+  | _ => VV_VABDU
+
+def num_of_zvabd_vabd_func6 (arg_ : zvabd_vabd_func6) : Int :=
+  match arg_ with
+  | VV_VABD => 0
+  | VV_VABDU => 1
+
+def undefined_zvabd_vwabda_func6 (_ : Unit) : SailM zvabd_vwabda_func6 := do
+  (internal_pick [VV_VWABDA, VV_VWABDAU])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def zvabd_vwabda_func6_of_num (arg_ : Nat) : zvabd_vwabda_func6 :=
+  match arg_ with
+  | 0 => VV_VWABDA
+  | _ => VV_VWABDAU
+
+def num_of_zvabd_vwabda_func6 (arg_ : zvabd_vwabda_func6) : Int :=
+  match arg_ with
+  | VV_VWABDA => 0
+  | VV_VWABDAU => 1
 

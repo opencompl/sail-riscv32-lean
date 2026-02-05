@@ -28,6 +28,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -1314,6 +1316,7 @@ def hartSupports (merge_var : extension) : Bool :=
   | Ext_Zve64d => ((6 ≥b 6) && (vector_support_ge vector_support_level Float_double))
   | Ext_Zve64f => ((6 ≥b 6) && (vector_support_ge vector_support_level Float_single))
   | Ext_Zve64x => ((6 ≥b 6) && (vector_support_ge vector_support_level Integer))
+  | Ext_Zvabd => ((sys_enable_experimental_extensions ()) && (true : Bool))
   | Ext_Zvfbfmin => true
   | Ext_Zvfbfwma => true
   | Ext_Zvfh => true
@@ -1489,7 +1492,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex742851_ : Bool -/
+/-- Type quantifiers: k_ex777715_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -1719,6 +1722,11 @@ def utype_mnemonic_forwards (arg_ : uop) : String :=
   match arg_ with
   | LUI => "lui"
   | AUIPC => "auipc"
+
+def vabd_mnemonic_forwards (arg_ : zvabd_vabd_func6) : String :=
+  match arg_ with
+  | VV_VABD => "vabd.vv"
+  | VV_VABDU => "vabdu.vv"
 
 def vaesdf_mnemonic_forwards (arg_ : zvk_vaesdf_funct6) : String :=
   match arg_ with
@@ -1984,6 +1992,11 @@ def vvtype_mnemonic_forwards (arg_ : vvfunct6) : String :=
   | VV_VMIN => "vmin.vv"
   | VV_VMAXU => "vmaxu.vv"
   | VV_VMAX => "vmax.vv"
+
+def vwabda_mnemonic_forwards (arg_ : zvabd_vwabda_func6) : String :=
+  match arg_ with
+  | VV_VWABDA => "vwabda.vv"
+  | VV_VWABDAU => "vwabdau.vv"
 
 def vxcmptype_mnemonic_forwards (arg_ : vxcmpfunct6) : String :=
   match arg_ with
@@ -4611,6 +4624,30 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (sep_forwards ())
               (String.append (vreg_name_forwards vs2)
                 (String.append (sep_forwards ()) (String.append (← (hex_bits_5_forwards uimm)) ""))))))))
+  | .VABS_V (vm, vs2, vd) =>
+    (pure (String.append "vabs.v"
+        (String.append (spc_forwards ())
+          (String.append (vreg_name_forwards vd)
+            (String.append (sep_forwards ())
+              (String.append (vreg_name_forwards vs2) (String.append (maybe_vmask_backwards vm) "")))))))
+  | .ZVABDTYPE (funct6, vm, vs2, vs1, vd) =>
+    (pure (String.append (vabd_mnemonic_forwards funct6)
+        (String.append (spc_forwards ())
+          (String.append (vreg_name_forwards vd)
+            (String.append (sep_forwards ())
+              (String.append (vreg_name_forwards vs2)
+                (String.append (sep_forwards ())
+                  (String.append (vreg_name_forwards vs1)
+                    (String.append (maybe_vmask_backwards vm) "")))))))))
+  | .ZVWABDATYPE (funct6, vm, vs2, vs1, vd) =>
+    (pure (String.append (vwabda_mnemonic_forwards funct6)
+        (String.append (spc_forwards ())
+          (String.append (vreg_name_forwards vd)
+            (String.append (sep_forwards ())
+              (String.append (vreg_name_forwards vs2)
+                (String.append (sep_forwards ())
+                  (String.append (vreg_name_forwards vs1)
+                    (String.append (maybe_vmask_backwards vm) "")))))))))
   | .CSRImm (csr, imm, rd, op) =>
     (pure (String.append (csr_mnemonic_forwards op)
         (String.append "i"
@@ -5138,6 +5175,9 @@ def assembly_forwards_matches (arg_ : instruction) : Bool :=
   | .ZVKSHA2TYPE (funct6, vs2, vs1, vd) => true
   | .VSM3ME_VV (vs2, vs1, vd) => true
   | .VSM3C_VI (vs2, uimm, vd) => true
+  | .VABS_V (vm, vs2, vd) => true
+  | .ZVABDTYPE (funct6, vm, vs2, vs1, vd) => true
+  | .ZVWABDATYPE (funct6, vm, vs2, vs1, vd) => true
   | .CSRImm (csr, imm, rd, op) => true
   | .CSRReg (csr, rs1, rd, op) => true
   | .SINVAL_VMA (rs1, rs2) => true
@@ -5591,6 +5631,7 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zvknha => (pure ((hartSupports Ext_Zvknha) && (← (currentlyEnabled Ext_Zve32x))))
   | Ext_Zvknhb => (pure ((hartSupports Ext_Zvknhb) && (← (currentlyEnabled Ext_Zve64x))))
   | Ext_Zvksh => (pure ((hartSupports Ext_Zvksh) && (← (currentlyEnabled Ext_Zve32x))))
+  | Ext_Zvabd => (pure ((hartSupports Ext_Zvabd) && (← (currentlyEnabled Ext_Zve32x))))
   | Ext_Zicsr => (pure (hartSupports Ext_Zicsr))
   | Ext_Svinval => (pure (hartSupports Ext_Svinval))
   | Ext_Zihpm => (pure ((hartSupports Ext_Zihpm) && (← (currentlyEnabled Ext_Zicsr))))
@@ -6392,6 +6433,16 @@ def encdec_zicondop_forwards (arg_ : zicondop) : (BitVec 3) :=
   | CZERO_EQZ => 0b101#3
   | CZERO_NEZ => 0b111#3
 
+def encdec_zvabd_vabd_func6_forwards (arg_ : zvabd_vabd_func6) : (BitVec 6) :=
+  match arg_ with
+  | VV_VABD => 0b010001#6
+  | VV_VABDU => 0b010011#6
+
+def encdec_zvabd_vwabda_func6_forwards (arg_ : zvabd_vwabda_func6) : (BitVec 6) :=
+  match arg_ with
+  | VV_VWABDA => 0b010101#6
+  | VV_VWABDAU => 0b010110#6
+
 /-- Type quantifiers: width : Nat, width ∈ {1, 2, 4, 8} -/
 def float_load_store_width_supported (width : Nat) : SailM Bool := do
   match width with
@@ -6474,7 +6525,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex745024_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex779903_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -6562,6 +6613,10 @@ def valid_widening_fp_conversion (cvt : vfwunary0) : SailM Bool := do
     (pure (((← (currentlyEnabled Ext_Zvfh)) && (← do
             (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64f)) && (← do
             (pure ((← (get_sew ())) == 32))))))
+
+/-- Type quantifiers: sew : Nat, sew ∈ {8, 16, 32, 64} -/
+def valid_zvabd_sew (sew : Nat) : Bool :=
+  ((sew == 8) || (sew == 16))
 
 def vext_vs1_forwards (arg_ : vextfunct6) : (BitVec 5) :=
   match arg_ with
@@ -10327,6 +10382,38 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       then
         (pure (0b1010111#7 ++ ((encdec_vreg_forwards vs2) ++ ((uimm : (BitVec 5)) ++ (0b010#3 ++ ((encdec_vreg_forwards
                       vd) ++ 0b1110111#7))))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .VABS_V (vm, vs2, vd) =>
+    (do
+      if (((← (currentlyEnabled Ext_Zvabd)) && (← do
+             (pure (((← (get_sew ())) ≤b 32) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
+                     (pure ((← (get_sew ())) ≤b 64)))))))) : Bool)
+      then
+        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b10000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
+                        vd) ++ 0b1010111#7)))))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .ZVABDTYPE (funct6, vm, vs2, vs1, vd) =>
+    (do
+      if (((← (currentlyEnabled Ext_Zvabd)) && (valid_zvabd_sew (← (get_sew ())))) : Bool)
+      then
+        (pure ((encdec_zvabd_vabd_func6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
+                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .ZVWABDATYPE (funct6, vm, vs2, vs1, vd) =>
+    (do
+      if (((← (currentlyEnabled Ext_Zvabd)) && (valid_zvabd_sew (← (get_sew ())))) : Bool)
+      then
+        (pure ((encdec_zvabd_vwabda_func6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
+                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"

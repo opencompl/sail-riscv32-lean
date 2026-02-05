@@ -27,6 +27,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -231,6 +233,18 @@ def assert_vstart (i : Int) : SailM Bool := do
 def valid_rd_mask (rd : vregidx) (vm : (BitVec 1)) : Bool :=
   ((vm != 0#1) || (bne rd zvreg))
 
+/-- Type quantifiers: EMUL_pow : Int -/
+def valid_reg_group (r : vregidx) (EMUL_pow : Int) : Bool :=
+  let reg_group_size :=
+    if ((EMUL_pow >b 0) : Bool)
+    then (2 ^i EMUL_pow)
+    else 1
+  ((Int.tmod (BitVec.toNatInt (vregidx_bits r)) reg_group_size) == 0)
+
+/-- Type quantifiers: nf : Nat, nf ∈ {1, 2, 4, 8} -/
+def valid_whole_register (r : vregidx) (nf : Nat) : Bool :=
+  ((Int.tmod (BitVec.toNatInt (vregidx_bits r)) nf) == 0)
+
 /-- Type quantifiers: EMUL_pow_rd : Int, EMUL_pow_rs : Int -/
 def valid_reg_overlap (rs : vregidx) (rd : vregidx) (EMUL_pow_rs : Int) (EMUL_pow_rd : Int) : Bool :=
   let rs_group :=
@@ -243,13 +257,16 @@ def valid_reg_overlap (rs : vregidx) (rd : vregidx) (EMUL_pow_rs : Int) (EMUL_po
     else 1
   let rs_int := (BitVec.toNatInt (vregidx_bits rs))
   let rd_int := (BitVec.toNatInt (vregidx_bits rd))
-  if ((EMUL_pow_rs <b EMUL_pow_rd) : Bool)
-  then
-    (((rs_int +i rs_group) ≤b rd_int) || ((rs_int ≥b (rd_int +i rd_group)) || (((rs_int +i rs_group) == (rd_int +i rd_group)) && (EMUL_pow_rs ≥b 0))))
+  if ((((Int.tmod rs_int rs_group) != 0) || ((Int.tmod rd_int rd_group) != 0)) : Bool)
+  then false
   else
-    (if ((EMUL_pow_rs >b EMUL_pow_rd) : Bool)
-    then ((rd_int ≤b rs_int) || (rd_int ≥b (rs_int +i rs_group)))
-    else true)
+    (if ((EMUL_pow_rs <b EMUL_pow_rd) : Bool)
+    then
+      (((rs_int +i rs_group) ≤b rd_int) || ((rs_int ≥b (rd_int +i rd_group)) || (((rs_int +i rs_group) == (rd_int +i rd_group)) && (EMUL_pow_rs ≥b 0))))
+    else
+      (if ((EMUL_pow_rs >b EMUL_pow_rd) : Bool)
+      then ((rd_int ≤b rs_int) || (rd_int ≥b (rs_int +i rs_group)))
+      else true))
 
 /-- Type quantifiers: EMUL_pow : Int, nf : Nat, nf > 0 ∧ nf ≤ 8 -/
 def valid_segment (nf : Nat) (EMUL_pow : Int) : Bool :=
@@ -322,7 +339,7 @@ def write_velem_quad (vd : vregidx) (SEW : Nat) (input : (BitVec k_n)) (i : Nat)
   for j in [loop_j_lower:loop_j_upper:1]i do
     let () := loop_vars
     loop_vars ← do
-      assert (((j +i 1) *i SEW) ≤b (Sail.BitVec.length input)) "extensions/V/vext_utils_insts.sail:222.30-222.31"
+      assert (((j +i 1) *i SEW) ≤b (Sail.BitVec.length input)) "extensions/V/vext_utils_insts.sail:243.30-243.31"
       (write_single_element SEW ((4 *i i) +i j) vd
         (Sail.BitVec.extractLsb input (((j +i 1) *i SEW) -i 1) (j *i SEW)))
   (pure loop_vars)
@@ -395,7 +412,7 @@ def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : 
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:289.34-289.35"
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:310.34-310.35"
   let (mask, result) ← (( do
     let loop_i_lower := 0
     let loop_i_upper := (num_elem -i 1)
@@ -468,7 +485,7 @@ def init_masked_source (num_elem : Nat) (LMUL_pow : Int) (vm_val : (BitVec num_e
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:341.34-341.35"
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:362.34-362.35"
   let mask ← (( do
     let loop_i_lower := 0
     let loop_i_upper := (num_elem -i 1)
@@ -508,7 +525,7 @@ def init_masked_result_carry (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:379.34-379.35"
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:400.34-400.35"
   let (mask, result) ← (( do
     let loop_i_lower := 0
     let loop_i_upper := (num_elem -i 1)
@@ -566,7 +583,7 @@ def init_masked_result_cmp (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_va
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:419.34-419.35"
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:440.34-440.35"
   let (mask, result) ← (( do
     let loop_i_lower := 0
     let loop_i_upper := (num_elem -i 1)
@@ -668,7 +685,7 @@ def get_shift_amount (bit_val : (BitVec k_n)) (SEW : Nat) : SailM Nat := do
     | 16 => 4
     | 32 => 5
     | _ => 6
-  assert ((0 <b lowlog2bits) && (lowlog2bits <b (Sail.BitVec.length bit_val))) "extensions/V/vext_utils_insts.sail:481.43-481.44"
+  assert ((0 <b lowlog2bits) && (lowlog2bits <b (Sail.BitVec.length bit_val))) "extensions/V/vext_utils_insts.sail:502.43-502.44"
   (pure (BitVec.toNatInt (Sail.BitVec.extractLsb bit_val (lowlog2bits -i 1) 0)))
 
 /-- Type quantifiers: k_m : Nat, shift_amount : Nat, k_m > 0 ∧ shift_amount ≥ 0 -/
@@ -678,7 +695,7 @@ def get_fixed_rounding_incr (vec_elem : (BitVec k_m)) (shift_amount : Nat) : Sai
   else
     (do
       let rounding_mode ← do (pure (_get_Vcsr_vxrm (← readReg vcsr)))
-      assert (shift_amount <b (Sail.BitVec.length vec_elem)) "extensions/V/vext_utils_insts.sail:492.28-492.29"
+      assert (shift_amount <b (Sail.BitVec.length vec_elem)) "extensions/V/vext_utils_insts.sail:513.28-513.29"
       match rounding_mode with
       | 0b00 => (pure (BitVec.access vec_elem (shift_amount -i 1)))
       | 0b01 =>

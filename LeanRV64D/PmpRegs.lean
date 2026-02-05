@@ -23,6 +23,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -337,7 +339,7 @@ def pmpWriteCfgReg (n : Nat) (v : (BitVec 64)) : SailM Unit := do
       else (pure ())
   (pure loop_vars)
 
-/-- Type quantifiers: k_ex753602_ : Bool, k_ex753601_ : Bool -/
+/-- Type quantifiers: k_ex788566_ : Bool, k_ex788565_ : Bool -/
 def pmpWriteAddr (locked : Bool) (tor_locked : Bool) (reg : (BitVec 64)) (v : (BitVec 64)) : (BitVec 64) :=
   if ((locked || tor_locked) : Bool)
   then reg

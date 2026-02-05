@@ -1,6 +1,8 @@
-import LeanRV64D.Common
-import LeanRV64D.Nan
-import LeanRV64D.ArithInternal
+import Sail
+import LeanRV64D.Defs
+import LeanRV64D.Specialization
+import LeanRV64D.FakeReal
+import LeanRV64D.RiscvExtras
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -196,14 +198,83 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_n : Nat, k_n ≥ 0, is_fp_bits(k_n) -/
-def float_is_lt_quiet (op_0 : (BitVec k_n)) (op_1 : (BitVec k_n)) : (Bool × (BitVec 5)) :=
-  let is_nan := ((float_is_nan op_0) || (float_is_nan op_1))
-  let is_snan := ((float_is_snan op_0) || (float_is_snan op_1))
-  let flags :=
-    if (is_snan : Bool)
-    then fp_eflag_invalid
-    else fp_eflag_none
-  let is_lt := ((! is_nan) && (float_is_lt_internal op_0 op_1))
-  (is_lt, flags)
+def encdec_zvabd_vabd_func6_backwards (arg_ : (BitVec 6)) : SailM zvabd_vabd_func6 := do
+  match arg_ with
+  | 0b010001 => (pure VV_VABD)
+  | 0b010011 => (pure VV_VABDU)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def encdec_zvabd_vabd_func6_forwards_matches (arg_ : zvabd_vabd_func6) : Bool :=
+  match arg_ with
+  | VV_VABD => true
+  | VV_VABDU => true
+
+def encdec_zvabd_vabd_func6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
+  match arg_ with
+  | 0b010001 => true
+  | 0b010011 => true
+  | _ => false
+
+def vabd_mnemonic_backwards (arg_ : String) : SailM zvabd_vabd_func6 := do
+  match arg_ with
+  | "vabd.vv" => (pure VV_VABD)
+  | "vabdu.vv" => (pure VV_VABDU)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def vabd_mnemonic_forwards_matches (arg_ : zvabd_vabd_func6) : Bool :=
+  match arg_ with
+  | VV_VABD => true
+  | VV_VABDU => true
+
+def vabd_mnemonic_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "vabd.vv" => true
+  | "vabdu.vv" => true
+  | _ => false
+
+def encdec_zvabd_vwabda_func6_backwards (arg_ : (BitVec 6)) : SailM zvabd_vwabda_func6 := do
+  match arg_ with
+  | 0b010101 => (pure VV_VWABDA)
+  | 0b010110 => (pure VV_VWABDAU)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def encdec_zvabd_vwabda_func6_forwards_matches (arg_ : zvabd_vwabda_func6) : Bool :=
+  match arg_ with
+  | VV_VWABDA => true
+  | VV_VWABDAU => true
+
+def encdec_zvabd_vwabda_func6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
+  match arg_ with
+  | 0b010101 => true
+  | 0b010110 => true
+  | _ => false
+
+def vwabda_mnemonic_backwards (arg_ : String) : SailM zvabd_vwabda_func6 := do
+  match arg_ with
+  | "vwabda.vv" => (pure VV_VWABDA)
+  | "vwabdau.vv" => (pure VV_VWABDAU)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def vwabda_mnemonic_forwards_matches (arg_ : zvabd_vwabda_func6) : Bool :=
+  match arg_ with
+  | VV_VWABDA => true
+  | VV_VWABDAU => true
+
+def vwabda_mnemonic_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "vwabda.vv" => true
+  | "vwabdau.vv" => true
+  | _ => false
 

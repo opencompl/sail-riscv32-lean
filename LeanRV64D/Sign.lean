@@ -18,6 +18,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -192,11 +194,11 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex741093_ : Nat, k_ex741093_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex741093_)) : Bool :=
+/-- Type quantifiers: k_ex775954_ : Nat, k_ex775954_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex775954_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex741095_ : Nat, k_ex741095_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex741095_)) : Bool :=
+/-- Type quantifiers: k_ex775956_ : Nat, k_ex775956_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex775956_)) : Bool :=
   (is_highest_one op)
 

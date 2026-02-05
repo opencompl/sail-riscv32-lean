@@ -30,6 +30,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -512,7 +514,7 @@ def process_vsseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (load_width_bytes
                   data (Store Data) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
-                (internal_error "extensions/V/vext_mem_insts.sail" 217
+                (internal_error "extensions/V/vext_mem_insts.sail" 219
                   "store got false from vmem_write")
               | .Err e => SailME.throw (e : ExecutionResult)
           (pure loop_vars_1))
@@ -620,7 +622,7 @@ def process_vssseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (load_width_byte
                   data (Store Data) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
-                (internal_error "extensions/V/vext_mem_insts.sail" 342
+                (internal_error "extensions/V/vext_mem_insts.sail" 346
                   "store got false from vmem_write")
               | .Err e => SailME.throw (e : ExecutionResult)
           (pure loop_vars_1))
@@ -733,7 +735,7 @@ def process_vsxseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (EEW_index_bytes
                   data (Store Data) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
-                (internal_error "extensions/V/vext_mem_insts.sail" 474
+                (internal_error "extensions/V/vext_mem_insts.sail" 481
                   "store got false from vmem_write")
               | .Err e => SailME.throw (e : ExecutionResult)
           (pure loop_vars_1))
@@ -842,7 +844,7 @@ def process_vsre (nf : Nat) (load_width_bytes : Nat) (rs1 : regidx) (vs3 : vregi
                       load_width_bytes data (Store Data) false false false)) with
                   | .Ok true => (pure ())
                   | .Ok false =>
-                    (internal_error "extensions/V/vext_mem_insts.sail" 591
+                    (internal_error "extensions/V/vext_mem_insts.sail" 601
                       "store got false from vmem_write")
                   | .Err e => SailME.throw (e : ExecutionResult)
                   (pure (cur_elem +i 1))
@@ -872,7 +874,7 @@ def process_vsre (nf : Nat) (load_width_bytes : Nat) (rs1 : regidx) (vs3 : vregi
                     (GetElem?.getElem! vs3_val i) (Store Data) false false false)) with
                 | .Ok true => (pure ())
                 | .Ok false =>
-                  (internal_error "extensions/V/vext_mem_insts.sail" 606
+                  (internal_error "extensions/V/vext_mem_insts.sail" 616
                     "store got false from vmem_write")
                 | .Err e => SailME.throw (e : ExecutionResult)
                 (pure (cur_elem +i 1))
@@ -937,7 +939,7 @@ def process_vm (vd_or_vs3 : vregidx) (rs1 : regidx) (num_elem : Nat) (evl : Nat)
                       (GetElem?.getElem! vd_or_vs3_val i) (Store Data) false false false)) with
                   | .Ok true => (pure ())
                   | .Ok false =>
-                    (internal_error "extensions/V/vext_mem_insts.sail" 661
+                    (internal_error "extensions/V/vext_mem_insts.sail" 672
                       "store got false from vmem_write")
                   | .Err e => SailME.throw (e : ExecutionResult))
               else (pure ())))

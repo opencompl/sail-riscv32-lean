@@ -18,6 +18,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -192,8 +194,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex741086_ : Nat, k_ex741086_ ∈ {16, 32, 64, 128} -/
-def float_is_inf (op : (BitVec k_ex741086_)) : Bool :=
+/-- Type quantifiers: k_ex775947_ : Nat, k_ex775947_ ∈ {16, 32, 64, 128} -/
+def float_is_inf (op : (BitVec k_ex775947_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (is_all_zeros mantissa))
 

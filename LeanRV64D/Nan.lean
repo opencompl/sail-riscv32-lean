@@ -18,6 +18,8 @@ open zvk_vaesem_funct6
 open zvk_vaesef_funct6
 open zvk_vaesdm_funct6
 open zvk_vaesdf_funct6
+open zvabd_vwabda_func6
+open zvabd_vabd_func6
 open zicondop
 open xRET_type
 open wxfunct6
@@ -192,18 +194,18 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex741055_ : Nat, k_ex741055_ ∈ {16, 32, 64, 128} -/
-def float_is_nan (op : (BitVec k_ex741055_)) : Bool :=
+/-- Type quantifiers: k_ex775916_ : Nat, k_ex775916_ ∈ {16, 32, 64, 128} -/
+def float_is_nan (op : (BitVec k_ex775916_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (! (is_all_zeros mantissa)))
 
-/-- Type quantifiers: k_ex741072_ : Nat, k_ex741072_ ∈ {16, 32, 64, 128} -/
-def float_is_snan (op : (BitVec k_ex741072_)) : Bool :=
+/-- Type quantifiers: k_ex775933_ : Nat, k_ex775933_ ∈ {16, 32, 64, 128} -/
+def float_is_snan (op : (BitVec k_ex775933_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_zero mantissa))
 
-/-- Type quantifiers: k_ex741079_ : Nat, k_ex741079_ ∈ {16, 32, 64, 128} -/
-def float_is_qnan (op : (BitVec k_ex741079_)) : Bool :=
+/-- Type quantifiers: k_ex775940_ : Nat, k_ex775940_ ∈ {16, 32, 64, 128} -/
+def float_is_qnan (op : (BitVec k_ex775940_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_one mantissa))
 
