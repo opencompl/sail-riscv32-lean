@@ -1,6 +1,6 @@
 import LeanRV64D.Prelude
 import LeanRV64D.Errors
-import LeanRV64D.PlatformConfig
+import LeanRV64D.Types
 import LeanRV64D.SysRegs
 
 set_option maxHeartbeats 1_000_000_000

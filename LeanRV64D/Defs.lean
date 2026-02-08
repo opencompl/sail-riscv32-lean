@@ -182,13 +182,99 @@ inductive PmpWriteOnlyReservedBehavior where | PMP_Fatal | PMP_ClearPermissions
   deriving BEq, Inhabited, Repr
   open PmpWriteOnlyReservedBehavior
 
+inductive XenvcfgCbieReservedBehavior where | Xenvcfg_Fatal | Xenvcfg_ClearPermissions
+  deriving BEq, Inhabited, Repr
+  open XenvcfgCbieReservedBehavior
+
 inductive RV32ZdinxOddRegisterReservedBehavior where | Zdinx_Fatal | Zdinx_Illegal
   deriving BEq, Inhabited, Repr
   open RV32ZdinxOddRegisterReservedBehavior
 
-inductive XenvcfgCbieReservedBehavior where | Xenvcfg_Fatal | Xenvcfg_ClearPermissions
+inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zibi | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvabd | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Sscofpmf | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Smcntrpmf | Ext_Smstateen | Ext_Ssqosid
   deriving BEq, Inhabited, Repr
-  open XenvcfgCbieReservedBehavior
+  open extension
+
+abbrev exc_code := (BitVec 6)
+
+abbrev ext_ptw := Unit
+
+abbrev ext_ptw_fail := Unit
+
+abbrev ext_ptw_error := Unit
+
+abbrev ext_exc_type := Unit
+
+abbrev half := (BitVec 16)
+
+abbrev word := (BitVec 32)
+
+abbrev instbits := (BitVec 32)
+
+abbrev pagesize_bits : Int := 12
+
+inductive cregidx where
+  | Cregidx (_ : (BitVec 3))
+  deriving Inhabited, BEq, Repr
+  open cregidx
+
+abbrev csreg := (BitVec 12)
+
+inductive regno where
+  | Regno (_ : Nat)
+  deriving Inhabited, BEq, Repr
+  open regno
+
+inductive Architecture where | RV32 | RV64 | RV128
+  deriving BEq, Inhabited, Repr
+  open Architecture
+
+abbrev arch_xlen := (BitVec 2)
+
+abbrev nom_priv_bits := (BitVec 2)
+
+abbrev virt_mode_bit := (BitVec 1)
+
+inductive Privilege where | User | VirtualUser | Supervisor | VirtualSupervisor | Machine
+  deriving BEq, Inhabited, Repr
+  open Privilege
+
+abbrev Misa := (BitVec 64)
+
+abbrev Mstatus := (BitVec 64)
+
+abbrev MEnvcfg := (BitVec 64)
+
+abbrev Seccfg := (BitVec 64)
+
+abbrev SEnvcfg := (BitVec 64)
+
+abbrev Hstateen0 := (BitVec 64)
+
+abbrev Hstateen1 := (BitVec 64)
+
+abbrev Hstateen2 := (BitVec 64)
+
+abbrev Hstateen3 := (BitVec 64)
+
+abbrev Mstateen0 := (BitVec 64)
+
+abbrev Mstateen1 := (BitVec 64)
+
+abbrev Mstateen2 := (BitVec 64)
+
+abbrev Mstateen3 := (BitVec 64)
+
+abbrev Sstateen0 := (BitVec 32)
+
+abbrev Sstateen1 := (BitVec 32)
+
+abbrev Sstateen2 := (BitVec 32)
+
+abbrev Sstateen3 := (BitVec 32)
+
+inductive stateen_bit where | STATEEN_FCSR | STATEEN_SRMCFG | STATEEN_ENVCFG | STATEEN_SE
+  deriving BEq, Inhabited, Repr
+  open stateen_bit
 
 inductive mem_payload where | Data
   deriving BEq, Inhabited, Repr
@@ -216,10 +302,6 @@ inductive MemoryAccessType (k_a : Type) where
 inductive AtomicSupport where | AMONone | AMOSwap | AMOLogical | AMOArithmetic | AMOCASW | AMOCASD | AMOCASQ
   deriving BEq, Inhabited, Repr
   open AtomicSupport
-
-abbrev csreg := (BitVec 12)
-
-abbrev ext_exc_type := Unit
 
 inductive breakpoint_cause where | Brk_Software | Brk_Hardware
   deriving BEq, Inhabited, Repr
@@ -267,11 +349,6 @@ inductive cfregidx where
   | Cfregidx (_ : (BitVec 3))
   deriving Inhabited, BEq, Repr
   open cfregidx
-
-inductive cregidx where
-  | Cregidx (_ : (BitVec 3))
-  deriving Inhabited, BEq, Repr
-  open cregidx
 
 inductive csrop where | CSRRW | CSRRS | CSRRC
   deriving BEq, Inhabited, Repr
@@ -380,10 +457,6 @@ inductive f_un_x_op_D where | FCLASS_D | FMV_X_D
 inductive f_un_x_op_H where | FCLASS_H | FMV_X_H
   deriving BEq, Inhabited, Repr
   open f_un_x_op_H
-
-inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zibi | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvabd | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Sscofpmf | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Smcntrpmf | Ext_Smstateen | Ext_Ssqosid
-  deriving BEq, Inhabited, Repr
-  open extension
 
 inductive rounding_mode where | RM_RNE | RM_RTZ | RM_RDN | RM_RUP | RM_RMM | RM_DYN
   deriving BEq, Inhabited, Repr
@@ -719,8 +792,6 @@ inductive f_un_rm_ff_op_S where | FSQRT_S
   deriving BEq, Inhabited, Repr
   open f_un_rm_ff_op_S
 
-abbrev half := (BitVec 16)
-
 abbrev landing_pad_label := (BitVec 20)
 
 
@@ -732,8 +803,6 @@ abbrev nfields := Int
 abbrev nfields_pow2 := Int
 
 abbrev shamt_zba := (BitVec 2)
-
-abbrev word := (BitVec 32)
 
 abbrev word_width := Int
 
@@ -1094,52 +1163,6 @@ inductive instruction where
   deriving Inhabited, Repr
   open instruction
 
-inductive Privilege where | User | VirtualUser | Supervisor | VirtualSupervisor | Machine
-  deriving BEq, Inhabited, Repr
-  open Privilege
-
-inductive Architecture where | RV32 | RV64 | RV128
-  deriving BEq, Inhabited, Repr
-  open Architecture
-
-abbrev Misa := (BitVec 64)
-
-abbrev Mstatus := (BitVec 64)
-
-abbrev MEnvcfg := (BitVec 64)
-
-abbrev Seccfg := (BitVec 64)
-
-abbrev SEnvcfg := (BitVec 64)
-
-abbrev Hstateen0 := (BitVec 64)
-
-abbrev Hstateen1 := (BitVec 64)
-
-abbrev Hstateen2 := (BitVec 64)
-
-abbrev Hstateen3 := (BitVec 64)
-
-abbrev Mstateen0 := (BitVec 64)
-
-abbrev Mstateen1 := (BitVec 64)
-
-abbrev Mstateen2 := (BitVec 64)
-
-abbrev Mstateen3 := (BitVec 64)
-
-abbrev Sstateen0 := (BitVec 32)
-
-abbrev Sstateen1 := (BitVec 32)
-
-abbrev Sstateen2 := (BitVec 32)
-
-abbrev Sstateen3 := (BitVec 32)
-
-inductive stateen_bit where | STATEEN_FCSR | STATEEN_SRMCFG | STATEEN_ENVCFG | STATEEN_SE
-  deriving BEq, Inhabited, Repr
-  open stateen_bit
-
 abbrev Vtype := (BitVec 64)
 
 abbrev sew_bitsize := Int
@@ -1176,8 +1199,6 @@ structure PMA_Region where
   include_in_device_tree : Bool
   deriving BEq, Inhabited, Repr
 
-abbrev ext_ptw_error := Unit
-
 inductive PTW_Error where
   | PTW_Invalid_Addr (_ : Unit)
   | PTW_No_Access (_ : Unit)
@@ -1198,27 +1219,6 @@ inductive TrapCause where
 inductive WaitReason where | WAIT_WFI | WAIT_WRS_STO | WAIT_WRS_NTO
   deriving BEq, Inhabited, Repr
   open WaitReason
-
-abbrev exc_code := (BitVec 6)
-
-abbrev ext_ptw := Unit
-
-abbrev ext_ptw_fail := Unit
-
-abbrev instbits := (BitVec 32)
-
-abbrev pagesize_bits : Int := 12
-
-inductive regno where
-  | Regno (_ : Nat)
-  deriving Inhabited, BEq, Repr
-  open regno
-
-abbrev arch_xlen := (BitVec 2)
-
-abbrev nom_priv_bits := (BitVec 2)
-
-abbrev virt_mode_bit := (BitVec 1)
 
 inductive CSRAccessType where | CSRRead | CSRWrite | CSRReadWrite
   deriving BEq, Inhabited, Repr

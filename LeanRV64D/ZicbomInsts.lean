@@ -2,6 +2,7 @@ import LeanRV64D.Arith
 import LeanRV64D.Prelude
 import LeanRV64D.Errors
 import LeanRV64D.PlatformConfig
+import LeanRV64D.Types
 import LeanRV64D.Regs
 import LeanRV64D.SysRegs
 import LeanRV64D.AddrChecks

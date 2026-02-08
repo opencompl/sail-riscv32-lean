@@ -224,3 +224,6 @@ def ext_exc_type_bits_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   | 0b011000 => true
   | _ => false
 
+def ext_exc_type_to_str (_e : Unit) : String :=
+  "extension-exception"
+

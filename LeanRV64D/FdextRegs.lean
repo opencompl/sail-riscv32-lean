@@ -1,7 +1,7 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
 import LeanRV64D.Flen
-import LeanRV64D.PlatformConfig
+import LeanRV64D.Extensions
 import LeanRV64D.Types
 import LeanRV64D.Callbacks
 import LeanRV64D.Regs

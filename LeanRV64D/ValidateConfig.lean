@@ -4,6 +4,7 @@ import LeanRV64D.Prelude
 import LeanRV64D.Xlen
 import LeanRV64D.Vlen
 import LeanRV64D.PlatformConfig
+import LeanRV64D.Extensions
 import LeanRV64D.PmpRegs
 import LeanRV64D.Pma
 

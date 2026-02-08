@@ -1,6 +1,6 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
-import LeanRV64D.PlatformConfig
+import LeanRV64D.Types
 import LeanRV64D.Regs
 import LeanRV64D.AddrChecks
 import LeanRV64D.Mem

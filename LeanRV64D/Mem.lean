@@ -4,7 +4,6 @@ import LeanRV64D.Errors
 import LeanRV64D.MemAddrtype
 import LeanRV64D.MemMetadata
 import LeanRV64D.PhysMemInterface
-import LeanRV64D.PlatformConfig
 import LeanRV64D.Types
 import LeanRV64D.VmemTypes
 import LeanRV64D.MemTypeUtils

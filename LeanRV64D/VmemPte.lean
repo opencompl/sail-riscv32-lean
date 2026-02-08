@@ -1,7 +1,6 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
 import LeanRV64D.Errors
-import LeanRV64D.PlatformConfig
 import LeanRV64D.Types
 import LeanRV64D.SysRegs
 import LeanRV64D.VextRegs

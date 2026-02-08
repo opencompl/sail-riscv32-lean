@@ -3,6 +3,7 @@ import LeanRV64D.Prelude
 import LeanRV64D.Errors
 import LeanRV64D.Xlen
 import LeanRV64D.PlatformConfig
+import LeanRV64D.Extensions
 import LeanRV64D.Types
 import LeanRV64D.Callbacks
 import LeanRV64D.Regs

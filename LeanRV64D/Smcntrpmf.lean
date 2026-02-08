@@ -1,4 +1,4 @@
-import LeanRV64D.PlatformConfig
+import LeanRV64D.Types
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
