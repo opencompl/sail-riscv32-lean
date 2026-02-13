@@ -198,9 +198,13 @@ open AmocasOddRegisterReservedBehavior
 def stateen_allows_CSR_access (csr : (BitVec 12)) (priv : Privilege) (_access_type : CSRAccessType) : SailM Bool := do
   match (csr, priv) with
   | (0x60C, priv) => (check_stateen_bit priv STATEEN_SE 0)
+  | (0x61C, priv) => (check_stateen_bit priv STATEEN_SE 0)
   | (0x60D, priv) => (check_stateen_bit priv STATEEN_SE 1)
+  | (0x61D, priv) => (check_stateen_bit priv STATEEN_SE 1)
   | (0x60E, priv) => (check_stateen_bit priv STATEEN_SE 2)
+  | (0x61E, priv) => (check_stateen_bit priv STATEEN_SE 2)
   | (0x60F, priv) => (check_stateen_bit priv STATEEN_SE 3)
+  | (0x61F, priv) => (check_stateen_bit priv STATEEN_SE 3)
   | (0x10C, priv) => (check_stateen_bit priv STATEEN_SE 0)
   | (0x10D, priv) => (check_stateen_bit priv STATEEN_SE 1)
   | (0x10E, priv) => (check_stateen_bit priv STATEEN_SE 2)
