@@ -226,7 +226,7 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 64)
 def redirect_callback (x_0 : (BitVec 64)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex788276_ : Bool -/
+/-- Type quantifiers: k_ex788310_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
@@ -242,11 +242,6 @@ def csr_name_map_backwards (arg_ : String) : SailM (BitVec 12) := do
     | "menvcfg" => (pure (some 0x30A#12))
     | "menvcfgh" => (pure (some 0x31A#12))
     | "senvcfg" => (pure (some 0x10A#12))
-    | "mie" => (pure (some 0x304#12))
-    | "mip" => (pure (some 0x344#12))
-    | "medeleg" => (pure (some 0x302#12))
-    | "medelegh" => (pure (some 0x312#12))
-    | "mideleg" => (pure (some 0x303#12))
     | "mcause" => (pure (some 0x342#12))
     | "mtval" => (pure (some 0x343#12))
     | "mscratch" => (pure (some 0x340#12))
@@ -259,8 +254,6 @@ def csr_name_map_backwards (arg_ : String) : SailM (BitVec 12) := do
     | "mhartid" => (pure (some 0xF14#12))
     | "mconfigptr" => (pure (some 0xF15#12))
     | "sstatus" => (pure (some 0x100#12))
-    | "sip" => (pure (some 0x144#12))
-    | "sie" => (pure (some 0x104#12))
     | "sscratch" => (pure (some 0x140#12))
     | "scause" => (pure (some 0x142#12))
     | "stval" => (pure (some 0x143#12))
@@ -268,6 +261,13 @@ def csr_name_map_backwards (arg_ : String) : SailM (BitVec 12) := do
     | "tdata1" => (pure (some 0x7A1#12))
     | "tdata2" => (pure (some 0x7A2#12))
     | "tdata3" => (pure (some 0x7A3#12))
+    | "mie" => (pure (some 0x304#12))
+    | "mip" => (pure (some 0x344#12))
+    | "medeleg" => (pure (some 0x302#12))
+    | "medelegh" => (pure (some 0x312#12))
+    | "mideleg" => (pure (some 0x303#12))
+    | "sip" => (pure (some 0x144#12))
+    | "sie" => (pure (some 0x104#12))
     | "stvec" => (pure (some 0x105#12))
     | "sepc" => (pure (some 0x141#12))
     | "mtvec" => (pure (some 0x305#12))

@@ -4,7 +4,9 @@ import LeanRV64D.Errors
 import LeanRV64D.PlatformConfig
 import LeanRV64D.Types
 import LeanRV64D.MemTypeUtils
+import LeanRV64D.Callbacks
 import LeanRV64D.SysRegs
+import LeanRV64D.InterruptRegs
 import LeanRV64D.Smcntrpmf
 
 set_option maxHeartbeats 1_000_000_000
@@ -350,7 +352,9 @@ def clint_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (wid
                               else ()
                             (pure (Err (accessFaultFromAccessType access))))))))))
 
-def clint_dispatch (_ : Unit) : SailM Unit := do
+/-- Type quantifiers: k_ex791417_ : Bool -/
+def clint_dispatch (mip_was_written : Bool) : SailM Unit := do
+  let old_mip ← do readReg mip
   writeReg mip (Sail.BitVec.updateSubrange (← readReg mip) 7 7
     (bool_to_bit (zopz0zIzJ_u (← readReg mtimecmp) (← readReg mtime))))
   if (((← (currentlyEnabled Ext_Sstc)) && ((_get_MEnvcfg_STCE (← readReg menvcfg)) == 1#1)) : Bool)
@@ -360,18 +364,10 @@ def clint_dispatch (_ : Unit) : SailM Unit := do
   else (pure ())
   if ((get_config_print_clint ()) : Bool)
   then
-    (pure (print_endline
-        (HAppend.hAppend "clint mtime "
-          (HAppend.hAppend (BitVec.toFormatted (← readReg mtime))
-            (HAppend.hAppend " (mip.MTI <- "
-              (HAppend.hAppend (BitVec.toFormatted (_get_Minterrupts_MTI (← readReg mip)))
-                (HAppend.hAppend
-                  (← do
-                    if ((← (currentlyEnabled Ext_Sstc)) : Bool)
-                    then
-                      (pure (HAppend.hAppend ", mip.STI <- "
-                          (BitVec.toFormatted (_get_Minterrupts_STI (← readReg mip)))))
-                    else (pure "")) ")")))))))
+    (pure (print_endline (HAppend.hAppend "clint mtime " (BitVec.toFormatted (← readReg mtime)))))
+  else (pure ())
+  if (((old_mip != (← readReg mip)) || mip_was_written) : Bool)
+  then (csr_name_write_callback "mip" (← readReg mip))
   else (pure ())
 
 /-- Type quantifiers: width : Nat, width ≥ 0, width > 0 -/
@@ -394,7 +390,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
         else ()
       writeReg mip (Sail.BitVec.updateSubrange (← readReg mip) 3 3
         (BitVec.join1 [(BitVec.access data 0)]))
-      (clint_dispatch ())
+      (clint_dispatch true)
       (pure (Ok true)))
   else
     (do
@@ -411,7 +407,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
                       (HAppend.hAppend (BitVec.toFormatted data) " (mtimecmp)")))))
             else ()
           writeReg mtimecmp (zero_extend (m := 64) data)
-          (clint_dispatch ())
+          (clint_dispatch false)
           (pure (Ok true)))
       else
         (do
@@ -429,7 +425,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
                 else ()
               writeReg mtimecmp (Sail.BitVec.updateSubrange (← readReg mtimecmp) 31 0
                 (zero_extend (m := 32) data))
-              (clint_dispatch ())
+              (clint_dispatch false)
               (pure (Ok true)))
           else
             (do
@@ -447,7 +443,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
                     else ()
                   writeReg mtimecmp (Sail.BitVec.updateSubrange (← readReg mtimecmp) 63 32
                     (zero_extend (m := 32) data))
-                  (clint_dispatch ())
+                  (clint_dispatch false)
                   (pure (Ok true)))
               else
                 (do
@@ -464,7 +460,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
                                   (HAppend.hAppend (BitVec.toFormatted data) " (mtime)")))))
                         else ()
                       writeReg mtime data
-                      (clint_dispatch ())
+                      (clint_dispatch false)
                       (pure (Ok true)))
                   else
                     (do
@@ -481,7 +477,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
                                       (HAppend.hAppend (BitVec.toFormatted data) " (mtime)")))))
                             else ()
                           writeReg mtime (Sail.BitVec.updateSubrange (← readReg mtime) 31 0 data)
-                          (clint_dispatch ())
+                          (clint_dispatch false)
                           (pure (Ok true)))
                       else
                         (do
@@ -499,7 +495,7 @@ def clint_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) :
                                 else ()
                               writeReg mtime (Sail.BitVec.updateSubrange (← readReg mtime) 63 32
                                 data)
-                              (clint_dispatch ())
+                              (clint_dispatch false)
                               (pure (Ok true)))
                           else
                             (let _ : Unit :=
@@ -526,7 +522,7 @@ def tick_clock (_ : Unit) : SailM Unit := do
   then writeReg mcycle (BitVec.addInt (← readReg mcycle) 1)
   else (pure ())
   writeReg mtime (BitVec.addInt (← readReg mtime) 1)
-  (clint_dispatch ())
+  (clint_dispatch false)
 
 def undefined_htif_cmd (_ : Unit) : SailM (BitVec 64) := do
   (undefined_bitvector 64)
@@ -582,7 +578,7 @@ def htif_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (widt
   let base ← (( do
     match (← readReg htif_tohost_base) with
     | .some base => (pure base)
-    | none => (internal_error "sys/platform.sail" 253 "HTIF load while HTIF isn't enabled") ) :
+    | none => (internal_error "sys/platform.sail" 256 "HTIF load while HTIF isn't enabled") ) :
     SailM physaddrbits )
   if (((width == 8) && (paddr == base)) : Bool)
   then (pure (Ok (zero_extend (m := 64) (← readReg htif_tohost))))
@@ -612,7 +608,7 @@ def htif_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) : 
   let base ← (( do
     match (← readReg htif_tohost_base) with
     | .some base => (pure base)
-    | none => (internal_error "sys/platform.sail" 273 "HTIF store while HTIF isn't enabled") ) :
+    | none => (internal_error "sys/platform.sail" 276 "HTIF store while HTIF isn't enabled") ) :
     SailME (Result Bool ExceptionType) physaddrbits )
   if (((width == 8) && (paddr == base)) : Bool)
   then

@@ -7,6 +7,7 @@ import LeanRV64D.Extensions
 import LeanRV64D.Types
 import LeanRV64D.Regs
 import LeanRV64D.SysRegs
+import LeanRV64D.InterruptRegs
 import LeanRV64D.PmpRegs
 import LeanRV64D.FdextRegs
 import LeanRV64D.VextRegs
@@ -260,10 +261,6 @@ def initialize_registers (_ : Unit) : SailM Unit := do
   writeReg x31 (← (undefined_bitvector 64))
   writeReg cur_privilege (← (undefined_Privilege ()))
   writeReg cur_inst (← (undefined_bitvector 64))
-  writeReg mie (← (undefined_Minterrupts ()))
-  writeReg mip (← (undefined_Minterrupts ()))
-  writeReg medeleg (← (undefined_Medeleg ()))
-  writeReg mideleg (← (undefined_Minterrupts ()))
   writeReg mtvec (← (undefined_Mtvec ()))
   writeReg mcause (← (undefined_Mcause ()))
   writeReg mepc (← (undefined_bitvector 64))
@@ -282,6 +279,10 @@ def initialize_registers (_ : Unit) : SailM Unit := do
   writeReg scause (← (undefined_Mcause ()))
   writeReg stval (← (undefined_bitvector 64))
   writeReg tselect (← (undefined_bitvector 64))
+  writeReg mie (← (undefined_Minterrupts ()))
+  writeReg mip (← (undefined_Minterrupts ()))
+  writeReg medeleg (← (undefined_Medeleg ()))
+  writeReg mideleg (← (undefined_Minterrupts ()))
   writeReg pmpcfg_n (← (undefined_vector 64 (← (undefined_Pmpcfg_ent ()))))
   writeReg pmpaddr_n (← (undefined_vector 64 (← (undefined_bitvector 64))))
   writeReg f0 (← (undefined_bitvector (8 *i 8)))

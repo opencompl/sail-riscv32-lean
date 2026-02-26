@@ -917,11 +917,6 @@ def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   | 0x30A => (pure "menvcfg")
   | 0x31A => (pure "menvcfgh")
   | 0x10A => (pure "senvcfg")
-  | 0x304 => (pure "mie")
-  | 0x344 => (pure "mip")
-  | 0x302 => (pure "medeleg")
-  | 0x312 => (pure "medelegh")
-  | 0x303 => (pure "mideleg")
   | 0x342 => (pure "mcause")
   | 0x343 => (pure "mtval")
   | 0x340 => (pure "mscratch")
@@ -934,8 +929,6 @@ def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   | 0xF14 => (pure "mhartid")
   | 0xF15 => (pure "mconfigptr")
   | 0x100 => (pure "sstatus")
-  | 0x144 => (pure "sip")
-  | 0x104 => (pure "sie")
   | 0x140 => (pure "sscratch")
   | 0x142 => (pure "scause")
   | 0x143 => (pure "stval")
@@ -943,6 +936,13 @@ def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   | 0x7A1 => (pure "tdata1")
   | 0x7A2 => (pure "tdata2")
   | 0x7A3 => (pure "tdata3")
+  | 0x304 => (pure "mie")
+  | 0x344 => (pure "mip")
+  | 0x302 => (pure "medeleg")
+  | 0x312 => (pure "medelegh")
+  | 0x303 => (pure "mideleg")
+  | 0x144 => (pure "sip")
+  | 0x104 => (pure "sie")
   | 0x105 => (pure "stvec")
   | 0x141 => (pure "sepc")
   | 0x305 => (pure "mtvec")
@@ -1867,7 +1867,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex778820_ : Bool -/
+/-- Type quantifiers: k_ex778854_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6313,7 +6313,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex779971_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex780005_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 

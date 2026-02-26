@@ -7,6 +7,7 @@ import LeanRV64D.Callbacks
 import LeanRV64D.Regs
 import LeanRV64D.SysRegs
 import LeanRV64D.ExtRegs
+import LeanRV64D.InterruptRegs
 import LeanRV64D.SysExceptions
 import LeanRV64D.PmpRegs
 import LeanRV64D.StateenRegs
@@ -236,7 +237,7 @@ def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_ex797078_ : Bool, k_ex797077_ : Bool -/
+/-- Type quantifiers: k_ex797116_ : Bool, k_ex797115_ : Bool -/
 def csr_access_type (op : csrop) (rd_is_x0 : Bool) (rs1_imm_is_zero : Bool) : CSRAccessType :=
   match (op, rd_is_x0, rs1_imm_is_zero) with
   | (CSRRW, true, _) => CSRWrite
@@ -7133,6 +7134,22 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
                                                                 "Read from CSR that does not exist: "
                                                                 (BitVec.toFormatted v__3790)))))))))))))))))
   | 0x10A => (pure (Sail.BitVec.extractLsb (← readReg senvcfg) (xlen -i 1) 0))
+  | 0x342 => readReg mcause
+  | 0x343 => readReg mtval
+  | 0x340 => readReg mscratch
+  | 0x106 => (pure (zero_extend (m := 64) (← readReg scounteren)))
+  | 0x306 => (pure (zero_extend (m := 64) (← readReg mcounteren)))
+  | 0x320 => (pure (zero_extend (m := 64) (← readReg mcountinhibit)))
+  | 0xF11 => (pure (zero_extend (m := 64) (← readReg mvendorid)))
+  | 0xF12 => readReg marchid
+  | 0xF13 => readReg mimpid
+  | 0xF14 => readReg mhartid
+  | 0xF15 => readReg mconfigptr
+  | 0x100 => (pure (Sail.BitVec.extractLsb (lower_mstatus (← readReg mstatus)) (xlen -i 1) 0))
+  | 0x140 => readReg sscratch
+  | 0x142 => readReg scause
+  | 0x143 => readReg stval
+  | 0x7A0 => (pure (Complement.complement (← readReg tselect)))
   | 0x304 => readReg mie
   | 0x344 => readReg mip
   | 0x302 => (pure (Sail.BitVec.extractLsb (← readReg medeleg) (xlen -i 1) 0))
@@ -9407,24 +9424,8 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
                                                                 "Read from CSR that does not exist: "
                                                                 (BitVec.toFormatted v__3790)))))))))))))))))
   | 0x303 => readReg mideleg
-  | 0x342 => readReg mcause
-  | 0x343 => readReg mtval
-  | 0x340 => readReg mscratch
-  | 0x106 => (pure (zero_extend (m := 64) (← readReg scounteren)))
-  | 0x306 => (pure (zero_extend (m := 64) (← readReg mcounteren)))
-  | 0x320 => (pure (zero_extend (m := 64) (← readReg mcountinhibit)))
-  | 0xF11 => (pure (zero_extend (m := 64) (← readReg mvendorid)))
-  | 0xF12 => readReg marchid
-  | 0xF13 => readReg mimpid
-  | 0xF14 => readReg mhartid
-  | 0xF15 => readReg mconfigptr
-  | 0x100 => (pure (Sail.BitVec.extractLsb (lower_mstatus (← readReg mstatus)) (xlen -i 1) 0))
   | 0x144 => (pure (lower_mip (← readReg mip) (← readReg mideleg)))
   | 0x104 => (pure (lower_mie (← readReg mie) (← readReg mideleg)))
-  | 0x140 => readReg sscratch
-  | 0x142 => readReg scause
-  | 0x143 => readReg stval
-  | 0x7A0 => (pure (Complement.complement (← readReg tselect)))
   | 0x105 => (get_stvec ())
   | 0x141 => (get_xepc Supervisor)
   | 0x305 => (get_mtvec ())
@@ -17803,6 +17804,50 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
     (do
       writeReg senvcfg (← (legalize_senvcfg (← readReg senvcfg) (zero_extend (m := 64) value)))
       (pure (Ok (Sail.BitVec.extractLsb (← readReg senvcfg) (xlen -i 1) 0))))
+  | (0x342, value) =>
+    (do
+      writeReg mcause value
+      (pure (Ok (← readReg mcause))))
+  | (0x343, value) =>
+    (do
+      writeReg mtval value
+      (pure (Ok (← readReg mtval))))
+  | (0x340, value) =>
+    (do
+      writeReg mscratch value
+      (pure (Ok (← readReg mscratch))))
+  | (0x106, value) =>
+    (do
+      writeReg scounteren (legalize_scounteren (← readReg scounteren) value)
+      (pure (Ok (zero_extend (m := 64) (← readReg scounteren)))))
+  | (0x306, value) =>
+    (do
+      writeReg mcounteren (legalize_mcounteren (← readReg mcounteren) value)
+      (pure (Ok (zero_extend (m := 64) (← readReg mcounteren)))))
+  | (0x320, value) =>
+    (do
+      writeReg mcountinhibit (legalize_mcountinhibit (← readReg mcountinhibit) value)
+      (pure (Ok (zero_extend (m := 64) (← readReg mcountinhibit)))))
+  | (0x100, value) =>
+    (do
+      writeReg mstatus (← (legalize_sstatus (← readReg mstatus) value))
+      (pure (Ok (Sail.BitVec.extractLsb (lower_mstatus (← readReg mstatus)) (xlen -i 1) 0))))
+  | (0x140, value) =>
+    (do
+      writeReg sscratch value
+      (pure (Ok (← readReg sscratch))))
+  | (0x142, value) =>
+    (do
+      writeReg scause value
+      (pure (Ok (← readReg scause))))
+  | (0x143, value) =>
+    (do
+      writeReg stval value
+      (pure (Ok (← readReg stval))))
+  | (0x7A0, value) =>
+    (do
+      writeReg tselect value
+      (pure (Ok (← readReg tselect))))
   | (0x304, value) =>
     (do
       writeReg mie (← (legalize_mie (← readReg mie) value))
@@ -19866,34 +19911,6 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
     (do
       writeReg mideleg (← (legalize_mideleg (← readReg mideleg) value))
       (pure (Ok (← readReg mideleg))))
-  | (0x342, value) =>
-    (do
-      writeReg mcause value
-      (pure (Ok (← readReg mcause))))
-  | (0x343, value) =>
-    (do
-      writeReg mtval value
-      (pure (Ok (← readReg mtval))))
-  | (0x340, value) =>
-    (do
-      writeReg mscratch value
-      (pure (Ok (← readReg mscratch))))
-  | (0x106, value) =>
-    (do
-      writeReg scounteren (legalize_scounteren (← readReg scounteren) value)
-      (pure (Ok (zero_extend (m := 64) (← readReg scounteren)))))
-  | (0x306, value) =>
-    (do
-      writeReg mcounteren (legalize_mcounteren (← readReg mcounteren) value)
-      (pure (Ok (zero_extend (m := 64) (← readReg mcounteren)))))
-  | (0x320, value) =>
-    (do
-      writeReg mcountinhibit (legalize_mcountinhibit (← readReg mcountinhibit) value)
-      (pure (Ok (zero_extend (m := 64) (← readReg mcountinhibit)))))
-  | (0x100, value) =>
-    (do
-      writeReg mstatus (← (legalize_sstatus (← readReg mstatus) value))
-      (pure (Ok (Sail.BitVec.extractLsb (lower_mstatus (← readReg mstatus)) (xlen -i 1) 0))))
   | (0x144, value) =>
     (do
       writeReg mip (legalize_sip (← readReg mip) (← readReg mideleg) value)
@@ -19902,22 +19919,6 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
     (do
       writeReg mie (legalize_sie (← readReg mie) (← readReg mideleg) value)
       (pure (Ok (lower_mie (← readReg mie) (← readReg mideleg)))))
-  | (0x140, value) =>
-    (do
-      writeReg sscratch value
-      (pure (Ok (← readReg sscratch))))
-  | (0x142, value) =>
-    (do
-      writeReg scause value
-      (pure (Ok (← readReg scause))))
-  | (0x143, value) =>
-    (do
-      writeReg stval value
-      (pure (Ok (← readReg stval))))
-  | (0x7A0, value) =>
-    (do
-      writeReg tselect value
-      (pure (Ok (← readReg tselect))))
   | (0x105, value) => (pure (Ok (← (set_stvec value))))
   | (0x141, value) => (pure (Ok (← (set_xepc Supervisor value))))
   | (0x305, value) => (pure (Ok (← (set_mtvec value))))

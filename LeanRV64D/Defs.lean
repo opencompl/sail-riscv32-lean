@@ -1266,10 +1266,6 @@ abbrev vpn_bits k_v := (BitVec (k_v - 12))
 
 abbrev regtype := xlenbits
 
-abbrev Minterrupts := (BitVec 64)
-
-abbrev Medeleg := (BitVec 64)
-
 abbrev Mtvec := (BitVec 64)
 
 abbrev Mcause := (BitVec 64)
@@ -1280,11 +1276,15 @@ abbrev Counterin := (BitVec 32)
 
 abbrev Sstatus := (BitVec 64)
 
-abbrev Sinterrupts := (BitVec 64)
-
 abbrev Satp64 := (BitVec 64)
 
 abbrev Satp32 := (BitVec 32)
+
+abbrev Minterrupts := (BitVec 64)
+
+abbrev Medeleg := (BitVec 64)
+
+abbrev Sinterrupts := (BitVec 64)
 
 /-- Type quantifiers: k_a : Type -/
 inductive Ext_DataAddr_Check (k_a : Type) where
@@ -1593,6 +1593,10 @@ inductive Register : Type where
   | f0
   | pmpaddr_n
   | pmpcfg_n
+  | mideleg
+  | medeleg
+  | mip
+  | mie
   | tselect
   | stval
   | scause
@@ -1616,10 +1620,6 @@ inductive Register : Type where
   | mepc
   | mcause
   | mtvec
-  | mideleg
-  | medeleg
-  | mip
-  | mie
   | cur_inst
   | x31
   | x30
@@ -1774,6 +1774,10 @@ abbrev RegisterType : Register → Type
   | .f0 => (BitVec (if ( true  : Bool) then 8 else 4 * 8))
   | .pmpaddr_n => (Vector (BitVec 64) 64)
   | .pmpcfg_n => (Vector (BitVec 8) 64)
+  | .mideleg => (BitVec 64)
+  | .medeleg => (BitVec 64)
+  | .mip => (BitVec 64)
+  | .mie => (BitVec 64)
   | .tselect => (BitVec 64)
   | .stval => (BitVec 64)
   | .scause => (BitVec 64)
@@ -1797,10 +1801,6 @@ abbrev RegisterType : Register → Type
   | .mepc => (BitVec 64)
   | .mcause => (BitVec 64)
   | .mtvec => (BitVec 64)
-  | .mideleg => (BitVec 64)
-  | .medeleg => (BitVec 64)
-  | .mip => (BitVec 64)
-  | .mie => (BitVec 64)
   | .cur_inst => (BitVec 64)
   | .x31 => (BitVec 64)
   | .x30 => (BitVec 64)
