@@ -202,7 +202,7 @@ def fsplit_D (x64 : (BitVec 64)) : ((BitVec 1) × (BitVec 11) × (BitVec 52)) :=
     x64 51 0))
 
 def fmake_D (sign : (BitVec 1)) (exp : (BitVec 11)) (mant : (BitVec 52)) : (BitVec 64) :=
-  (sign ++ (exp ++ mant))
+  (sign +++ (exp +++ mant))
 
 def f_is_neg_inf_D (x64 : (BitVec 64)) : Bool :=
   let (sign, exp, mant) := (fsplit_D x64)

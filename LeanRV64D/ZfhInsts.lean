@@ -202,7 +202,7 @@ def fsplit_H (xf16 : (BitVec 16)) : ((BitVec 1) × (BitVec 5) × (BitVec 10)) :=
     xf16 9 0))
 
 def fmake_H (sign : (BitVec 1)) (exp : (BitVec 5)) (mant : (BitVec 10)) : (BitVec 16) :=
-  (sign ++ (exp ++ mant))
+  (sign +++ (exp +++ mant))
 
 def negate_H (xf16 : (BitVec 16)) : (BitVec 16) :=
   let (sign, exp, mant) := (fsplit_H xf16)

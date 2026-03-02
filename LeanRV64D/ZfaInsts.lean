@@ -203,7 +203,7 @@ def fcvtmod_helper (x64 : (BitVec 64)) : ((BitVec 5) × (BitVec 32)) :=
   let is_subnorm := ((exp == (zeros (n := 11))) && (mant != (zeros (n := 52))))
   let is_zero := ((exp == (zeros (n := 11))) && (mant == (zeros (n := 52))))
   let is_nan_or_inf := (exp == (ones (n := 11)))
-  let true_mant := (1#1 ++ mant)
+  let true_mant := (1#1 +++ mant)
   let true_exp := ((BitVec.toNatInt exp) -i 1023)
   let is_too_large := (true_exp ≥b 84)
   let is_too_small := (true_exp <b 0)

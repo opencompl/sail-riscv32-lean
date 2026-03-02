@@ -262,12 +262,12 @@ def Mk_Pmpcfg_ent (v : (BitVec 8)) : (BitVec 8) :=
 /-- Type quantifiers: n : Nat, 0 ≤ n ∧ n ≤ 15 -/
 def pmpReadCfgReg (n : Nat) : SailM (BitVec 64) := do
   assert ((Int.tmod n 2) == 0) "Unexpected pmp config reg read"
-  (pure ((GetElem?.getElem! (← readReg pmpcfg_n) ((n *i 4) +i 7)) ++ ((GetElem?.getElem!
-          (← readReg pmpcfg_n) ((n *i 4) +i 6)) ++ ((GetElem?.getElem! (← readReg pmpcfg_n)
-            ((n *i 4) +i 5)) ++ ((GetElem?.getElem! (← readReg pmpcfg_n) ((n *i 4) +i 4)) ++ ((GetElem?.getElem!
-                (← readReg pmpcfg_n) ((n *i 4) +i 3)) ++ ((GetElem?.getElem!
-                  (← readReg pmpcfg_n) ((n *i 4) +i 2)) ++ ((GetElem?.getElem!
-                    (← readReg pmpcfg_n) ((n *i 4) +i 1)) ++ (GetElem?.getElem!
+  (pure ((GetElem?.getElem! (← readReg pmpcfg_n) ((n *i 4) +i 7)) +++ ((GetElem?.getElem!
+          (← readReg pmpcfg_n) ((n *i 4) +i 6)) +++ ((GetElem?.getElem! (← readReg pmpcfg_n)
+            ((n *i 4) +i 5)) +++ ((GetElem?.getElem! (← readReg pmpcfg_n) ((n *i 4) +i 4)) +++ ((GetElem?.getElem!
+                (← readReg pmpcfg_n) ((n *i 4) +i 3)) +++ ((GetElem?.getElem!
+                  (← readReg pmpcfg_n) ((n *i 4) +i 2)) +++ ((GetElem?.getElem!
+                    (← readReg pmpcfg_n) ((n *i 4) +i 1)) +++ (GetElem?.getElem!
                     (← readReg pmpcfg_n) ((n *i 4) +i 0))))))))))
 
 /-- Type quantifiers: n : Nat, 0 ≤ n ∧ n ≤ 63 -/

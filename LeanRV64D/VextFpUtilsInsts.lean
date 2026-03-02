@@ -545,29 +545,29 @@ def fp_widen (nval : (BitVec k_m)) : SailM (BitVec (k_m * 2)) := do
 
 def riscv_f16ToI16 (rm : (BitVec 3)) (v : (BitVec 16)) : ((BitVec 5) × (BitVec 16)) :=
   let (flag, sig32) := (riscv_f16ToI32 rm v)
-  if (((BitVec.toInt sig32) >b (BitVec.toInt (0#1 ++ (ones (n := 15))))) : Bool)
-  then ((nvFlag ()), (0#1 ++ (ones (n := 15))))
+  if (((BitVec.toInt sig32) >b (BitVec.toInt (0#1 +++ (ones (n := 15))))) : Bool)
+  then ((nvFlag ()), (0#1 +++ (ones (n := 15))))
   else
-    (if (((BitVec.toInt sig32) <b (BitVec.toInt (1#1 ++ (zeros (n := 15))))) : Bool)
-    then ((nvFlag ()), (1#1 ++ (zeros (n := 15))))
+    (if (((BitVec.toInt sig32) <b (BitVec.toInt (1#1 +++ (zeros (n := 15))))) : Bool)
+    then ((nvFlag ()), (1#1 +++ (zeros (n := 15))))
     else (flag, (Sail.BitVec.extractLsb sig32 15 0)))
 
 def riscv_f16ToI8 (rm : (BitVec 3)) (v : (BitVec 16)) : ((BitVec 5) × (BitVec 8)) :=
   let (flag, sig32) := (riscv_f16ToI32 rm v)
-  if (((BitVec.toInt sig32) >b (BitVec.toInt (0#1 ++ (ones (n := 7))))) : Bool)
-  then ((nvFlag ()), (0#1 ++ (ones (n := 7))))
+  if (((BitVec.toInt sig32) >b (BitVec.toInt (0#1 +++ (ones (n := 7))))) : Bool)
+  then ((nvFlag ()), (0#1 +++ (ones (n := 7))))
   else
-    (if (((BitVec.toInt sig32) <b (BitVec.toInt (1#1 ++ (zeros (n := 7))))) : Bool)
-    then ((nvFlag ()), (1#1 ++ (zeros (n := 7))))
+    (if (((BitVec.toInt sig32) <b (BitVec.toInt (1#1 +++ (zeros (n := 7))))) : Bool)
+    then ((nvFlag ()), (1#1 +++ (zeros (n := 7))))
     else (flag, (Sail.BitVec.extractLsb sig32 7 0)))
 
 def riscv_f32ToI16 (rm : (BitVec 3)) (v : (BitVec 32)) : ((BitVec 5) × (BitVec 16)) :=
   let (flag, sig32) := (riscv_f32ToI32 rm v)
-  if (((BitVec.toInt sig32) >b (BitVec.toInt (0#1 ++ (ones (n := 15))))) : Bool)
-  then ((nvFlag ()), (0#1 ++ (ones (n := 15))))
+  if (((BitVec.toInt sig32) >b (BitVec.toInt (0#1 +++ (ones (n := 15))))) : Bool)
+  then ((nvFlag ()), (0#1 +++ (ones (n := 15))))
   else
-    (if (((BitVec.toInt sig32) <b (BitVec.toInt (1#1 ++ (zeros (n := 15))))) : Bool)
-    then ((nvFlag ()), (1#1 ++ (zeros (n := 15))))
+    (if (((BitVec.toInt sig32) <b (BitVec.toInt (1#1 +++ (zeros (n := 15))))) : Bool)
+    then ((nvFlag ()), (1#1 +++ (zeros (n := 15))))
     else (flag, (Sail.BitVec.extractLsb sig32 15 0)))
 
 def riscv_f16ToUi16 (rm : (BitVec 3)) (v : (BitVec 16)) : ((BitVec 5) × (BitVec 16)) :=
@@ -616,22 +616,22 @@ def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
     match (Sail.BitVec.length v) with
     | 16 =>
       (BitVec.toNatInt
-        ((BitVec.join1 [(BitVec.access normalized_exp 0)]) ++ (Sail.BitVec.extractLsb normalized_sig
-            9 4)))
+        ((BitVec.join1 [(BitVec.access normalized_exp 0)]) +++ (Sail.BitVec.extractLsb
+            normalized_sig 9 4)))
     | 32 =>
       (BitVec.toNatInt
-        ((BitVec.join1 [(BitVec.access normalized_exp 0)]) ++ (Sail.BitVec.extractLsb normalized_sig
-            22 17)))
+        ((BitVec.join1 [(BitVec.access normalized_exp 0)]) +++ (Sail.BitVec.extractLsb
+            normalized_sig 22 17)))
     | _ =>
       (BitVec.toNatInt
-        ((BitVec.join1 [(BitVec.access normalized_exp 0)]) ++ (Sail.BitVec.extractLsb normalized_sig
-            51 46)))
+        ((BitVec.join1 [(BitVec.access normalized_exp 0)]) +++ (Sail.BitVec.extractLsb
+            normalized_sig 51 46)))
   assert ((idx ≥b 0) && (idx <b 128)) "extensions/V/vext_fp_utils_insts.sail:457.29-457.30"
   let out_sig := ((to_bits_unsafe (l := s) (GetElem?.getElem! table (127 -i idx))) <<< (s -i 7))
   let out_exp :=
     (to_bits_unsafe (l := e)
       (Int.tdiv (((3 *i ((2 ^i (e -i 1)) -i 1)) -i 1) -i (BitVec.toInt normalized_exp)) 2))
-  (pure (zero_extend (m := 64) (sign ++ (out_exp ++ out_sig))))
+  (pure (zero_extend (m := 64) (sign +++ (out_exp +++ out_sig))))
 
 def riscv_f16Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 16)) : SailM ((BitVec 5) × (BitVec 16)) := do
   match (← (float_classify v)) with
@@ -712,19 +712,19 @@ def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool ×
   let mid_sig := ((to_bits_unsafe (l := s) (GetElem?.getElem! table (127 -i idx))) <<< (s -i 7))
   let (out_exp, out_sig) :=
     if ((mid_exp == (zeros (n := e))) : Bool)
-    then (mid_exp, ((mid_sig >>> 1) ||| (1#1 ++ (zeros (n := (s -i 1))))))
+    then (mid_exp, ((mid_sig >>> 1) ||| (1#1 +++ (zeros (n := (s -i 1))))))
     else
       (if ((mid_exp == (ones (n := e))) : Bool)
-      then ((zeros (n := e)), ((mid_sig >>> 2) ||| (0b01#2 ++ (zeros (n := (s -i 2))))))
+      then ((zeros (n := e)), ((mid_sig >>> 2) ||| (0b01#2 +++ (zeros (n := (s -i 2))))))
       else (mid_exp, mid_sig))
   if ((sub && (nr_leadingzeros >b 1)) : Bool)
   then
     (if (((rm_3b == 0b001#3) || (((rm_3b == 0b010#3) && (sign == 0#1)) || ((rm_3b == 0b011#3) && (sign == 1#1)))) : Bool)
     then
       (pure (true, (zero_extend (m := 64)
-          (sign ++ ((ones (n := (e -i 1))) ++ (0#1 ++ (ones (n := s))))))))
-    else (pure (true, (zero_extend (m := 64) (sign ++ ((ones (n := e)) ++ (zeros (n := s))))))))
-  else (pure (false, (zero_extend (m := 64) (sign ++ (out_exp ++ out_sig)))))
+          (sign +++ ((ones (n := (e -i 1))) +++ (0#1 +++ (ones (n := s))))))))
+    else (pure (true, (zero_extend (m := 64) (sign +++ ((ones (n := e)) +++ (zeros (n := s))))))))
+  else (pure (false, (zero_extend (m := 64) (sign +++ (out_exp +++ out_sig)))))
 
 def riscv_f16Recip7 (rm : (BitVec 3)) (v : (BitVec 16)) : SailM ((BitVec 5) × (BitVec 16)) := do
   let (round_abnormal_true, res_true) ← do (recip7 v rm true)

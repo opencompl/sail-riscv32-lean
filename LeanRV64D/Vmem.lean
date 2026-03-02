@@ -235,7 +235,7 @@ def pt_walk (sv_width : Nat) (vpn : (BitVec (sv_width - 12))) (access : (MemoryA
     if ((sv_width == 32) : Bool)
     then 2
     else 3
-  let pte_addr := (pt_base ++ (vpn_i ++ (zeros (n := log_pte_size_bytes))))
+  let pte_addr := (pt_base +++ (vpn_i +++ (zeros (n := log_pte_size_bytes))))
   assert ((sv_width == 32) || (xlen == 64)) "sys/vmem.sail:99.36-99.37"
   let pte_addr := (Physaddr (zero_extend (m := 64) pte_addr))
   match (← (read_pte pte_addr (2 ^i log_pte_size_bytes))) with
@@ -296,7 +296,7 @@ def pt_walk (sv_width : Nat) (vpn : (BitVec (sv_width - 12))) (access : (MemoryA
                   if ((level >b 0) : Bool)
                   then
                     (let low_bits := (ppn_size_bits *i level)
-                    ((Sail.BitVec.extractLsb ppn ((Sail.BitVec.length ppn) -i 1) low_bits) ++ (Sail.BitVec.extractLsb
+                    ((Sail.BitVec.extractLsb ppn ((Sail.BitVec.length ppn) -i 1) low_bits) +++ (Sail.BitVec.extractLsb
                         vpn (low_bits -i 1) 0)))
                   else ppn
                 let _ : Unit := (ptw_success_callback (zero_extend (m := 64) ppn) level)
@@ -333,7 +333,7 @@ def translationMode (priv : Privilege) : SailM SATPMode := do
             assert (xlen ≥b 64) "sys/vmem.sail:202.25-202.26"
             (pure (_get_Satp64_Mode (Mk_Satp64 (← readReg satp)))))
         | RV32 =>
-          (pure (0b000#3 ++ (_get_Satp32_Mode
+          (pure (0b000#3 +++ (_get_Satp32_Mode
                 (Mk_Satp32 (Sail.BitVec.extractLsb (← readReg satp) 31 0)))))
         | RV128 => (internal_error "sys/vmem.sail" 206 "RV128 not supported") ) : SailM satp_mode )
       match (satpMode_of_bits arch mbits) with
@@ -492,7 +492,7 @@ def translateAddr (vAddr : virtaddr) (access : (MemoryAccessType mem_payload)) :
           match res with
           | .Ok (ppn, ext_ptw) =>
             (let paddr :=
-              (ppn ++ (Sail.BitVec.extractLsb (bits_of_virtaddr vAddr) (pagesize_bits -i 1) 0))
+              (ppn +++ (Sail.BitVec.extractLsb (bits_of_virtaddr vAddr) (pagesize_bits -i 1) 0))
             (pure (Ok ((Physaddr (zero_extend (m := 64) paddr)), ext_ptw))))
           | .Err (f, ext_ptw) => (pure (Err ((translationException access f), ext_ptw)))))
 

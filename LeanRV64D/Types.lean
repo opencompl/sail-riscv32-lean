@@ -220,7 +220,7 @@ def regidx_bits (app_0 : regidx) : (BitVec (if ( false  : Bool) then 4 else 5)) 
 
 def creg2reg_idx (app_0 : cregidx) : regidx :=
   let .Cregidx i := app_0
-  (Regidx (zero_extend (m := 5) (1#1 ++ i)))
+  (Regidx (zero_extend (m := 5) (1#1 +++ i)))
 
 def zreg : regidx := (Regidx (zero_extend (m := 5) 0b00#2))
 
@@ -735,7 +735,7 @@ def get_hstateen (idx : Nat) : SailM (BitVec 64) := do
 termination_by let _ := idx; (6).toNat
 /-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
 def get_sstateen (idx : Nat) : SailM (BitVec 64) := do
-  (pure (0xFFFFFFFF#32 ++ (← do
+  (pure (0xFFFFFFFF#32 +++ (← do
         if ((not (← (is_sstateen_accessible ()))) : Bool)
         then (pure (ones (n := (64 -i 32))))
         else
@@ -1406,7 +1406,7 @@ def freg_name_forwards (arg_ : fregidx) : SailM String := do
 
 def cfreg_name_forwards (arg_ : cfregidx) : SailM String := do
   match arg_ with
-  | .Cfregidx i => (freg_name_forwards (Fregidx (0b01#2 ++ (i : (BitVec 3)))))
+  | .Cfregidx i => (freg_name_forwards (Fregidx (0b01#2 +++ (i : (BitVec 3)))))
 
 def encdec_reg_backwards (arg_ : (BitVec 5)) : SailM regidx := do
   let r := arg_
@@ -1525,7 +1525,7 @@ def reg_name_forwards (arg_ : regidx) : SailM String := do
 
 def creg_name_forwards (arg_ : cregidx) : SailM String := do
   match arg_ with
-  | .Cregidx i => (reg_name_forwards (← (encdec_reg_backwards (0b01#2 ++ (i : (BitVec 3))))))
+  | .Cregidx i => (reg_name_forwards (← (encdec_reg_backwards (0b01#2 +++ (i : (BitVec 3))))))
 
 def csr_mnemonic_forwards (arg_ : csrop) : String :=
   match arg_ with
@@ -2319,7 +2319,7 @@ def vtype_assembly_backwards (arg_ : ((BitVec 1) × (BitVec 1) × (BitVec 3) × 
               (String.append (ta_flag_backwards ta) (String.append (ma_flag_backwards ma) "")))))
       else
         (hex_bits_8_forwards
-          ((ma : (BitVec 1)) ++ ((ta : (BitVec 1)) ++ ((sew : (BitVec 3)) ++ (lmul : (BitVec 3)))))))
+          ((ma : (BitVec 1)) +++ ((ta : (BitVec 1)) +++ ((sew : (BitVec 3)) +++ (lmul : (BitVec 3)))))))
 
 def vvcmptype_mnemonic_forwards (arg_ : vvcmpfunct6) : String :=
   match arg_ with
@@ -2929,7 +2929,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
                 (String.append (sep_forwards ())
                   (String.append (← (sp_reg_name_forwards ()))
                     (String.append (sep_forwards ())
-                      (String.append (← (hex_bits_10_forwards ((nzimm : (BitVec 8)) ++ 0b00#2)))
+                      (String.append (← (hex_bits_10_forwards ((nzimm : (BitVec 8)) +++ 0b00#2)))
                         ""))))))))
       else
         (do
@@ -2940,7 +2940,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (creg_name_forwards rdc))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) ++ 0b00#2)))
+              (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) +++ 0b00#2)))
                 (String.append "("
                   (String.append (← (creg_name_forwards rsc)) (String.append ")" "")))))))))
   | .C_LD (uimm, rsc, rdc) =>
@@ -2948,7 +2948,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (creg_name_forwards rdc))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) ++ 0b000#3)))
+              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (creg_name_forwards rsc)) (String.append ")" "")))))))))
   | .C_SW (uimm, rsc1, rsc2) =>
@@ -2956,7 +2956,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (creg_name_forwards rsc2))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) ++ 0b00#2)))
+              (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) +++ 0b00#2)))
                 (String.append "("
                   (String.append (← (creg_name_forwards rsc1)) (String.append ")" "")))))))))
   | .C_SD (uimm, rsc1, rsc2) =>
@@ -2964,7 +2964,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (creg_name_forwards rsc2))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) ++ 0b000#3)))
+              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (creg_name_forwards rsc1)) (String.append ")" "")))))))))
   | .C_ADDI (imm, rsd) =>
@@ -2986,7 +2986,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
       then
         (pure (String.append "c.jal"
             (String.append (spc_forwards ())
-              (String.append (← (hex_bits_signed_12_forwards ((imm : (BitVec 11)) ++ 0#1))) ""))))
+              (String.append (← (hex_bits_signed_12_forwards ((imm : (BitVec 11)) +++ 0#1))) ""))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -3011,7 +3011,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (sp_reg_name_forwards ()))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_signed_10_forwards ((imm : (BitVec 6)) ++ 0x0#4)))
+                  (String.append (← (hex_bits_signed_10_forwards ((imm : (BitVec 6)) +++ 0x0#4)))
                     ""))))))
       else
         (do
@@ -3079,19 +3079,19 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
   | .C_J imm =>
     (pure (String.append "c.j"
         (String.append (spc_forwards ())
-          (String.append (← (hex_bits_signed_12_forwards ((imm : (BitVec 11)) ++ 0#1))) ""))))
+          (String.append (← (hex_bits_signed_12_forwards ((imm : (BitVec 11)) +++ 0#1))) ""))))
   | .C_BEQZ (imm, rs) =>
     (pure (String.append "c.beqz"
         (String.append (spc_forwards ())
           (String.append (← (creg_name_forwards rs))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_signed_9_forwards ((imm : (BitVec 8)) ++ 0#1))) ""))))))
+              (String.append (← (hex_bits_signed_9_forwards ((imm : (BitVec 8)) +++ 0#1))) ""))))))
   | .C_BNEZ (imm, rs) =>
     (pure (String.append "c.bnez"
         (String.append (spc_forwards ())
           (String.append (← (creg_name_forwards rs))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_signed_9_forwards ((imm : (BitVec 8)) ++ 0#1))) ""))))))
+              (String.append (← (hex_bits_signed_9_forwards ((imm : (BitVec 8)) +++ 0#1))) ""))))))
   | .C_SLLI (shamt, rsd) =>
     (pure (String.append "c.slli"
         (String.append (spc_forwards ())
@@ -3105,7 +3105,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (reg_name_forwards rd))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 6)) ++ 0b00#2)))
+                  (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 6)) +++ 0b00#2)))
                     (String.append "("
                       (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
       else
@@ -3120,7 +3120,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (reg_name_forwards rd))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) ++ 0b000#3)))
+                  (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) +++ 0b000#3)))
                     (String.append "("
                       (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
       else
@@ -3132,7 +3132,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (reg_name_forwards rs2))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 6)) ++ 0b00#2)))
+              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 6)) +++ 0b00#2)))
                 (String.append "("
                   (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
   | .C_SDSP (uimm, rs2) =>
@@ -3140,7 +3140,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (reg_name_forwards rs2))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) ++ 0b000#3)))
+              (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
   | .C_JR rs1 =>
@@ -3366,7 +3366,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (freg_name_forwards rd))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_8_forwards ((imm : (BitVec 6)) ++ 0b00#2)))
+                  (String.append (← (hex_bits_8_forwards ((imm : (BitVec 6)) +++ 0b00#2)))
                     (String.append "("
                       (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
       else
@@ -3381,7 +3381,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (freg_name_forwards rs2))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 6)) ++ 0b00#2)))
+                  (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 6)) +++ 0b00#2)))
                     (String.append "("
                       (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
       else
@@ -3396,7 +3396,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (cfreg_name_forwards rdc))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) ++ 0b00#2)))
+                  (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) +++ 0b00#2)))
                     (String.append "("
                       (String.append (← (creg_name_forwards rsc)) (String.append ")" "")))))))))
       else
@@ -3411,7 +3411,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (spc_forwards ())
               (String.append (← (cfreg_name_forwards rsc2))
                 (String.append (sep_forwards ())
-                  (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) ++ 0b00#2)))
+                  (String.append (← (hex_bits_7_forwards ((uimm : (BitVec 5)) +++ 0b00#2)))
                     (String.append "("
                       (String.append (← (creg_name_forwards rsc1)) (String.append ")" "")))))))))
       else
@@ -3491,7 +3491,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (freg_name_forwards rd))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) ++ 0b000#3)))
+              (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
   | .C_FSDSP (uimm, rs2) =>
@@ -3499,7 +3499,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (freg_name_forwards rs2))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) ++ 0b000#3)))
+              (String.append (← (hex_bits_9_forwards ((uimm : (BitVec 6)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (sp_reg_name_forwards ())) (String.append ")" "")))))))))
   | .C_FLD (uimm, rsc, rdc) =>
@@ -3507,7 +3507,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (cfreg_name_forwards rdc))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) ++ 0b000#3)))
+              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (creg_name_forwards rsc)) (String.append ")" "")))))))))
   | .C_FSD (uimm, rsc1, rsc2) =>
@@ -3515,7 +3515,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
         (String.append (spc_forwards ())
           (String.append (← (cfreg_name_forwards rsc2))
             (String.append (sep_forwards ())
-              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) ++ 0b000#3)))
+              (String.append (← (hex_bits_8_forwards ((uimm : (BitVec 5)) +++ 0b000#3)))
                 (String.append "("
                   (String.append (← (creg_name_forwards rsc1)) (String.append ")" "")))))))))
   | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, op) =>
@@ -5161,7 +5161,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
                   (String.append (sep_forwards ()) (String.append (← (reg_name_forwards rs2)) "")))))))))
   | .ZCMOP mop =>
     (pure (String.append "c.mop."
-        (String.append (← (dec_bits_4_forwards ((mop : (BitVec 3)) ++ 1#1))) "")))
+        (String.append (← (dec_bits_4_forwards ((mop : (BitVec 3)) +++ 1#1))) "")))
   | .ILLEGAL s =>
     (pure (String.append "illegal"
         (String.append (spc_forwards ()) (String.append (← (hex_bits_32_forwards s)) ""))))
@@ -6478,8 +6478,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       then
         (let offset11_5 : (BitVec 7) := (Sail.BitVec.extractLsb v__12 11 5)
         let offset11_5 : (BitVec 7) := (Sail.BitVec.extractLsb v__12 11 5)
-        (pure ((offset11_5 : (BitVec 7)) ++ ((encdec_cbop_zicbop_forwards cbop) ++ ((encdec_reg_forwards
-                  rs1) ++ (0b110#3 ++ (0b00000#5 ++ 0b0010011#7)))))))
+        (pure ((offset11_5 : (BitVec 7)) +++ ((encdec_cbop_zicbop_forwards cbop) +++ ((encdec_reg_forwards
+                  rs1) +++ (0b110#3 +++ (0b00000#5 +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6488,7 +6488,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zihintntl)) : Bool)
       then
-        (pure (0b0000000#7 ++ ((encdec_ntl_forwards op) ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b0110011#7))))))
+        (pure (0b0000000#7 +++ ((encdec_ntl_forwards op) +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6497,7 +6497,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zihintpause)) : Bool)
       then
-        (pure (0b0000#4 ++ (0b0001#4 ++ (0b0000#4 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b0001111#7)))))))
+        (pure (0b0000#4 +++ (0b0001#4 +++ (0b0000#4 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b0001111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6505,140 +6505,143 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
   | .LPAD lpl =>
     (do
       if ((← (currentlyEnabled Ext_Zicfilp)) : Bool)
-      then (pure ((lpl : (BitVec 20)) ++ (0b00000#5 ++ 0b0010111#7)))
+      then (pure ((lpl : (BitVec 20)) +++ (0b00000#5 +++ 0b0010111#7)))
       else
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
   | .UTYPE (imm, rd, op) =>
-    (pure ((imm : (BitVec 20)) ++ ((encdec_reg_forwards rd) ++ (encdec_uop_forwards op))))
+    (pure ((imm : (BitVec 20)) +++ ((encdec_reg_forwards rd) +++ (encdec_uop_forwards op))))
   | .JAL (v__14, rd) =>
     (do
       if (((Sail.BitVec.extractLsb v__14 0 0) == (0#1 : (BitVec 1))) : Bool)
       then
         (let imm := (Sail.BitVec.extractLsb v__14 20 1)
         let imm := (Sail.BitVec.extractLsb v__14 20 1)
-        (pure ((Sail.BitVec.extractLsb imm 19 19) ++ ((Sail.BitVec.extractLsb imm 9 0) ++ ((Sail.BitVec.extractLsb
-                  imm 10 10) ++ ((Sail.BitVec.extractLsb imm 18 11) ++ ((encdec_reg_forwards rd) ++ 0b1101111#7)))))))
+        (pure ((Sail.BitVec.extractLsb imm 19 19) +++ ((Sail.BitVec.extractLsb imm 9 0) +++ ((Sail.BitVec.extractLsb
+                  imm 10 10) +++ ((Sail.BitVec.extractLsb imm 18 11) +++ ((encdec_reg_forwards rd) +++ 0b1101111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
   | .JALR (imm, rs1, rd) =>
-    (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b1100111#7)))))
+    (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                rd) +++ 0b1100111#7)))))
   | .BTYPE (v__16, rs2, rs1, op) =>
     (do
       if (((Sail.BitVec.extractLsb v__16 0 0) == (0#1 : (BitVec 1))) : Bool)
       then
         (let imm := (Sail.BitVec.extractLsb v__16 12 1)
         let imm := (Sail.BitVec.extractLsb v__16 12 1)
-        (pure ((Sail.BitVec.extractLsb imm 11 11) ++ ((Sail.BitVec.extractLsb imm 9 4) ++ ((encdec_reg_forwards
-                  rs2) ++ ((encdec_reg_forwards rs1) ++ ((encdec_bop_forwards op) ++ ((Sail.BitVec.extractLsb
-                        imm 3 0) ++ ((Sail.BitVec.extractLsb imm 10 10) ++ 0b1100011#7)))))))))
+        (pure ((Sail.BitVec.extractLsb imm 11 11) +++ ((Sail.BitVec.extractLsb imm 9 4) +++ ((encdec_reg_forwards
+                  rs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_bop_forwards op) +++ ((Sail.BitVec.extractLsb
+                        imm 3 0) +++ ((Sail.BitVec.extractLsb imm 10 10) +++ 0b1100011#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
   | .ITYPE (imm, rs1, rd, op) =>
-    (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ ((encdec_iop_forwards op) ++ ((encdec_reg_forwards
-                rd) ++ 0b0010011#7)))))
+    (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ ((encdec_iop_forwards op) +++ ((encdec_reg_forwards
+                rd) +++ 0b0010011#7)))))
   | .SHIFTIOP (shamt, rs1, rd, SLLI) =>
-    (pure (0b000000#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0010011#7))))))
+    (pure (0b000000#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0010011#7))))))
   | .SHIFTIOP (shamt, rs1, rd, SRLI) =>
-    (pure (0b000000#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0010011#7))))))
+    (pure (0b000000#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0010011#7))))))
   | .SHIFTIOP (shamt, rs1, rd, SRAI) =>
-    (pure (0b010000#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0010011#7))))))
+    (pure (0b010000#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0010011#7))))))
   | .RTYPE (rs2, rs1, rd, ADD) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, SLT) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b010#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, SLTU) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b011#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b011#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, AND) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b111#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b111#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, OR) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, XOR) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, SLL) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, SRL) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, SUB) =>
-    (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .RTYPE (rs2, rs1, rd, SRA) =>
-    (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0110011#7))))))
+    (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0110011#7))))))
   | .LOAD (imm, rs1, rd, is_unsigned, width) =>
     (do
       if ((valid_load_encdec width is_unsigned) : Bool)
       then
-        (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ ((bool_bit_forwards is_unsigned) ++ ((width_enc_forwards
-                    width) ++ ((encdec_reg_forwards rd) ++ 0b0000011#7))))))
+        (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ ((bool_bit_forwards
+                  is_unsigned) +++ ((width_enc_forwards width) +++ ((encdec_reg_forwards rd) +++ 0b0000011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
   | .STORE (imm, rs2, rs1, width) =>
-    (pure ((Sail.BitVec.extractLsb imm 11 5) ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-              rs1) ++ (0#1 ++ ((width_enc_forwards width) ++ ((Sail.BitVec.extractLsb imm 4 0) ++ 0b0100011#7)))))))
+    (pure ((Sail.BitVec.extractLsb imm 11 5) +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+              rs1) +++ (0#1 +++ ((width_enc_forwards width) +++ ((Sail.BitVec.extractLsb imm 4 0) +++ 0b0100011#7)))))))
   | .ADDIW (imm, rs1, rd) =>
-    (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0011011#7)))))
+    (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                rd) +++ 0b0011011#7)))))
   | .RTYPEW (rs2, rs1, rd, ADDW) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0111011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0111011#7))))))
   | .RTYPEW (rs2, rs1, rd, SUBW) =>
-    (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0111011#7))))))
+    (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0111011#7))))))
   | .RTYPEW (rs2, rs1, rd, SLLW) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0111011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0111011#7))))))
   | .RTYPEW (rs2, rs1, rd, SRLW) =>
-    (pure (0b0000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0111011#7))))))
+    (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0111011#7))))))
   | .RTYPEW (rs2, rs1, rd, SRAW) =>
-    (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0111011#7))))))
+    (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0111011#7))))))
   | .SHIFTIWOP (shamt, rs1, rd, SLLIW) =>
-    (pure (0b0000000#7 ++ ((shamt : (BitVec 5)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0011011#7))))))
+    (pure (0b0000000#7 +++ ((shamt : (BitVec 5)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0011011#7))))))
   | .SHIFTIWOP (shamt, rs1, rd, SRLIW) =>
-    (pure (0b0000000#7 ++ ((shamt : (BitVec 5)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0011011#7))))))
+    (pure (0b0000000#7 +++ ((shamt : (BitVec 5)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0011011#7))))))
   | .SHIFTIWOP (shamt, rs1, rd, SRAIW) =>
-    (pure (0b0100000#7 ++ ((shamt : (BitVec 5)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                  rd) ++ 0b0011011#7))))))
+    (pure (0b0100000#7 +++ ((shamt : (BitVec 5)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                  rd) +++ 0b0011011#7))))))
   | .FENCE_TSO () =>
-    (pure (0b1000#4 ++ (0b0011#4 ++ (0b0011#4 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b0001111#7)))))))
+    (pure (0b1000#4 +++ (0b0011#4 +++ (0b0011#4 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b0001111#7)))))))
   | .FENCE (fm, pred, succ, rs, rd) =>
-    (pure ((fm : (BitVec 4)) ++ ((pred : (BitVec 4)) ++ ((succ : (BitVec 4)) ++ ((encdec_reg_forwards
-                rs) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0001111#7)))))))
+    (pure ((fm : (BitVec 4)) +++ ((pred : (BitVec 4)) +++ ((succ : (BitVec 4)) +++ ((encdec_reg_forwards
+                rs) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0001111#7)))))))
   | .ECALL () =>
-    (pure (0b000000000000#12 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7)))))
+    (pure (0b000000000000#12 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7)))))
   | .MRET () =>
-    (pure (0b0011000#7 ++ (0b00010#5 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7))))))
+    (pure (0b0011000#7 +++ (0b00010#5 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7))))))
   | .SRET () =>
-    (pure (0b0001000#7 ++ (0b00010#5 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7))))))
+    (pure (0b0001000#7 +++ (0b00010#5 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7))))))
   | .EBREAK () =>
-    (pure (0b000000000001#12 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7)))))
-  | .WFI () => (pure (0b000100000101#12 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7)))))
+    (pure (0b000000000001#12 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7)))))
+  | .WFI () =>
+    (pure (0b000100000101#12 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7)))))
   | .SFENCE_VMA (rs1, rs2) =>
     (do
       if (((← (virtual_memory_supported ())) || (not (true : Bool))) : Bool)
       then
-        (pure (0b0001001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7))))))
+        (pure (0b0001001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6647,9 +6650,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (amo_encoding_valid size op rs2 rd)) : Bool)
       then
-        (pure ((encdec_amoop_forwards op) ++ ((bool_bit_forwards aq) ++ ((bool_bit_forwards rl) ++ ((encdec_reg_forwards
-                    rs2) ++ ((encdec_reg_forwards rs1) ++ ((width_enc_wide_forwards size) ++ ((encdec_reg_forwards
-                          rd) ++ 0b0101111#7))))))))
+        (pure ((encdec_amoop_forwards op) +++ ((bool_bit_forwards aq) +++ ((bool_bit_forwards rl) +++ ((encdec_reg_forwards
+                    rs2) +++ ((encdec_reg_forwards rs1) +++ ((width_enc_wide_forwards size) +++ ((encdec_reg_forwards
+                          rd) +++ 0b0101111#7))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6658,8 +6661,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zalrsc)) && (lrsc_width_valid width)) : Bool)
       then
-        (pure (0b00010#5 ++ ((bool_bit_forwards aq) ++ ((bool_bit_forwards rl) ++ (0b00000#5 ++ ((encdec_reg_forwards
-                      rs1) ++ (0#1 ++ ((width_enc_forwards width) ++ ((encdec_reg_forwards rd) ++ 0b0101111#7)))))))))
+        (pure (0b00010#5 +++ ((bool_bit_forwards aq) +++ ((bool_bit_forwards rl) +++ (0b00000#5 +++ ((encdec_reg_forwards
+                      rs1) +++ (0#1 +++ ((width_enc_forwards width) +++ ((encdec_reg_forwards rd) +++ 0b0101111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6668,9 +6671,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zalrsc)) && (lrsc_width_valid width)) : Bool)
       then
-        (pure (0b00011#5 ++ ((bool_bit_forwards aq) ++ ((bool_bit_forwards rl) ++ ((encdec_reg_forwards
-                    rs2) ++ ((encdec_reg_forwards rs1) ++ (0#1 ++ ((width_enc_forwards width) ++ ((encdec_reg_forwards
-                            rd) ++ 0b0101111#7)))))))))
+        (pure (0b00011#5 +++ ((bool_bit_forwards aq) +++ ((bool_bit_forwards rl) +++ ((encdec_reg_forwards
+                    rs2) +++ ((encdec_reg_forwards rs1) +++ (0#1 +++ ((width_enc_forwards width) +++ ((encdec_reg_forwards
+                            rd) +++ 0b0101111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6679,8 +6682,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_M)) || (← (currentlyEnabled Ext_Zmmul))) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ ((← (encdec_mul_op_forwards
-                      mul_op)) ++ ((encdec_reg_forwards rd) ++ 0b0110011#7))))))
+        (pure (0b0000001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ ((← (encdec_mul_op_forwards
+                      mul_op)) +++ ((encdec_reg_forwards rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6689,8 +6692,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_M)) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b10#2 ++ ((bool_bit_forwards
-                      is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure (0b0000001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b10#2 +++ ((bool_bit_forwards
+                      is_unsigned) +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6699,8 +6702,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_M)) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b11#2 ++ ((bool_bit_forwards
-                      is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure (0b0000001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b11#2 +++ ((bool_bit_forwards
+                      is_unsigned) +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6709,8 +6712,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((xlen == 64) && ((← (currentlyEnabled Ext_M)) || (← (currentlyEnabled Ext_Zmmul)))) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0111011#7))))))
+        (pure (0b0000001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0111011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6719,8 +6722,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((xlen == 64) && (← (currentlyEnabled Ext_M))) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b10#2 ++ ((bool_bit_forwards
-                      is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0111011#7)))))))
+        (pure (0b0000001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b10#2 +++ ((bool_bit_forwards
+                      is_unsigned) +++ ((encdec_reg_forwards rd) +++ 0b0111011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6729,8 +6732,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((xlen == 64) && (← (currentlyEnabled Ext_M))) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b11#2 ++ ((bool_bit_forwards
-                      is_unsigned) ++ ((encdec_reg_forwards rd) ++ 0b0111011#7)))))))
+        (pure (0b0000001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b11#2 +++ ((bool_bit_forwards
+                      is_unsigned) +++ ((encdec_reg_forwards rd) +++ 0b0111011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6739,8 +6742,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zba)) && (xlen == 64)) : Bool)
       then
-        (pure (0b000010#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0011011#7))))))
+        (pure (0b000010#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0011011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6749,8 +6752,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zba)) && (xlen == 64)) : Bool)
       then
-        (pure (0b0000100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b00#2 ++ (0#1 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0111011#7)))))))
+        (pure (0b0000100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b00#2 +++ (0#1 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0111011#7)))))))
       else
         (do
           match (ZBA_RTYPEUW (rs2, rs1, rd, 0b00#2)) with
@@ -6758,8 +6761,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
             (do
               if (((← (currentlyEnabled Ext_Zba)) && (xlen == 64)) : Bool)
               then
-                (pure (0b0010000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ ((shamt : (BitVec 2)) ++ (0#1 ++ ((encdec_reg_forwards
-                                rd) ++ 0b0111011#7)))))))
+                (pure (0b0010000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ ((shamt : (BitVec 2)) +++ (0#1 +++ ((encdec_reg_forwards
+                                rd) +++ 0b0111011#7)))))))
               else
                 (do
                   assert false "Pattern match failure at unknown location"
@@ -6772,8 +6775,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zba)) && (xlen == 64)) : Bool)
       then
-        (pure (0b0010000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ ((shamt : (BitVec 2)) ++ (0#1 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0111011#7)))))))
+        (pure (0b0010000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ ((shamt : (BitVec 2)) +++ (0#1 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0111011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6782,8 +6785,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((shamt != 0b00#2) && (← (currentlyEnabled Ext_Zba))) : Bool)
       then
-        (pure (0b0010000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ ((shamt : (BitVec 2)) ++ (0#1 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b0010000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ ((shamt : (BitVec 2)) +++ (0#1 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6792,8 +6795,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 64)) : Bool)
       then
-        (pure (0b0110000#7 ++ ((shamt : (BitVec 5)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0011011#7))))))
+        (pure (0b0110000#7 +++ ((shamt : (BitVec 5)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0011011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6803,8 +6806,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && ((xlen == 64) || ((BitVec.access
                  shamt 5) == 0#1))) : Bool)
       then
-        (pure (0b011000#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b011000#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6813,8 +6816,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 64)) : Bool)
       then
-        (pure (0b0110000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0111011#7))))))
+        (pure (0b0110000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0111011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6823,8 +6826,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 64)) : Bool)
       then
-        (pure (0b0110000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0111011#7))))))
+        (pure (0b0110000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0111011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6833,8 +6836,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
-        (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b111#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b111#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6843,8 +6846,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
-        (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6853,8 +6856,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
-        (pure (0b0100000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6863,8 +6866,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6873,8 +6876,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b111#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b111#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6883,8 +6886,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6893,8 +6896,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6903,8 +6906,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
-        (pure (0b0110000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0110000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6913,8 +6916,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
-        (pure (0b0110000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0110000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6923,8 +6926,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00100#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b0110000#7 +++ (0b00100#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6933,8 +6936,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00101#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b0110000#7 +++ (0b00101#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6943,14 +6946,14 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) && (xlen == 32)) : Bool)
       then
-        (pure (0b0000100#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000100#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           if (((← (currentlyEnabled Ext_Zbb)) && (xlen == 64)) : Bool)
           then
-            (pure (0b0000100#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                          rd) ++ 0b0111011#7))))))
+            (pure (0b0000100#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                          rd) +++ 0b0111011#7))))))
           else
             (do
               assert false "Pattern match failure at unknown location"
@@ -6959,14 +6962,14 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 32)) : Bool)
       then
-        (pure (0b011010011000#12 ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                    rd) ++ 0b0010011#7)))))
+        (pure (0b011010011000#12 +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                    rd) +++ 0b0010011#7)))))
       else
         (do
           if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 64)) : Bool)
           then
-            (pure (0b011010111000#12 ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))
+            (pure (0b011010111000#12 +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))
           else
             (do
               assert false "Pattern match failure at unknown location"
@@ -6975,8 +6978,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b001010000111#12 ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                    rd) ++ 0b0010011#7)))))
+        (pure (0b001010000111#12 +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                    rd) +++ 0b0010011#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6985,8 +6988,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00010#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b0110000#7 +++ (0b00010#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -6995,8 +6998,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) && (xlen == 64)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00010#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0011011#7))))))
+        (pure (0b0110000#7 +++ (0b00010#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0011011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7005,8 +7008,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b0110000#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7015,8 +7018,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) && (xlen == 64)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0011011#7))))))
+        (pure (0b0110000#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0011011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7025,8 +7028,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00001#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b0110000#7 +++ (0b00001#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7035,8 +7038,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbb)) && (xlen == 64)) : Bool)
       then
-        (pure (0b0110000#7 ++ (0b00001#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0011011#7))))))
+        (pure (0b0110000#7 +++ (0b00001#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0011011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7045,8 +7048,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbc)) || (← (currentlyEnabled Ext_Zbkc))) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7055,8 +7058,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbc)) || (← (currentlyEnabled Ext_Zbkc))) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b011#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b011#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7065,8 +7068,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbc)) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b010#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7075,8 +7078,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
-        (pure (0b010010#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b010010#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7085,8 +7088,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
-        (pure (0b010010#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b010010#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7095,8 +7098,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
-        (pure (0b011010#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b011010#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7105,8 +7108,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
-        (pure (0b001010#6 ++ ((shamt : (BitVec 6)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0010011#7))))))
+        (pure (0b001010#6 +++ ((shamt : (BitVec 6)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7115,8 +7118,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
-        (pure (0b0100100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0100100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7125,8 +7128,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
-        (pure (0b0100100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0100100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7135,8 +7138,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
-        (pure (0b0110100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0110100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7145,8 +7148,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7155,8 +7158,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (float_load_store_width_supported width)) : Bool)
       then
-        (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ (0#1 ++ ((width_enc_forwards
-                    width) ++ ((encdec_freg_forwards rd) ++ 0b0000111#7))))))
+        (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ (0#1 +++ ((width_enc_forwards
+                    width) +++ ((encdec_freg_forwards rd) +++ 0b0000111#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7165,8 +7168,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (float_load_store_width_supported width)) : Bool)
       then
-        (pure ((Sail.BitVec.extractLsb imm 11 5) ++ ((encdec_freg_forwards rs2) ++ ((encdec_reg_forwards
-                  rs1) ++ (0#1 ++ ((width_enc_forwards width) ++ ((Sail.BitVec.extractLsb imm 4 0) ++ 0b0100111#7)))))))
+        (pure ((Sail.BitVec.extractLsb imm 11 5) +++ ((encdec_freg_forwards rs2) +++ ((encdec_reg_forwards
+                  rs1) +++ (0#1 +++ ((width_enc_forwards width) +++ ((Sail.BitVec.extractLsb imm 4 0) +++ 0b0100111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7175,8 +7178,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b00#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1000011#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b00#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1000011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7185,8 +7188,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b00#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1000111#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b00#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1000111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7195,8 +7198,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b00#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1001011#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b00#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1001011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7205,8 +7208,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b00#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1001111#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b00#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1001111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7215,8 +7218,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0000000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0000000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7225,8 +7228,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0000100#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0000100#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7235,8 +7238,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0001000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0001000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7245,8 +7248,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0001100#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0001100#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7255,8 +7258,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0101100#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0101100#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7265,8 +7268,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1100000#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100000#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7275,8 +7278,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1100000#7 ++ (0b00001#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100000#7 +++ (0b00001#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7285,8 +7288,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1101000#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101000#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7295,8 +7298,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1101000#7 ++ (0b00001#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101000#7 +++ (0b00001#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7305,8 +7308,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1100000#7 ++ (0b00010#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100000#7 +++ (0b00010#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7315,8 +7318,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1100000#7 ++ (0b00011#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100000#7 +++ (0b00011#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7325,8 +7328,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1101000#7 ++ (0b00010#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101000#7 +++ (0b00010#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7335,8 +7338,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1101000#7 ++ (0b00011#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101000#7 +++ (0b00011#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7345,8 +7348,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7355,8 +7358,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7365,8 +7368,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7375,8 +7378,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7385,8 +7388,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7395,8 +7398,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7405,8 +7408,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7415,8 +7418,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7425,8 +7428,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
-        (pure (0b1110000#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110000#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7435,8 +7438,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_F)) : Bool)
       then
-        (pure (0b1110000#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110000#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7445,8 +7448,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_F)) : Bool)
       then
-        (pure (0b1111000#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1111000#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7455,8 +7458,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3])) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b01#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1000011#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b01#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1000011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7465,8 +7468,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3])) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b01#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1000111#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b01#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1000111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7475,8 +7478,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3])) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b01#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1001011#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b01#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1001011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7485,8 +7488,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3])) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b01#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1001111#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b01#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1001111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7495,8 +7498,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0000001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0000001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7505,8 +7508,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0000101#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0000101#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7515,8 +7518,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0001001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0001001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7525,8 +7528,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0001101#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0001101#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7535,8 +7538,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 2) #v[rd, rs1])) : Bool)
       then
-        (pure (0b0101101#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0101101#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7545,8 +7548,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rs1])) : Bool)
       then
-        (pure (0b1100001#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100001#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7555,8 +7558,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rs1])) : Bool)
       then
-        (pure (0b1100001#7 ++ (0b00001#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100001#7 +++ (0b00001#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7565,8 +7568,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rd])) : Bool)
       then
-        (pure (0b1101001#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101001#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7575,8 +7578,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rd])) : Bool)
       then
-        (pure (0b1101001#7 ++ (0b00001#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101001#7 +++ (0b00001#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7585,8 +7588,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rs1])) : Bool)
       then
-        (pure (0b0100000#7 ++ (0b00001#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100000#7 +++ (0b00001#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7595,8 +7598,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rd])) : Bool)
       then
-        (pure (0b0100001#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100001#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7605,8 +7608,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1100001#7 ++ (0b00010#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100001#7 +++ (0b00010#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7615,8 +7618,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1100001#7 ++ (0b00011#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100001#7 +++ (0b00011#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7625,8 +7628,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1101001#7 ++ (0b00010#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101001#7 +++ (0b00010#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7635,8 +7638,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1101001#7 ++ (0b00011#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101001#7 +++ (0b00011#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7645,8 +7648,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7655,8 +7658,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7665,8 +7668,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7675,8 +7678,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0010101#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010101#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7685,8 +7688,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 3) #v[rd, rs1, rs2])) : Bool)
       then
-        (pure (0b0010101#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010101#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7695,8 +7698,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 2) #v[rs1, rs2])) : Bool)
       then
-        (pure (0b1010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7705,8 +7708,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 2) #v[rs1, rs2])) : Bool)
       then
-        (pure (0b1010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7715,8 +7718,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 2) #v[rs1, rs2])) : Bool)
       then
-        (pure (0b1010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7725,8 +7728,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rs1])) : Bool)
       then
-        (pure (0b1110001#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110001#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7735,8 +7738,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1110001#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110001#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7745,8 +7748,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1111001#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1111001#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7755,8 +7758,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0000010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0000010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7765,8 +7768,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0000110#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0000110#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7775,8 +7778,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0001010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0001010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7785,8 +7788,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0001110#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0001110#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7795,8 +7798,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b10#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1000011#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b10#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1000011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7805,8 +7808,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b10#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1000111#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b10#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1000111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7815,8 +7818,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b10#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1001011#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b10#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1001011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7825,8 +7828,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure ((encdec_freg_forwards rs3) ++ (0b10#2 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards
-                    rs1) ++ ((encdec_rounding_mode_forwards rm) ++ ((encdec_freg_forwards rd) ++ 0b1001111#7)))))))
+        (pure ((encdec_freg_forwards rs3) +++ (0b10#2 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards
+                    rs1) +++ ((encdec_rounding_mode_forwards rm) +++ ((encdec_freg_forwards rd) +++ 0b1001111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7835,8 +7838,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7845,8 +7848,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7855,8 +7858,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7865,8 +7868,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0010110#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010110#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7875,8 +7878,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0010110#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010110#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7885,8 +7888,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7895,8 +7898,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7905,8 +7908,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7915,8 +7918,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b0101110#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0101110#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7925,8 +7928,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1100010#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100010#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7935,8 +7938,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1100010#7 ++ (0b00001#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100010#7 +++ (0b00001#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7945,8 +7948,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1101010#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101010#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7955,8 +7958,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1101010#7 ++ (0b00001#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101010#7 +++ (0b00001#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7965,8 +7968,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfMin ())) : Bool)
       then
-        (pure (0b0100010#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100010#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7975,8 +7978,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveHalfMin ())) && ((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rs1]))) : Bool)
       then
-        (pure (0b0100010#7 ++ (0b00001#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100010#7 +++ (0b00001#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7985,8 +7988,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfMin ())) : Bool)
       then
-        (pure (0b0100000#7 ++ (0b00010#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100000#7 +++ (0b00010#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -7995,8 +7998,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveHalfMin ())) && ((← (haveDoubleFPU ())) && (validDoubleRegs (n := 1) #v[rd]))) : Bool)
       then
-        (pure (0b0100001#7 ++ (0b00010#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100001#7 +++ (0b00010#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8005,8 +8008,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1100010#7 ++ (0b00010#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100010#7 +++ (0b00010#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8015,8 +8018,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1100010#7 ++ (0b00011#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_reg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1100010#7 +++ (0b00011#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_reg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8025,8 +8028,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1101010#7 ++ (0b00010#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101010#7 +++ (0b00010#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8035,8 +8038,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
-        (pure (0b1101010#7 ++ (0b00011#5 ++ ((encdec_reg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b1101010#7 +++ (0b00011#5 +++ ((encdec_reg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8045,8 +8048,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
-        (pure (0b1110010#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110010#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8055,8 +8058,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfhmin)) || (← (currentlyEnabled Ext_Zfbfmin))) : Bool)
       then
-        (pure (0b1110010#7 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110010#7 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8065,8 +8068,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfhmin)) || (← (currentlyEnabled Ext_Zfbfmin))) : Bool)
       then
-        (pure (0b1111010#7 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1111010#7 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8076,8 +8079,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zfh)) || (← (currentlyEnabled Ext_Zvfh))) && (← (currentlyEnabled
                Ext_Zfa))) : Bool)
       then
-        (pure (0b1111010#7 ++ (0b00001#5 ++ ((constantidx : (BitVec 5)) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1111010#7 +++ (0b00001#5 +++ ((constantidx : (BitVec 5)) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8086,8 +8089,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b1111000#7 ++ (0b00001#5 ++ ((constantidx : (BitVec 5)) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1111000#7 +++ (0b00001#5 +++ ((constantidx : (BitVec 5)) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8096,8 +8099,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b1111001#7 ++ (0b00001#5 ++ ((constantidx : (BitVec 5)) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1111001#7 +++ (0b00001#5 +++ ((constantidx : (BitVec 5)) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8106,8 +8109,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfh)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0010110#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010110#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8116,8 +8119,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfh)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0010110#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b011#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010110#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b011#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8126,8 +8129,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8136,8 +8139,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b011#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b011#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8146,8 +8149,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0010101#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b010#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010101#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b010#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8156,8 +8159,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0010101#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b011#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b0010101#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b011#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8166,8 +8169,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfh)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0100010#7 ++ (0b00100#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100010#7 +++ (0b00100#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8176,8 +8179,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfh)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0100010#7 ++ (0b00101#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100010#7 +++ (0b00101#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8186,8 +8189,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b0100000#7 ++ (0b00100#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100000#7 +++ (0b00100#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8196,8 +8199,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b0100000#7 ++ (0b00101#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100000#7 +++ (0b00101#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8206,8 +8209,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0100001#7 ++ (0b00100#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100001#7 +++ (0b00100#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8216,8 +8219,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b0100001#7 ++ (0b00101#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                    rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7))))))
+        (pure (0b0100001#7 +++ (0b00101#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                    rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8227,8 +8230,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_D)) && ((← (currentlyEnabled Ext_Zfa)) && (← (in32BitMode
                  ())))) : Bool)
       then
-        (pure (0b1110001#7 ++ (0b00001#5 ++ ((encdec_freg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1110001#7 +++ (0b00001#5 +++ ((encdec_freg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8238,8 +8241,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_D)) && ((← (currentlyEnabled Ext_Zfa)) && (← (in32BitMode
                  ())))) : Bool)
       then
-        (pure (0b1011001#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_freg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1011001#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_freg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8248,8 +8251,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfh)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b1010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8258,8 +8261,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zfh)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b1010010#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010010#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8268,8 +8271,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b1010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8278,8 +8281,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfa)) : Bool)
       then
-        (pure (0b1010000#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010000#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8288,8 +8291,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b1010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8298,8 +8301,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b1010001#7 ++ ((encdec_freg_forwards rs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1010001#7 +++ ((encdec_freg_forwards rs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8308,8 +8311,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_D)) && (← (currentlyEnabled Ext_Zfa))) : Bool)
       then
-        (pure (0b1100001#7 ++ (0b01000#5 ++ ((encdec_freg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010011#7))))))
+        (pure (0b1100001#7 +++ (0b01000#5 +++ ((encdec_freg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8318,8 +8321,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zve32x)) : Bool)
       then
-        (pure (0b0000#4 ++ ((ma : (BitVec 1)) ++ ((ta : (BitVec 1)) ++ ((sew : (BitVec 3)) ++ ((lmul : (BitVec 3)) ++ ((encdec_reg_forwards
-                        rs1) ++ (0b111#3 ++ ((encdec_reg_forwards rd) ++ 0b1010111#7)))))))))
+        (pure (0b0000#4 +++ ((ma : (BitVec 1)) +++ ((ta : (BitVec 1)) +++ ((sew : (BitVec 3)) +++ ((lmul : (BitVec 3)) +++ ((encdec_reg_forwards
+                        rs1) +++ (0b111#3 +++ ((encdec_reg_forwards rd) +++ 0b1010111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8328,8 +8331,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zve32x)) : Bool)
       then
-        (pure (0b1000000#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b111#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b1010111#7))))))
+        (pure (0b1000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b111#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b1010111#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8338,8 +8341,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zve32x)) : Bool)
       then
-        (pure (0b1100#4 ++ ((ma : (BitVec 1)) ++ ((ta : (BitVec 1)) ++ ((sew : (BitVec 3)) ++ ((lmul : (BitVec 3)) ++ ((uimm : (BitVec 5)) ++ (0b111#3 ++ ((encdec_reg_forwards
-                            rd) ++ 0b1010111#7)))))))))
+        (pure (0b1100#4 +++ ((ma : (BitVec 1)) +++ ((ta : (BitVec 1)) +++ ((sew : (BitVec 3)) +++ ((lmul : (BitVec 3)) +++ ((uimm : (BitVec 5)) +++ (0b111#3 +++ ((encdec_reg_forwards
+                            rd) +++ 0b1010111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8350,8 +8353,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure (((← (get_sew ())) ≤b 64) && (← (valid_wide_vvtype funct6))))))) : Bool)
       then
-        (pure ((encdec_vvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8362,8 +8365,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_nvsfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_nvsfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8374,8 +8377,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_nvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_nvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8386,8 +8389,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8398,8 +8401,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (1#1 ++ (0b00000#5 ++ ((encdec_vreg_forwards vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (1#1 +++ (0b00000#5 +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8410,8 +8413,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure (((← (get_sew ())) ≤b 64) && (← (valid_wide_vxtype funct6))))))) : Bool)
       then
-        (pure ((encdec_vxfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vxfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8422,8 +8425,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_nxsfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_nxsfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8434,8 +8437,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_nxfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_nxfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8446,8 +8449,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vxsgfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vxsgfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8458,8 +8461,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8470,8 +8473,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (1#1 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (1#1 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8482,8 +8485,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vifunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vifunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8494,8 +8497,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_nisfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((uimm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_nisfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((uimm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8506,8 +8509,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_nifunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((uimm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_nifunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((uimm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8518,8 +8521,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_visgfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_visgfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8530,8 +8533,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8542,8 +8545,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (1#1 ++ (0b00000#5 ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (1#1 +++ (0b00000#5 +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8554,8 +8557,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b100111#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_nreg_backwards nreg) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b100111#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_nreg_backwards nreg) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8566,8 +8569,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure (((← (get_sew ())) ≤b 64) && (← (valid_wide_mvvtype funct6))))))) : Bool)
       then
-        (pure ((encdec_mvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_mvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8578,8 +8581,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_mvvmafunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_mvvmafunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8590,8 +8593,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_wvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_wvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8602,8 +8605,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_wvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_wvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8614,8 +8617,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_wmvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_wmvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8626,8 +8629,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((vext_vs1_forwards
-                    funct6) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((vext_vs1_forwards
+                    funct6) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8638,8 +8641,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010000#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00000#5 ++ (0b010#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b1010111#7)))))))
+        (pure (0b010000#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00000#5 +++ (0b010#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8650,8 +8653,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010111#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8662,8 +8665,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure (((← (get_sew ())) ≤b 64) && (← (valid_wide_mvxtype funct6))))))) : Bool)
       then
-        (pure ((encdec_mvxfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_mvxfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8674,8 +8677,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_mvxmafunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_mvxmafunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8686,8 +8689,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_wvxfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_wvxfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8698,8 +8701,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_wxfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_wxfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8710,8 +8713,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_wmvxfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_wmvxfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8722,8 +8725,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010000#6 ++ (1#1 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010000#6 +++ (1#1 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8735,8 +8738,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_fvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8748,8 +8751,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_fvvmafunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fvvmafunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8760,8 +8763,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_fwvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fwvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8772,8 +8775,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_fwvvmafunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs1) ++ ((encdec_vreg_forwards vs2) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fwvvmafunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs1) +++ ((encdec_vreg_forwards vs2) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8784,8 +8787,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_fwvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fwvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8797,8 +8800,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vfunary0_vs1_forwards
-                    vfunary0) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vfunary0_vs1_forwards
+                    vfunary0) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8807,8 +8810,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (valid_widening_fp_conversion vfwunary0)) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vfwunary0_vs1_forwards
-                    vfwunary0) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vfwunary0_vs1_forwards
+                    vfwunary0) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8817,8 +8820,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (valid_narrowing_fp_conversion vfnunary0)) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vfnunary0_vs1_forwards
-                    vfnunary0) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vfnunary0_vs1_forwards
+                    vfnunary0) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8830,8 +8833,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure (0b010011#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vfunary1_vs1_forwards
-                    vfunary1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010011#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vfunary1_vs1_forwards
+                    vfunary1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8843,8 +8846,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure (0b010000#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00000#5 ++ (0b001#3 ++ ((encdec_freg_forwards
-                        rd) ++ 0b1010111#7)))))))
+        (pure (0b010000#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00000#5 +++ (0b001#3 +++ ((encdec_freg_forwards
+                        rd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8856,8 +8859,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_fvffunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fvffunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8869,8 +8872,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_fvfmafunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fvfmafunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8881,8 +8884,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_fwvffunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fwvffunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8893,8 +8896,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_fwvfmafunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fwvfmafunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8905,8 +8908,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_fwffunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fwffunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8918,8 +8921,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure (0b010111#6 ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8931,8 +8934,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure (0b010111#6 ++ (1#1 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010111#6 +++ (1#1 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8944,8 +8947,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure (0b010000#6 ++ (1#1 ++ (0b00000#5 ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010000#6 +++ (1#1 +++ (0b00000#5 +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8955,8 +8958,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && (((vlewidth_pow_forwards width) ≤b 6) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ (0b00#2 ++ ((vm : (BitVec 1)) ++ (0b00000#5 ++ ((encdec_reg_forwards
-                        rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards vd) ++ 0b0000111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ (0b00#2 +++ ((vm : (BitVec 1)) +++ (0b00000#5 +++ ((encdec_reg_forwards
+                        rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards vd) +++ 0b0000111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8966,8 +8969,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && (((vlewidth_pow_forwards width) ≤b 6) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ (0b00#2 ++ ((vm : (BitVec 1)) ++ (0b10000#5 ++ ((encdec_reg_forwards
-                        rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards vd) ++ 0b0000111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ (0b00#2 +++ ((vm : (BitVec 1)) +++ (0b10000#5 +++ ((encdec_reg_forwards
+                        rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards vd) +++ 0b0000111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8977,8 +8980,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && (((vlewidth_pow_forwards width) ≤b 6) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ (0b00#2 ++ ((vm : (BitVec 1)) ++ (0b00000#5 ++ ((encdec_reg_forwards
-                        rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards vs3) ++ 0b0100111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ (0b00#2 +++ ((vm : (BitVec 1)) +++ (0b00000#5 +++ ((encdec_reg_forwards
+                        rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards vs3) +++ 0b0100111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -8988,9 +8991,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && (((vlewidth_pow_forwards width) ≤b 6) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ (0b10#2 ++ ((vm : (BitVec 1)) ++ ((encdec_reg_forwards
-                      rs2) ++ ((encdec_reg_forwards rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards
-                            vd) ++ 0b0000111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ (0b10#2 +++ ((vm : (BitVec 1)) +++ ((encdec_reg_forwards
+                      rs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards
+                            vd) +++ 0b0000111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9000,9 +9003,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && (((vlewidth_pow_forwards width) ≤b 6) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ (0b10#2 ++ ((vm : (BitVec 1)) ++ ((encdec_reg_forwards
-                      rs2) ++ ((encdec_reg_forwards rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards
-                            vs3) ++ 0b0100111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ (0b10#2 +++ ((vm : (BitVec 1)) +++ ((encdec_reg_forwards
+                      rs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards
+                            vs3) +++ 0b0100111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9012,9 +9015,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && ((((vlewidth_pow_forwards width) ≤b 6) && (xlen == 64)) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ ((encdec_indexed_mop_forwards mop) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                      vs2) ++ ((encdec_reg_forwards rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards
-                            vd) ++ 0b0000111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ ((encdec_indexed_mop_forwards mop) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                      vs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards
+                            vd) +++ 0b0000111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9024,9 +9027,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && ((((vlewidth_pow_forwards width) ≤b 6) && (xlen == 64)) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_backwards nf) ++ (0#1 ++ ((encdec_indexed_mop_forwards mop) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                      vs2) ++ ((encdec_reg_forwards rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards
-                            vs3) ++ 0b0100111#7)))))))))
+        (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ ((encdec_indexed_mop_forwards mop) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                      vs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards
+                            vs3) +++ 0b0100111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9036,8 +9039,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
                  Ext_Zve64x)) && (((vlewidth_pow_forwards width) ≤b 6) : Bool))) : Bool)
       then
-        (pure ((encdec_nfields_pow2_backwards nf) ++ (0#1 ++ (0b00#2 ++ (1#1 ++ (0b01000#5 ++ ((encdec_reg_forwards
-                        rs1) ++ ((encdec_vlewidth_forwards width) ++ ((encdec_vreg_forwards vd) ++ 0b0000111#7)))))))))
+        (pure ((encdec_nfields_pow2_backwards nf) +++ (0#1 +++ (0b00#2 +++ (1#1 +++ (0b01000#5 +++ ((encdec_reg_forwards
+                        rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards vd) +++ 0b0000111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9046,8 +9049,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zve32x)) : Bool)
       then
-        (pure ((encdec_nfields_pow2_backwards nf) ++ (0#1 ++ (0b00#2 ++ (1#1 ++ (0b01000#5 ++ ((encdec_reg_forwards
-                        rs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vs3) ++ 0b0100111#7)))))))))
+        (pure ((encdec_nfields_pow2_backwards nf) +++ (0#1 +++ (0b00#2 +++ (1#1 +++ (0b01000#5 +++ ((encdec_reg_forwards
+                        rs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vs3) +++ 0b0100111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9056,8 +9059,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zve32x)) : Bool)
       then
-        (pure (0b000#3 ++ (0#1 ++ (0b00#2 ++ (1#1 ++ (0b01011#5 ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_vreg_forwards
-                            vd_or_vs3) ++ (encdec_lsop_forwards op))))))))))
+        (pure (0b000#3 +++ (0#1 +++ (0b00#2 +++ (1#1 +++ (0b01011#5 +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_vreg_forwards
+                            vd_or_vs3) +++ (encdec_lsop_forwards op))))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9068,8 +9071,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_mmfunct6_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_mmfunct6_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9080,8 +9083,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010000#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b10000#5 ++ (0b010#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b1010111#7)))))))
+        (pure (0b010000#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b10000#5 +++ (0b010#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9092,8 +9095,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010000#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b10001#5 ++ (0b010#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b1010111#7)))))))
+        (pure (0b010000#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b10001#5 +++ (0b010#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9104,8 +9107,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b00001#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b00001#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9116,8 +9119,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b00011#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b00011#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9128,8 +9131,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b00010#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b00010#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9140,8 +9143,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b10000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b10000#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9152,8 +9155,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ (0b00000#5 ++ (0b10001#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ (0b00000#5 +++ (0b10001#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9164,8 +9167,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vvmfunct6_forwards funct6) ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vvmfunct6_forwards funct6) +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9176,8 +9179,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vvmcfunct6_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vvmcfunct6_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9188,8 +9191,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vvmsfunct6_forwards funct6) ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vvmsfunct6_forwards funct6) +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9200,8 +9203,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vvcmpfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vvcmpfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9212,8 +9215,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vxmfunct6_forwards funct6) ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vxmfunct6_forwards funct6) +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9224,8 +9227,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vxmcfunct6_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vxmcfunct6_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9236,8 +9239,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vxmsfunct6_forwards funct6) ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vxmsfunct6_forwards funct6) +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9248,8 +9251,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vxcmpfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vxcmpfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9260,8 +9263,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vimfunct6_forwards funct6) ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vimfunct6_forwards funct6) +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9272,8 +9275,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vimcfunct6_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vimcfunct6_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9284,8 +9287,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vimsfunct6_forwards funct6) ++ (0#1 ++ ((encdec_vreg_forwards vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vimsfunct6_forwards funct6) +++ (0#1 +++ ((encdec_vreg_forwards vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9296,8 +9299,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_vicmpfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((simm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_vicmpfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((simm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9309,8 +9312,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_fvvmfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fvvmfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9322,8 +9325,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_fvfmfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_freg_forwards rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_fvfmfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_freg_forwards rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9334,8 +9337,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 16)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 32))))) : Bool)
       then
-        (pure ((encdec_rivvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_rivvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9346,8 +9349,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) ≤b 32)))) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                (pure ((← (get_sew ())) ≤b 64))))) : Bool)
       then
-        (pure ((encdec_rmvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_rmvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9359,8 +9362,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                  (pure ((← (get_sew ())) == 32)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                  (pure ((← (get_sew ())) == 64)))))) : Bool)
       then
-        (pure ((encdec_rfvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_rfvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9371,8 +9374,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
                (pure ((← (get_sew ())) == 32))))) : Bool)
       then
-        (pure ((encdec_rfwvvfunct6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_rfwvvfunct6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9381,8 +9384,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zknh)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9391,8 +9394,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zknh)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00001#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00001#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9401,8 +9404,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zknh)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00010#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00010#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9411,8 +9414,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zknh)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00011#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00011#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9421,8 +9424,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zkne)) && (xlen == 32)) : Bool)
       then
-        (pure ((bs : (BitVec 2)) ++ (0b10011#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure ((bs : (BitVec 2)) +++ (0b10011#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9431,8 +9434,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zkne)) && (xlen == 32)) : Bool)
       then
-        (pure ((bs : (BitVec 2)) ++ (0b10001#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure ((bs : (BitVec 2)) +++ (0b10001#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9441,8 +9444,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknd)) && (xlen == 32)) : Bool)
       then
-        (pure ((bs : (BitVec 2)) ++ (0b10111#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure ((bs : (BitVec 2)) +++ (0b10111#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9451,8 +9454,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknd)) && (xlen == 32)) : Bool)
       then
-        (pure ((bs : (BitVec 2)) ++ (0b10101#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure ((bs : (BitVec 2)) +++ (0b10101#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9461,8 +9464,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 32)) : Bool)
       then
-        (pure (0b01#2 ++ (0b01000#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b01000#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9471,8 +9474,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 32)) : Bool)
       then
-        (pure (0b01#2 ++ (0b01001#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b01001#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9481,8 +9484,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 32)) : Bool)
       then
-        (pure (0b01#2 ++ (0b01010#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b01010#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9491,8 +9494,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 32)) : Bool)
       then
-        (pure (0b01#2 ++ (0b01110#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b01110#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9501,8 +9504,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 32)) : Bool)
       then
-        (pure (0b01#2 ++ (0b01011#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b01011#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9511,8 +9514,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 32)) : Bool)
       then
-        (pure (0b01#2 ++ (0b01111#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b01111#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9522,8 +9525,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((((← (currentlyEnabled Ext_Zkne)) || (← (currentlyEnabled Ext_Zknd))) && ((xlen == 64) && (zopz0zI_u
                rnum 0xB#4))) : Bool)
       then
-        (pure (0b00#2 ++ (0b11000#5 ++ (1#1 ++ ((rnum : (BitVec 4)) ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                          rd) ++ 0b0010011#7))))))))
+        (pure (0b00#2 +++ (0b11000#5 +++ (1#1 +++ ((rnum : (BitVec 4)) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                          rd) +++ 0b0010011#7))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9532,8 +9535,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknd)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b11000#5 ++ (0b00000#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b11000#5 +++ (0b00000#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9542,8 +9545,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((((← (currentlyEnabled Ext_Zkne)) || (← (currentlyEnabled Ext_Zknd))) && (xlen == 64)) : Bool)
       then
-        (pure (0b01#2 ++ (0b11111#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b01#2 +++ (0b11111#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9552,8 +9555,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zkne)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b11011#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b00#2 +++ (0b11011#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9562,8 +9565,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zkne)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b11001#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b00#2 +++ (0b11001#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9572,8 +9575,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknd)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b11111#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b00#2 +++ (0b11111#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9582,8 +9585,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknd)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b11101#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0110011#7)))))))
+        (pure (0b00#2 +++ (0b11101#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9592,8 +9595,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00100#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00100#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9602,8 +9605,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00101#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00101#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9612,8 +9615,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00110#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00110#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9622,8 +9625,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zknh)) && (xlen == 64)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b00111#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b00111#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9632,8 +9635,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zksh)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b01000#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b01000#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9642,8 +9645,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zksh)) : Bool)
       then
-        (pure (0b00#2 ++ (0b01000#5 ++ (0b01001#5 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                        rd) ++ 0b0010011#7)))))))
+        (pure (0b00#2 +++ (0b01000#5 +++ (0b01001#5 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                        rd) +++ 0b0010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9652,8 +9655,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zksed)) : Bool)
       then
-        (pure ((bs : (BitVec 2)) ++ (0b11000#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure ((bs : (BitVec 2)) +++ (0b11000#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9662,8 +9665,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zksed)) : Bool)
       then
-        (pure ((bs : (BitVec 2)) ++ (0b11010#5 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b000#3 ++ ((encdec_reg_forwards rd) ++ 0b0110011#7)))))))
+        (pure ((bs : (BitVec 2)) +++ (0b11010#5 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b000#3 +++ ((encdec_reg_forwards rd) +++ 0b0110011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9672,8 +9675,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbkb)) : Bool)
       then
-        (pure (0b0000100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9682,8 +9685,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbkb)) : Bool)
       then
-        (pure (0b0000100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b111#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0000100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b111#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9692,8 +9695,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbkb)) && (xlen == 64)) : Bool)
       then
-        (pure (0b0000100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0111011#7))))))
+        (pure (0b0000100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0111011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9702,8 +9705,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbkb)) && (xlen == 32)) : Bool)
       then
-        (pure (0b000010001111#12 ++ ((encdec_reg_forwards rs1) ++ (0b001#3 ++ ((encdec_reg_forwards
-                    rd) ++ 0b0010011#7)))))
+        (pure (0b000010001111#12 +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
+                    rd) +++ 0b0010011#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9712,8 +9715,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zbkb)) && (xlen == 32)) : Bool)
       then
-        (pure (0b000010001111#12 ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                    rd) ++ 0b0010011#7)))))
+        (pure (0b000010001111#12 +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                    rd) +++ 0b0010011#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9722,8 +9725,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbkb)) : Bool)
       then
-        (pure (0b011010000111#12 ++ ((encdec_reg_forwards rs1) ++ (0b101#3 ++ ((encdec_reg_forwards
-                    rd) ++ 0b0010011#7)))))
+        (pure (0b011010000111#12 +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
+                    rd) +++ 0b0010011#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9732,8 +9735,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbkx)) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9742,8 +9745,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zbkx)) : Bool)
       then
-        (pure (0b0010100#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b010#3 ++ ((encdec_reg_forwards
-                      rd) ++ 0b0110011#7))))))
+        (pure (0b0010100#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
+                      rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9754,8 +9757,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b000001#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b000001#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9766,8 +9769,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b000001#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b000001#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9778,8 +9781,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01010#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01010#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9790,8 +9793,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01000#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9802,8 +9805,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01001#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01001#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9814,8 +9817,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01100#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01100#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9826,8 +9829,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01101#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01101#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9838,8 +9841,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01110#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01110#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9850,8 +9853,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9862,8 +9865,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9874,8 +9877,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9886,8 +9889,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b010100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b010100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9898,9 +9901,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b01010#5 ++ ((Sail.BitVec.extractLsb uimm 5 5) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                    vs2) ++ ((Sail.BitVec.extractLsb uimm 4 0) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                          vd) ++ 0b1010111#7))))))))
+        (pure (0b01010#5 +++ ((Sail.BitVec.extractLsb uimm 5 5) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                    vs2) +++ ((Sail.BitVec.extractLsb uimm 4 0) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                          vd) +++ 0b1010111#7))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9911,8 +9914,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b110101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b000#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b110101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b000#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9923,8 +9926,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b110101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b100#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b110101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b100#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9935,8 +9938,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || (← do
                    (pure (((← (get_sew ())) == 64) && (← (currentlyEnabled Ext_Zve64x))))))))) : Bool)
       then
-        (pure (0b110101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((uimm : (BitVec 5)) ++ (0b011#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b110101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((uimm : (BitVec 5)) +++ (0b011#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9946,8 +9949,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvbc)) && (← do
              (pure ((← (get_sew ())) == 64)))) : Bool)
       then
-        (pure (0b001100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b001100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9957,8 +9960,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvbc)) && (← do
              (pure ((← (get_sew ())) == 64)))) : Bool)
       then
-        (pure (0b001100#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b001100#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9968,8 +9971,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvbc)) && (← do
              (pure ((← (get_sew ())) == 64)))) : Bool)
       then
-        (pure (0b001101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b001101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9979,8 +9982,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvbc)) && (← do
              (pure ((← (get_sew ())) == 64)))) : Bool)
       then
-        (pure (0b001101#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_reg_forwards
-                    rs1) ++ (0b110#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b001101#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_reg_forwards
+                    rs1) +++ (0b110#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -9990,8 +9993,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvkg)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
       then
-        (pure (0b1011001#7 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                      vd) ++ 0b1110111#7))))))
+        (pure (0b1011001#7 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                      vd) +++ 0b1110111#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10001,8 +10004,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvkg)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
       then
-        (pure (0b1010001#7 ++ ((encdec_vreg_forwards vs2) ++ (0b10001#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                      vd) ++ 0b1110111#7))))))
+        (pure (0b1010001#7 +++ ((encdec_vreg_forwards vs2) +++ (0b10001#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                      vd) +++ 0b1110111#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10013,8 +10016,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && ((funct6 == ZVK_VAESDF_VV) || (zvk_valid_reg_overlap
                        vs2 vd (← (get_lmul_pow ()))))))))) : Bool)
       then
-        (pure ((encdec_vaesdf_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00001#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure ((encdec_vaesdf_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00001#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10025,8 +10028,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && ((funct6 == ZVK_VAESDM_VV) || (zvk_valid_reg_overlap
                        vs2 vd (← (get_lmul_pow ()))))))))) : Bool)
       then
-        (pure ((encdec_vaesdm_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure ((encdec_vaesdm_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00000#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10037,8 +10040,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && ((funct6 == ZVK_VAESEF_VV) || (zvk_valid_reg_overlap
                        vs2 vd (← (get_lmul_pow ()))))))))) : Bool)
       then
-        (pure ((encdec_vaesef_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00011#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure ((encdec_vaesef_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00011#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10049,8 +10052,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && ((funct6 == ZVK_VAESEM_VV) || (zvk_valid_reg_overlap
                        vs2 vd (← (get_lmul_pow ()))))))))) : Bool)
       then
-        (pure ((encdec_vaesem_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00010#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure ((encdec_vaesem_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00010#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10060,8 +10063,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvkned)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
       then
-        (pure (0b1000101#7 ++ ((encdec_vreg_forwards vs2) ++ ((rnd : (BitVec 5)) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                      vd) ++ 0b1110111#7))))))
+        (pure (0b1000101#7 +++ ((encdec_vreg_forwards vs2) +++ ((rnd : (BitVec 5)) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                      vd) +++ 0b1110111#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10071,8 +10074,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvkned)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
       then
-        (pure (0b101010#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((rnd : (BitVec 5)) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b101010#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((rnd : (BitVec 5)) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10083,8 +10086,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && (zvk_valid_reg_overlap
                      vs2 vd (← (get_lmul_pow ())))))))) : Bool)
       then
-        (pure (0b101001#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b00111#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b101001#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b00111#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10094,8 +10097,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvksed)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
       then
-        (pure (0b100001#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((uimm : (BitVec 5)) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b100001#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((uimm : (BitVec 5)) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10105,8 +10108,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvksed)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
       then
-        (pure (0b101000#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b10000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b101000#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b10000#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10117,8 +10120,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && (zvk_valid_reg_overlap
                      vs2 vd (← (get_lmul_pow ())))))))) : Bool)
       then
-        (pure (0b101001#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ (0b10000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b101001#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ (0b10000#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10131,8 +10134,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                        (pure ((← (get_sew ())) == 64))))))) && (← (zvknhab_check_encdec vs2 vs1
                  vd)))) : Bool)
       then
-        (pure (0b101101#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b101101#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10145,8 +10148,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
                        (pure ((← (get_sew ())) == 64))))))) && (← (zvknhab_check_encdec vs2 vs1
                  vd)))) : Bool)
       then
-        (pure ((encdec_vsha2_forwards funct6) ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1110111#7)))))))
+        (pure ((encdec_vsha2_forwards funct6) +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10157,8 +10160,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 256 8)) && (zvk_valid_reg_overlap
                      vs2 vd (← (get_lmul_pow ())))))))) : Bool)
       then
-        (pure (0b100000#6 ++ (1#1 ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1110111#7)))))))
+        (pure (0b100000#6 +++ (1#1 +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1110111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10169,8 +10172,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 256 8)) && (zvk_valid_reg_overlap
                      vs2 vd (← (get_lmul_pow ())))))))) : Bool)
       then
-        (pure (0b1010111#7 ++ ((encdec_vreg_forwards vs2) ++ ((uimm : (BitVec 5)) ++ (0b010#3 ++ ((encdec_vreg_forwards
-                      vd) ++ 0b1110111#7))))))
+        (pure (0b1010111#7 +++ ((encdec_vreg_forwards vs2) +++ ((uimm : (BitVec 5)) +++ (0b010#3 +++ ((encdec_vreg_forwards
+                      vd) +++ 0b1110111#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10181,8 +10184,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
              (pure (((← (get_sew ())) ≤b 32) || ((← (currentlyEnabled Ext_Zve64x)) && (← do
                      (pure ((← (get_sew ())) ≤b 64)))))))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b10000#5 ++ (0b010#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b10000#5 +++ (0b010#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10191,8 +10194,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zvabd)) && (valid_zvabd_sew (← (get_sew ())))) : Bool)
       then
-        (pure ((encdec_zvabd_vabd_func6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_zvabd_vabd_func6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10201,8 +10204,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if (((← (currentlyEnabled Ext_Zvabd)) && (valid_zvabd_sew (← (get_sew ())))) : Bool)
       then
-        (pure ((encdec_zvabd_vwabda_func6_forwards funct6) ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards
-                  vs2) ++ ((encdec_vreg_forwards vs1) ++ (0b010#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure ((encdec_zvabd_vwabda_func6_forwards funct6) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
+                  vs2) +++ ((encdec_vreg_forwards vs1) +++ (0b010#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10211,8 +10214,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zicsr)) : Bool)
       then
-        (pure ((csr : (BitVec 12)) ++ ((encdec_reg_forwards rs1) ++ (0#1 ++ ((encdec_csrop_forwards
-                    op) ++ ((encdec_reg_forwards rd) ++ 0b1110011#7))))))
+        (pure ((csr : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ (0#1 +++ ((encdec_csrop_forwards
+                    op) +++ ((encdec_reg_forwards rd) +++ 0b1110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10221,8 +10224,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zicsr)) : Bool)
       then
-        (pure ((csr : (BitVec 12)) ++ ((imm : (BitVec 5)) ++ (1#1 ++ ((encdec_csrop_forwards op) ++ ((encdec_reg_forwards
-                      rd) ++ 0b1110011#7))))))
+        (pure ((csr : (BitVec 12)) +++ ((imm : (BitVec 5)) +++ (1#1 +++ ((encdec_csrop_forwards op) +++ ((encdec_reg_forwards
+                      rd) +++ 0b1110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10231,7 +10234,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Svinval)) : Bool)
       then
-        (pure (0b0001011#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7))))))
+        (pure (0b0001011#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10240,7 +10243,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Svinval)) : Bool)
       then
-        (pure (0b0001100#7 ++ (0b00000#5 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7))))))
+        (pure (0b0001100#7 +++ (0b00000#5 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10249,7 +10252,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Svinval)) : Bool)
       then
-        (pure (0b0001100#7 ++ (0b00001#5 ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7))))))
+        (pure (0b0001100#7 +++ (0b00001#5 +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10258,7 +10261,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zawrs)) : Bool)
       then
-        (pure ((encdec_wrsop_forwards op) ++ (0b00000#5 ++ (0b000#3 ++ (0b00000#5 ++ 0b1110011#7)))))
+        (pure ((encdec_wrsop_forwards op) +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10267,8 +10270,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zicond)) : Bool)
       then
-        (pure (0b0000111#7 ++ ((encdec_reg_forwards rs2) ++ ((encdec_reg_forwards rs1) ++ ((encdec_zicondop_forwards
-                    op) ++ ((encdec_reg_forwards rd) ++ 0b0110011#7))))))
+        (pure (0b0000111#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_zicondop_forwards
+                    op) +++ ((encdec_reg_forwards rd) +++ 0b0110011#7))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10277,7 +10280,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zicbom)) : Bool)
       then
-        (pure ((encdec_cbop_forwards cbop) ++ ((encdec_reg_forwards rs1) ++ (0b010#3 ++ (0b00000#5 ++ 0b0001111#7)))))
+        (pure ((encdec_cbop_forwards cbop) +++ ((encdec_reg_forwards rs1) +++ (0b010#3 +++ (0b00000#5 +++ 0b0001111#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10288,9 +10291,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       then
         (let imm := (Sail.BitVec.extractLsb v__18 12 1)
         let imm := (Sail.BitVec.extractLsb v__18 12 1)
-        (pure ((Sail.BitVec.extractLsb imm 11 11) ++ ((Sail.BitVec.extractLsb imm 9 4) ++ ((cimm : (BitVec 5)) ++ ((encdec_reg_forwards
-                    rs1) ++ ((encdec_biop_forwards op) ++ ((Sail.BitVec.extractLsb imm 3 0) ++ ((Sail.BitVec.extractLsb
-                          imm 10 10) ++ 0b1100011#7)))))))))
+        (pure ((Sail.BitVec.extractLsb imm 11 11) +++ ((Sail.BitVec.extractLsb imm 9 4) +++ ((cimm : (BitVec 5)) +++ ((encdec_reg_forwards
+                    rs1) +++ ((encdec_biop_forwards op) +++ ((Sail.BitVec.extractLsb imm 3 0) +++ ((Sail.BitVec.extractLsb
+                          imm 10 10) +++ 0b1100011#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10299,19 +10302,20 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zicboz)) : Bool)
       then
-        (pure (0b000000000100#12 ++ ((encdec_reg_forwards rs1) ++ (0b010#3 ++ (0b00000#5 ++ 0b0001111#7)))))
+        (pure (0b000000000100#12 +++ ((encdec_reg_forwards rs1) +++ (0b010#3 +++ (0b00000#5 +++ 0b0001111#7)))))
       else
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
   | .FENCEI (imm, rs, rd) =>
-    (pure ((imm : (BitVec 12)) ++ ((encdec_reg_forwards rs) ++ (0b001#3 ++ ((encdec_reg_forwards rd) ++ 0b0001111#7)))))
+    (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs) +++ (0b001#3 +++ ((encdec_reg_forwards
+                rd) +++ 0b0001111#7)))))
   | .FCVT_BF16_S (rs1, rm, rd) =>
     (do
       if ((← (currentlyEnabled Ext_Zfbfmin)) : Bool)
       then
-        (pure (0b01000#5 ++ (0b10#2 ++ (0b01000#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                      rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7)))))))
+        (pure (0b01000#5 +++ (0b10#2 +++ (0b01000#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                      rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10320,8 +10324,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
     (do
       if ((← (currentlyEnabled Ext_Zfbfmin)) : Bool)
       then
-        (pure (0b01000#5 ++ (0b00#2 ++ (0b00110#5 ++ ((encdec_freg_forwards rs1) ++ ((encdec_rounding_mode_forwards
-                      rm) ++ ((encdec_freg_forwards rd) ++ 0b1010011#7)))))))
+        (pure (0b01000#5 +++ (0b00#2 +++ (0b00110#5 +++ ((encdec_freg_forwards rs1) +++ ((encdec_rounding_mode_forwards
+                      rm) +++ ((encdec_freg_forwards rd) +++ 0b1010011#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10331,8 +10335,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvfbfmin)) && (← do
              (pure ((← (get_sew ())) == 16)))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b11101#5 ++ (0b001#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b11101#5 +++ (0b001#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10342,8 +10346,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvfbfmin)) && (← do
              (pure ((← (get_sew ())) == 16)))) : Bool)
       then
-        (pure (0b010010#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ (0b01101#5 ++ (0b001#3 ++ ((encdec_vreg_forwards
-                        vd) ++ 0b1010111#7)))))))
+        (pure (0b010010#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ (0b01101#5 +++ (0b001#3 +++ ((encdec_vreg_forwards
+                        vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10353,8 +10357,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvfbfwma)) && (← do
              (pure ((← (get_sew ())) == 16)))) : Bool)
       then
-        (pure (0b111011#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_vreg_forwards
-                    vs1) ++ (0b001#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b111011#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_vreg_forwards
+                    vs1) +++ (0b001#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10364,8 +10368,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if (((← (currentlyEnabled Ext_Zvfbfwma)) && (← do
              (pure ((← (get_sew ())) == 16)))) : Bool)
       then
-        (pure (0b111011#6 ++ ((vm : (BitVec 1)) ++ ((encdec_vreg_forwards vs2) ++ ((encdec_freg_forwards
-                    rs1) ++ (0b101#3 ++ ((encdec_vreg_forwards vd) ++ 0b1010111#7)))))))
+        (pure (0b111011#6 +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards vs2) +++ ((encdec_freg_forwards
+                    rs1) +++ (0b101#3 +++ ((encdec_vreg_forwards vd) +++ 0b1010111#7)))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10378,8 +10382,8 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         let mop_30 : (BitVec 1) := (Sail.BitVec.extractLsb v__20 4 4)
         let mop_27_26 : (BitVec 2) := (Sail.BitVec.extractLsb v__20 3 2)
         let mop_21_20 : (BitVec 2) := (Sail.BitVec.extractLsb v__20 1 0)
-        (pure (1#1 ++ ((mop_30 : (BitVec 1)) ++ (0b00#2 ++ ((mop_27_26 : (BitVec 2)) ++ (0b0111#4 ++ ((mop_21_20 : (BitVec 2)) ++ ((encdec_reg_forwards
-                          rs1) ++ (0b100#3 ++ ((encdec_reg_forwards rd) ++ 0b1110011#7)))))))))))
+        (pure (1#1 +++ ((mop_30 : (BitVec 1)) +++ (0b00#2 +++ ((mop_27_26 : (BitVec 2)) +++ (0b0111#4 +++ ((mop_21_20 : (BitVec 2)) +++ ((encdec_reg_forwards
+                          rs1) +++ (0b100#3 +++ ((encdec_reg_forwards rd) +++ 0b1110011#7)))))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"
@@ -10391,8 +10395,9 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (let mop_30 : (BitVec 1) := (Sail.BitVec.extractLsb v__21 2 2)
         let mop_30 : (BitVec 1) := (Sail.BitVec.extractLsb v__21 2 2)
         let mop_27_26 : (BitVec 2) := (Sail.BitVec.extractLsb v__21 1 0)
-        (pure (1#1 ++ ((mop_30 : (BitVec 1)) ++ (0b00#2 ++ ((mop_27_26 : (BitVec 2)) ++ (1#1 ++ ((encdec_reg_forwards
-                        rs2) ++ ((encdec_reg_forwards rs1) ++ (0b100#3 ++ ((encdec_reg_forwards rd) ++ 0b1110011#7)))))))))))
+        (pure (1#1 +++ ((mop_30 : (BitVec 1)) +++ (0b00#2 +++ ((mop_27_26 : (BitVec 2)) +++ (1#1 +++ ((encdec_reg_forwards
+                        rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
+                              rd) +++ 0b1110011#7)))))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"

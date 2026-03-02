@@ -290,7 +290,7 @@ def read_vmask (num_elem : Nat) (vm : (BitVec 1)) (vrid : vregidx) : SailM (BitV
   if ((vm == 1#1) : Bool)
   then (pure (ones (n := num_elem)))
   else
-    (pure ((ones (n := (num_elem -i num_elem))) ++ (Sail.BitVec.extractLsb (← (rV_bits vrid))
+    (pure ((ones (n := (num_elem -i num_elem))) +++ (Sail.BitVec.extractLsb (← (rV_bits vrid))
           (num_elem -i 1) 0)))
 
 /-- Type quantifiers: num_elem : Nat, num_elem ≥ 0, 0 < num_elem ∧ num_elem ≤ vlen -/
@@ -298,7 +298,7 @@ def read_vmask_carry (num_elem : Nat) (vm : (BitVec 1)) (vrid : vregidx) : SailM
   if ((vm == 1#1) : Bool)
   then (pure (zeros (n := num_elem)))
   else
-    (pure ((zeros (n := (num_elem -i num_elem))) ++ (Sail.BitVec.extractLsb (← (rV_bits vrid))
+    (pure ((zeros (n := (num_elem -i num_elem))) +++ (Sail.BitVec.extractLsb (← (rV_bits vrid))
           (num_elem -i 1) 0)))
 
 /-- Type quantifiers: num_elem : Nat, num_elem ≥ 0, num_elem > 0 -/

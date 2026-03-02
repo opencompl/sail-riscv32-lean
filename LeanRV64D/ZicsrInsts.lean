@@ -253,40 +253,40 @@ def _get_HpmEvent_OF (v : (BitVec 64)) : (BitVec 1) :=
 
 def get_scountovf (priv : Privilege) : SailM (BitVec 32) := do
   let overflow ← do
-    (pure ((_get_HpmEvent_OF (GetElem?.getElem! (← readReg mhpmevent) 31)) ++ ((_get_HpmEvent_OF
-            (GetElem?.getElem! (← readReg mhpmevent) 30)) ++ ((_get_HpmEvent_OF
-              (GetElem?.getElem! (← readReg mhpmevent) 29)) ++ ((_get_HpmEvent_OF
-                (GetElem?.getElem! (← readReg mhpmevent) 28)) ++ ((_get_HpmEvent_OF
-                  (GetElem?.getElem! (← readReg mhpmevent) 27)) ++ ((_get_HpmEvent_OF
-                    (GetElem?.getElem! (← readReg mhpmevent) 26)) ++ ((_get_HpmEvent_OF
-                      (GetElem?.getElem! (← readReg mhpmevent) 25)) ++ ((_get_HpmEvent_OF
-                        (GetElem?.getElem! (← readReg mhpmevent) 24)) ++ ((_get_HpmEvent_OF
-                          (GetElem?.getElem! (← readReg mhpmevent) 23)) ++ ((_get_HpmEvent_OF
-                            (GetElem?.getElem! (← readReg mhpmevent) 22)) ++ ((_get_HpmEvent_OF
-                              (GetElem?.getElem! (← readReg mhpmevent) 21)) ++ ((_get_HpmEvent_OF
-                                (GetElem?.getElem! (← readReg mhpmevent) 20)) ++ ((_get_HpmEvent_OF
-                                  (GetElem?.getElem! (← readReg mhpmevent) 19)) ++ ((_get_HpmEvent_OF
-                                    (GetElem?.getElem! (← readReg mhpmevent) 18)) ++ ((_get_HpmEvent_OF
-                                      (GetElem?.getElem! (← readReg mhpmevent) 17)) ++ ((_get_HpmEvent_OF
-                                        (GetElem?.getElem! (← readReg mhpmevent) 16)) ++ ((_get_HpmEvent_OF
-                                          (GetElem?.getElem! (← readReg mhpmevent) 15)) ++ ((_get_HpmEvent_OF
-                                            (GetElem?.getElem! (← readReg mhpmevent) 14)) ++ ((_get_HpmEvent_OF
-                                              (GetElem?.getElem! (← readReg mhpmevent) 13)) ++ ((_get_HpmEvent_OF
-                                                (GetElem?.getElem! (← readReg mhpmevent) 12)) ++ ((_get_HpmEvent_OF
-                                                  (GetElem?.getElem! (← readReg mhpmevent) 11)) ++ ((_get_HpmEvent_OF
-                                                    (GetElem?.getElem! (← readReg mhpmevent) 10)) ++ ((_get_HpmEvent_OF
-                                                      (GetElem?.getElem! (← readReg mhpmevent) 9)) ++ ((_get_HpmEvent_OF
-                                                        (GetElem?.getElem! (← readReg mhpmevent) 8)) ++ ((_get_HpmEvent_OF
+    (pure ((_get_HpmEvent_OF (GetElem?.getElem! (← readReg mhpmevent) 31)) +++ ((_get_HpmEvent_OF
+            (GetElem?.getElem! (← readReg mhpmevent) 30)) +++ ((_get_HpmEvent_OF
+              (GetElem?.getElem! (← readReg mhpmevent) 29)) +++ ((_get_HpmEvent_OF
+                (GetElem?.getElem! (← readReg mhpmevent) 28)) +++ ((_get_HpmEvent_OF
+                  (GetElem?.getElem! (← readReg mhpmevent) 27)) +++ ((_get_HpmEvent_OF
+                    (GetElem?.getElem! (← readReg mhpmevent) 26)) +++ ((_get_HpmEvent_OF
+                      (GetElem?.getElem! (← readReg mhpmevent) 25)) +++ ((_get_HpmEvent_OF
+                        (GetElem?.getElem! (← readReg mhpmevent) 24)) +++ ((_get_HpmEvent_OF
+                          (GetElem?.getElem! (← readReg mhpmevent) 23)) +++ ((_get_HpmEvent_OF
+                            (GetElem?.getElem! (← readReg mhpmevent) 22)) +++ ((_get_HpmEvent_OF
+                              (GetElem?.getElem! (← readReg mhpmevent) 21)) +++ ((_get_HpmEvent_OF
+                                (GetElem?.getElem! (← readReg mhpmevent) 20)) +++ ((_get_HpmEvent_OF
+                                  (GetElem?.getElem! (← readReg mhpmevent) 19)) +++ ((_get_HpmEvent_OF
+                                    (GetElem?.getElem! (← readReg mhpmevent) 18)) +++ ((_get_HpmEvent_OF
+                                      (GetElem?.getElem! (← readReg mhpmevent) 17)) +++ ((_get_HpmEvent_OF
+                                        (GetElem?.getElem! (← readReg mhpmevent) 16)) +++ ((_get_HpmEvent_OF
+                                          (GetElem?.getElem! (← readReg mhpmevent) 15)) +++ ((_get_HpmEvent_OF
+                                            (GetElem?.getElem! (← readReg mhpmevent) 14)) +++ ((_get_HpmEvent_OF
+                                              (GetElem?.getElem! (← readReg mhpmevent) 13)) +++ ((_get_HpmEvent_OF
+                                                (GetElem?.getElem! (← readReg mhpmevent) 12)) +++ ((_get_HpmEvent_OF
+                                                  (GetElem?.getElem! (← readReg mhpmevent) 11)) +++ ((_get_HpmEvent_OF
+                                                    (GetElem?.getElem! (← readReg mhpmevent) 10)) +++ ((_get_HpmEvent_OF
+                                                      (GetElem?.getElem! (← readReg mhpmevent) 9)) +++ ((_get_HpmEvent_OF
+                                                        (GetElem?.getElem! (← readReg mhpmevent) 8)) +++ ((_get_HpmEvent_OF
                                                           (GetElem?.getElem! (← readReg mhpmevent)
-                                                            7)) ++ ((_get_HpmEvent_OF
+                                                            7)) +++ ((_get_HpmEvent_OF
                                                             (GetElem?.getElem!
-                                                              (← readReg mhpmevent) 6)) ++ ((_get_HpmEvent_OF
+                                                              (← readReg mhpmevent) 6)) +++ ((_get_HpmEvent_OF
                                                               (GetElem?.getElem!
-                                                                (← readReg mhpmevent) 5)) ++ ((_get_HpmEvent_OF
+                                                                (← readReg mhpmevent) 5)) +++ ((_get_HpmEvent_OF
                                                                 (GetElem?.getElem!
-                                                                  (← readReg mhpmevent) 4)) ++ ((_get_HpmEvent_OF
+                                                                  (← readReg mhpmevent) 4)) +++ ((_get_HpmEvent_OF
                                                                   (GetElem?.getElem!
-                                                                    (← readReg mhpmevent) 3)) ++ 0b000#3))))))))))))))))))))))))))))))
+                                                                    (← readReg mhpmevent) 3)) +++ 0b000#3))))))))))))))))))))))))))))))
   match priv with
   | Machine => (pure overflow)
   | Supervisor => (pure (overflow &&& (← readReg mcounteren)))
@@ -342,28 +342,28 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
               then
                 (do
                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 ++ idx))))
+                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 +++ idx))))
               else
                 (do
                   if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 ++ idx))))
+                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 +++ idx))))
                   else
                     (do
                       if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 ++ idx))))
+                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 +++ idx))))
                       else
                         (do
                           if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 ++ idx))))
+                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 +++ idx))))
                           else
                             (do
                               match v__3790 with
@@ -2613,28 +2613,28 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
               then
                 (do
                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 ++ idx))))
+                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 +++ idx))))
               else
                 (do
                   if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 ++ idx))))
+                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 +++ idx))))
                   else
                     (do
                       if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 ++ idx))))
+                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 +++ idx))))
                       else
                         (do
                           if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 ++ idx))))
+                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 +++ idx))))
                           else
                             (do
                               match v__3790 with
@@ -4884,28 +4884,28 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
               then
                 (do
                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 ++ idx))))
+                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 +++ idx))))
               else
                 (do
                   if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 ++ idx))))
+                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 +++ idx))))
                   else
                     (do
                       if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 ++ idx))))
+                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 +++ idx))))
                       else
                         (do
                           if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 ++ idx))))
+                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 +++ idx))))
                           else
                             (do
                               match v__3790 with
@@ -7174,28 +7174,28 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
               then
                 (do
                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 ++ idx))))
+                  (pmpReadAddrReg (BitVec.toNatInt (0b00#2 +++ idx))))
               else
                 (do
                   if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 ++ idx))))
+                      (pmpReadAddrReg (BitVec.toNatInt (0b01#2 +++ idx))))
                   else
                     (do
                       if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 ++ idx))))
+                          (pmpReadAddrReg (BitVec.toNatInt (0b10#2 +++ idx))))
                       else
                         (do
                           if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 ++ idx))))
+                              (pmpReadAddrReg (BitVec.toNatInt (0b11#2 +++ idx))))
                           else
                             (do
                               match v__3790 with
@@ -9446,28 +9446,28 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 64) := do
           then
             (do
               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-              (pmpReadAddrReg (BitVec.toNatInt (0b00#2 ++ idx))))
+              (pmpReadAddrReg (BitVec.toNatInt (0b00#2 +++ idx))))
           else
             (do
               if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
               then
                 (do
                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                  (pmpReadAddrReg (BitVec.toNatInt (0b01#2 ++ idx))))
+                  (pmpReadAddrReg (BitVec.toNatInt (0b01#2 +++ idx))))
               else
                 (do
                   if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                      (pmpReadAddrReg (BitVec.toNatInt (0b10#2 ++ idx))))
+                      (pmpReadAddrReg (BitVec.toNatInt (0b10#2 +++ idx))))
                   else
                     (do
                       if (((Sail.BitVec.extractLsb v__3790 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3790 3 0)
-                          (pmpReadAddrReg (BitVec.toNatInt (0b11#2 ++ idx))))
+                          (pmpReadAddrReg (BitVec.toNatInt (0b11#2 +++ idx))))
                       else
                         (do
                           match v__3790 with
@@ -11638,7 +11638,8 @@ def write_mhpmeventh (index : Nat) (value : (BitVec 32)) : SailM Unit := do
     writeReg mhpmevent (vectorUpdate (← readReg mhpmevent) index
       (← (legalize_hpmevent
           (Mk_HpmEvent
-            (value ++ (Sail.BitVec.extractLsb (GetElem?.getElem! (← readReg mhpmevent) index) 31 0))))))
+            (value +++ (Sail.BitVec.extractLsb (GetElem?.getElem! (← readReg mhpmevent) index) 31
+                0))))))
   else (pure ())
 
 def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 64) Unit) := do
@@ -11658,7 +11659,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       else
         (do
           writeReg mstatus (← (legalize_mstatus (← readReg mstatus)
-              ((Sail.BitVec.extractLsb (← readReg mstatus) 63 32) ++ value)))
+              ((Sail.BitVec.extractLsb (← readReg mstatus) 63 32) +++ value)))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg mstatus) 31 0)))))
   | (0x310, value) =>
     (do
@@ -11666,7 +11667,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       then
         (do
           writeReg mstatus (← (legalize_mstatus (← readReg mstatus)
-              (value ++ (Sail.BitVec.extractLsb (← readReg mstatus) 31 0))))
+              (value +++ (Sail.BitVec.extractLsb (← readReg mstatus) 31 0))))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg mstatus) 63 32))))
       else
         (do
@@ -11688,7 +11689,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                      let idx := (BitVec.toNatInt (0b00#2 ++ idx))
+                      let idx := (BitVec.toNatInt (0b00#2 +++ idx))
                       (pmpWriteAddrReg idx value)
                       (pure (Ok (← (pmpReadAddrReg idx)))))
                   else
@@ -11697,7 +11698,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                          let idx := (BitVec.toNatInt (0b01#2 ++ idx))
+                          let idx := (BitVec.toNatInt (0b01#2 +++ idx))
                           (pmpWriteAddrReg idx value)
                           (pure (Ok (← (pmpReadAddrReg idx)))))
                       else
@@ -11706,7 +11707,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                              let idx := (BitVec.toNatInt (0b10#2 ++ idx))
+                              let idx := (BitVec.toNatInt (0b10#2 +++ idx))
                               (pmpWriteAddrReg idx value)
                               (pure (Ok (← (pmpReadAddrReg idx)))))
                           else
@@ -11715,7 +11716,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                                  let idx := (BitVec.toNatInt (0b11#2 ++ idx))
+                                  let idx := (BitVec.toNatInt (0b11#2 +++ idx))
                                   (pmpWriteAddrReg idx value)
                                   (pure (Ok (← (pmpReadAddrReg idx)))))
                               else
@@ -11773,7 +11774,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg)
                                                 (xlen -i 1) 0)))))
@@ -11784,7 +11785,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mcyclecfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32))))
@@ -11954,7 +11955,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
                                               ((Sail.BitVec.extractLsb (← readReg minstretcfg) 63
-                                                  32) ++ value)))
+                                                  32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg)
                                                 (xlen -i 1) 0)))))
@@ -11965,7 +11966,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg minstretcfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg) 63
@@ -12128,7 +12129,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 31 0))))
                                       else
@@ -12143,7 +12144,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0))))
                                       else
@@ -12158,7 +12159,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0))))
                                       else
@@ -12173,7 +12174,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0))))
                                       else
@@ -12188,7 +12189,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 63 32))))
@@ -12350,7 +12351,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen1) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 63 32))))
@@ -12512,7 +12513,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen2) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 63 32))))
@@ -12674,7 +12675,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen3) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 63 32))))
@@ -12836,7 +12837,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 31 0))))
                                       else
@@ -12851,7 +12852,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 31 0))))
                                       else
@@ -12866,7 +12867,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 31 0))))
                                       else
@@ -12881,7 +12882,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 31 0))))
                                       else
@@ -12896,7 +12897,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 63 32))))
@@ -13058,7 +13059,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen1) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 63 32))))
@@ -13220,7 +13221,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen2) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 63 32))))
@@ -13382,7 +13383,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen3) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 63 32))))
@@ -13705,7 +13706,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       then
         (do
           writeReg mseccfg (← (legalize_mseccfg (← readReg mseccfg)
-              ((Sail.BitVec.extractLsb (← readReg mseccfg) 63 32) ++ value)))
+              ((Sail.BitVec.extractLsb (← readReg mseccfg) 63 32) +++ value)))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg mseccfg) 31 0))))
       else
         (do
@@ -13717,7 +13718,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       then
         (do
           writeReg mseccfg (← (legalize_mseccfg (← readReg mseccfg)
-              (value ++ (Sail.BitVec.extractLsb (← readReg mseccfg) 31 0))))
+              (value +++ (Sail.BitVec.extractLsb (← readReg mseccfg) 31 0))))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg mseccfg) 63 32))))
       else
         (do
@@ -13739,7 +13740,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                      let idx := (BitVec.toNatInt (0b00#2 ++ idx))
+                      let idx := (BitVec.toNatInt (0b00#2 +++ idx))
                       (pmpWriteAddrReg idx value)
                       (pure (Ok (← (pmpReadAddrReg idx)))))
                   else
@@ -13748,7 +13749,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                          let idx := (BitVec.toNatInt (0b01#2 ++ idx))
+                          let idx := (BitVec.toNatInt (0b01#2 +++ idx))
                           (pmpWriteAddrReg idx value)
                           (pure (Ok (← (pmpReadAddrReg idx)))))
                       else
@@ -13757,7 +13758,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                              let idx := (BitVec.toNatInt (0b10#2 ++ idx))
+                              let idx := (BitVec.toNatInt (0b10#2 +++ idx))
                               (pmpWriteAddrReg idx value)
                               (pure (Ok (← (pmpReadAddrReg idx)))))
                           else
@@ -13766,7 +13767,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                                  let idx := (BitVec.toNatInt (0b11#2 ++ idx))
+                                  let idx := (BitVec.toNatInt (0b11#2 +++ idx))
                                   (pmpWriteAddrReg idx value)
                                   (pure (Ok (← (pmpReadAddrReg idx)))))
                               else
@@ -13824,7 +13825,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg)
                                                 (xlen -i 1) 0)))))
@@ -13835,7 +13836,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mcyclecfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32))))
@@ -14005,7 +14006,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
                                               ((Sail.BitVec.extractLsb (← readReg minstretcfg) 63
-                                                  32) ++ value)))
+                                                  32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg)
                                                 (xlen -i 1) 0)))))
@@ -14016,7 +14017,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg minstretcfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg) 63
@@ -14179,7 +14180,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 31 0))))
                                       else
@@ -14194,7 +14195,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0))))
                                       else
@@ -14209,7 +14210,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0))))
                                       else
@@ -14224,7 +14225,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0))))
                                       else
@@ -14239,7 +14240,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 63 32))))
@@ -14401,7 +14402,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen1) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 63 32))))
@@ -14563,7 +14564,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen2) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 63 32))))
@@ -14725,7 +14726,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen3) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 63 32))))
@@ -14887,7 +14888,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 31 0))))
                                       else
@@ -14902,7 +14903,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 31 0))))
                                       else
@@ -14917,7 +14918,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 31 0))))
                                       else
@@ -14932,7 +14933,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 31 0))))
                                       else
@@ -14947,7 +14948,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 63 32))))
@@ -15109,7 +15110,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen1) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 63 32))))
@@ -15271,7 +15272,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen2) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 63 32))))
@@ -15433,7 +15434,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen3) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 63 32))))
@@ -15756,7 +15757,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       then
         (do
           writeReg menvcfg (← (legalize_menvcfg (← readReg menvcfg)
-              ((Sail.BitVec.extractLsb (← readReg menvcfg) 63 32) ++ value)))
+              ((Sail.BitVec.extractLsb (← readReg menvcfg) 63 32) +++ value)))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg menvcfg) 31 0))))
       else
         (do
@@ -15768,7 +15769,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       then
         (do
           writeReg menvcfg (← (legalize_menvcfg (← readReg menvcfg)
-              (value ++ (Sail.BitVec.extractLsb (← readReg menvcfg) 31 0))))
+              (value +++ (Sail.BitVec.extractLsb (← readReg menvcfg) 31 0))))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg menvcfg) 63 32))))
       else
         (do
@@ -15790,7 +15791,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                      let idx := (BitVec.toNatInt (0b00#2 ++ idx))
+                      let idx := (BitVec.toNatInt (0b00#2 +++ idx))
                       (pmpWriteAddrReg idx value)
                       (pure (Ok (← (pmpReadAddrReg idx)))))
                   else
@@ -15799,7 +15800,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                          let idx := (BitVec.toNatInt (0b01#2 ++ idx))
+                          let idx := (BitVec.toNatInt (0b01#2 +++ idx))
                           (pmpWriteAddrReg idx value)
                           (pure (Ok (← (pmpReadAddrReg idx)))))
                       else
@@ -15808,7 +15809,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                              let idx := (BitVec.toNatInt (0b10#2 ++ idx))
+                              let idx := (BitVec.toNatInt (0b10#2 +++ idx))
                               (pmpWriteAddrReg idx value)
                               (pure (Ok (← (pmpReadAddrReg idx)))))
                           else
@@ -15817,7 +15818,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                                  let idx := (BitVec.toNatInt (0b11#2 ++ idx))
+                                  let idx := (BitVec.toNatInt (0b11#2 +++ idx))
                                   (pmpWriteAddrReg idx value)
                                   (pure (Ok (← (pmpReadAddrReg idx)))))
                               else
@@ -15875,7 +15876,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg)
                                                 (xlen -i 1) 0)))))
@@ -15886,7 +15887,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mcyclecfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32))))
@@ -16056,7 +16057,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
                                               ((Sail.BitVec.extractLsb (← readReg minstretcfg) 63
-                                                  32) ++ value)))
+                                                  32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg)
                                                 (xlen -i 1) 0)))))
@@ -16067,7 +16068,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg minstretcfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg) 63
@@ -16230,7 +16231,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 31 0))))
                                       else
@@ -16245,7 +16246,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0))))
                                       else
@@ -16260,7 +16261,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0))))
                                       else
@@ -16275,7 +16276,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0))))
                                       else
@@ -16290,7 +16291,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 63 32))))
@@ -16452,7 +16453,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen1) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 63 32))))
@@ -16614,7 +16615,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen2) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 63 32))))
@@ -16776,7 +16777,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen3) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 63 32))))
@@ -16938,7 +16939,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 31 0))))
                                       else
@@ -16953,7 +16954,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 31 0))))
                                       else
@@ -16968,7 +16969,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 31 0))))
                                       else
@@ -16983,7 +16984,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 31 0))))
                                       else
@@ -16998,7 +16999,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 63 32))))
@@ -17160,7 +17161,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen1) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 63 32))))
@@ -17322,7 +17323,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen2) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 63 32))))
@@ -17484,7 +17485,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen3) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 63 32))))
@@ -17867,7 +17868,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       else
         (do
           writeReg medeleg (legalize_medeleg (← readReg medeleg)
-            ((Sail.BitVec.extractLsb (← readReg medeleg) 63 32) ++ value))
+            ((Sail.BitVec.extractLsb (← readReg medeleg) 63 32) +++ value))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg medeleg) 31 0)))))
   | (0x312, value) =>
     (do
@@ -17875,7 +17876,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
       then
         (do
           writeReg medeleg (legalize_medeleg (← readReg medeleg)
-            (value ++ (Sail.BitVec.extractLsb (← readReg medeleg) 31 0)))
+            (value +++ (Sail.BitVec.extractLsb (← readReg medeleg) 31 0)))
           (pure (Ok (Sail.BitVec.extractLsb (← readReg medeleg) 63 32))))
       else
         (do
@@ -17897,7 +17898,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                      let idx := (BitVec.toNatInt (0b00#2 ++ idx))
+                      let idx := (BitVec.toNatInt (0b00#2 +++ idx))
                       (pmpWriteAddrReg idx value)
                       (pure (Ok (← (pmpReadAddrReg idx)))))
                   else
@@ -17906,7 +17907,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                          let idx := (BitVec.toNatInt (0b01#2 ++ idx))
+                          let idx := (BitVec.toNatInt (0b01#2 +++ idx))
                           (pmpWriteAddrReg idx value)
                           (pure (Ok (← (pmpReadAddrReg idx)))))
                       else
@@ -17915,7 +17916,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                           then
                             (do
                               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                              let idx := (BitVec.toNatInt (0b10#2 ++ idx))
+                              let idx := (BitVec.toNatInt (0b10#2 +++ idx))
                               (pmpWriteAddrReg idx value)
                               (pure (Ok (← (pmpReadAddrReg idx)))))
                           else
@@ -17924,7 +17925,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                                  let idx := (BitVec.toNatInt (0b11#2 ++ idx))
+                                  let idx := (BitVec.toNatInt (0b11#2 +++ idx))
                                   (pmpWriteAddrReg idx value)
                                   (pure (Ok (← (pmpReadAddrReg idx)))))
                               else
@@ -17982,7 +17983,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg)
                                                 (xlen -i 1) 0)))))
@@ -17993,7 +17994,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mcyclecfg (← (legalize_smcntrpmf
                                               (← readReg mcyclecfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mcyclecfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32))))
@@ -18163,7 +18164,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
                                               ((Sail.BitVec.extractLsb (← readReg minstretcfg) 63
-                                                  32) ++ value)))
+                                                  32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg)
                                                 (xlen -i 1) 0)))))
@@ -18174,7 +18175,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg minstretcfg (← (legalize_smcntrpmf
                                               (← readReg minstretcfg)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg minstretcfg) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg minstretcfg) 63
@@ -18337,7 +18338,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 31 0))))
                                       else
@@ -18352,7 +18353,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0))))
                                       else
@@ -18367,7 +18368,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0))))
                                       else
@@ -18382,7 +18383,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) ++ value))
+                                            ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) +++ value))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0))))
                                       else
@@ -18397,7 +18398,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen0 (← (legalize_mstateen0
                                               (← readReg mstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg mstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen0) 63 32))))
@@ -18559,7 +18560,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen1 (legalize_mstateen1
                                             (← readReg mstateen1)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen1) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen1) 63 32))))
@@ -18721,7 +18722,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen2 (legalize_mstateen2
                                             (← readReg mstateen2)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen2) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen2) 63 32))))
@@ -18883,7 +18884,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg mstateen3 (legalize_mstateen3
                                             (← readReg mstateen3)
-                                            (value ++ (Sail.BitVec.extractLsb
+                                            (value +++ (Sail.BitVec.extractLsb
                                                 (← readReg mstateen3) 31 0)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg mstateen3) 63 32))))
@@ -19045,7 +19046,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 31 0))))
                                       else
@@ -19060,7 +19061,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 31 0))))
                                       else
@@ -19075,7 +19076,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 31 0))))
                                       else
@@ -19090,7 +19091,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) ++ value)))
+                                              ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) +++ value)))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 31 0))))
                                       else
@@ -19105,7 +19106,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen0 (← (legalize_hstateen0
                                               (← readReg hstateen0)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen0) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen0) 63 32))))
@@ -19267,7 +19268,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen1 (← (legalize_hstateen1
                                               (← readReg hstateen1)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen1) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen1) 63 32))))
@@ -19429,7 +19430,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen2 (← (legalize_hstateen2
                                               (← readReg hstateen2)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen2) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen2) 63 32))))
@@ -19591,7 +19592,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                         (do
                                           writeReg hstateen3 (← (legalize_hstateen3
                                               (← readReg hstateen3)
-                                              (value ++ (Sail.BitVec.extractLsb
+                                              (value +++ (Sail.BitVec.extractLsb
                                                   (← readReg hstateen3) 31 0))))
                                           (pure (Ok
                                               (Sail.BitVec.extractLsb (← readReg hstateen3) 63 32))))
@@ -19941,7 +19942,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
           then
             (do
               let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-              let idx := (BitVec.toNatInt (0b00#2 ++ idx))
+              let idx := (BitVec.toNatInt (0b00#2 +++ idx))
               (pmpWriteAddrReg idx value)
               (pure (Ok (← (pmpReadAddrReg idx)))))
           else
@@ -19950,7 +19951,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
               then
                 (do
                   let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                  let idx := (BitVec.toNatInt (0b01#2 ++ idx))
+                  let idx := (BitVec.toNatInt (0b01#2 +++ idx))
                   (pmpWriteAddrReg idx value)
                   (pure (Ok (← (pmpReadAddrReg idx)))))
               else
@@ -19959,7 +19960,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                   then
                     (do
                       let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                      let idx := (BitVec.toNatInt (0b10#2 ++ idx))
+                      let idx := (BitVec.toNatInt (0b10#2 +++ idx))
                       (pmpWriteAddrReg idx value)
                       (pure (Ok (← (pmpReadAddrReg idx)))))
                   else
@@ -19968,7 +19969,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                       then
                         (do
                           let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3812 3 0)
-                          let idx := (BitVec.toNatInt (0b11#2 ++ idx))
+                          let idx := (BitVec.toNatInt (0b11#2 +++ idx))
                           (pmpWriteAddrReg idx value)
                           (pure (Ok (← (pmpReadAddrReg idx)))))
                       else
@@ -20021,7 +20022,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg mcyclecfg (← (legalize_smcntrpmf
                                       (← readReg mcyclecfg)
-                                      ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32) +++ value)))
                                   (pure (Ok
                                       (Sail.BitVec.extractLsb (← readReg mcyclecfg) (xlen -i 1) 0)))))
                           | (0x721, value) =>
@@ -20031,7 +20032,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg mcyclecfg (← (legalize_smcntrpmf
                                       (← readReg mcyclecfg)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg mcyclecfg) 31 0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg mcyclecfg) 31
+                                          0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mcyclecfg) 63 32))))
                               else
                                 (do
@@ -20185,7 +20187,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg minstretcfg (← (legalize_smcntrpmf
                                       (← readReg minstretcfg)
-                                      ((Sail.BitVec.extractLsb (← readReg minstretcfg) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg minstretcfg) 63 32) +++ value)))
                                   (pure (Ok
                                       (Sail.BitVec.extractLsb (← readReg minstretcfg) (xlen -i 1)
                                         0)))))
@@ -20196,8 +20198,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg minstretcfg (← (legalize_smcntrpmf
                                       (← readReg minstretcfg)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg minstretcfg) 31
-                                          0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg minstretcfg)
+                                          31 0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg minstretcfg) 63 32))))
                               else
                                 (do
@@ -20344,7 +20346,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg mstateen0 (← (legalize_mstateen0
                                       (← readReg mstateen0)
-                                      ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg mstateen0) 63 32) +++ value)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen0) 31 0))))
                               else
                                 (do
@@ -20357,7 +20359,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   writeReg mstateen1 (legalize_mstateen1 (← readReg mstateen1)
-                                    ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) ++ value))
+                                    ((Sail.BitVec.extractLsb (← readReg mstateen1) 63 32) +++ value))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0))))
                               else
                                 (do
@@ -20370,7 +20372,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   writeReg mstateen2 (legalize_mstateen2 (← readReg mstateen2)
-                                    ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) ++ value))
+                                    ((Sail.BitVec.extractLsb (← readReg mstateen2) 63 32) +++ value))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0))))
                               else
                                 (do
@@ -20383,7 +20385,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   writeReg mstateen3 (legalize_mstateen3 (← readReg mstateen3)
-                                    ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) ++ value))
+                                    ((Sail.BitVec.extractLsb (← readReg mstateen3) 63 32) +++ value))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0))))
                               else
                                 (do
@@ -20397,7 +20399,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg mstateen0 (← (legalize_mstateen0
                                       (← readReg mstateen0)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg mstateen0) 31 0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg mstateen0) 31
+                                          0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen0) 63 32))))
                               else
                                 (do
@@ -20543,7 +20546,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   writeReg mstateen1 (legalize_mstateen1 (← readReg mstateen1)
-                                    (value ++ (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0)))
+                                    (value +++ (Sail.BitVec.extractLsb (← readReg mstateen1) 31 0)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen1) 63 32))))
                               else
                                 (do
@@ -20689,7 +20692,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   writeReg mstateen2 (legalize_mstateen2 (← readReg mstateen2)
-                                    (value ++ (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0)))
+                                    (value +++ (Sail.BitVec.extractLsb (← readReg mstateen2) 31 0)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen2) 63 32))))
                               else
                                 (do
@@ -20835,7 +20838,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                               then
                                 (do
                                   writeReg mstateen3 (legalize_mstateen3 (← readReg mstateen3)
-                                    (value ++ (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0)))
+                                    (value +++ (Sail.BitVec.extractLsb (← readReg mstateen3) 31 0)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg mstateen3) 63 32))))
                               else
                                 (do
@@ -20982,7 +20985,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen0 (← (legalize_hstateen0
                                       (← readReg hstateen0)
-                                      ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg hstateen0) 63 32) +++ value)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen0) 31 0))))
                               else
                                 (do
@@ -20996,7 +20999,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen1 (← (legalize_hstateen1
                                       (← readReg hstateen1)
-                                      ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg hstateen1) 63 32) +++ value)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen1) 31 0))))
                               else
                                 (do
@@ -21010,7 +21013,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen2 (← (legalize_hstateen2
                                       (← readReg hstateen2)
-                                      ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg hstateen2) 63 32) +++ value)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen2) 31 0))))
                               else
                                 (do
@@ -21024,7 +21027,7 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen3 (← (legalize_hstateen3
                                       (← readReg hstateen3)
-                                      ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) ++ value)))
+                                      ((Sail.BitVec.extractLsb (← readReg hstateen3) 63 32) +++ value)))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen3) 31 0))))
                               else
                                 (do
@@ -21038,7 +21041,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen0 (← (legalize_hstateen0
                                       (← readReg hstateen0)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg hstateen0) 31 0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg hstateen0) 31
+                                          0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen0) 63 32))))
                               else
                                 (do
@@ -21185,7 +21189,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen1 (← (legalize_hstateen1
                                       (← readReg hstateen1)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg hstateen1) 31 0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg hstateen1) 31
+                                          0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen1) 63 32))))
                               else
                                 (do
@@ -21332,7 +21337,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen2 (← (legalize_hstateen2
                                       (← readReg hstateen2)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg hstateen2) 31 0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg hstateen2) 31
+                                          0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen2) 63 32))))
                               else
                                 (do
@@ -21479,7 +21485,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 64)) : SailM (Result (BitVec 
                                 (do
                                   writeReg hstateen3 (← (legalize_hstateen3
                                       (← readReg hstateen3)
-                                      (value ++ (Sail.BitVec.extractLsb (← readReg hstateen3) 31 0))))
+                                      (value +++ (Sail.BitVec.extractLsb (← readReg hstateen3) 31
+                                          0))))
                                   (pure (Ok (Sail.BitVec.extractLsb (← readReg hstateen3) 63 32))))
                               else
                                 (do

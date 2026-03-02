@@ -302,7 +302,7 @@ def float_compose_after_round (sign : (BitVec 1)) (exp : (BitVec k_n)) (mantissa
     else exp
   let exp_shift := (exp_new <<< (Sail.BitVec.length fp.mantissa))
   let exp_and_mantissa := (Sail.BitVec.truncate (exp_shift + mantissa_new) (bitsize -i 1))
-  ((sign ++ exp_and_mantissa), eflag)
+  ((sign +++ exp_and_mantissa), eflag)
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, k_n ∈ {16, 32, 64, 128} -/
 def float_get_sign_with_all_ones_exp (sign : (BitVec 1)) (op : (BitVec k_n)) : (BitVec k_n) :=
@@ -311,7 +311,7 @@ def float_get_sign_with_all_ones_exp (sign : (BitVec 1)) (op : (BitVec k_n)) : (
   let one := (Sail.BitVec.zeroExtend (1#1 : (BitVec 1)) bitsize)
   let all_ones := ((one <<< (Sail.BitVec.length fp.exp)) - one)
   let all_ones_exp := (all_ones <<< (Sail.BitVec.length fp.mantissa))
-  (sign ++ (Sail.BitVec.truncate all_ones_exp (bitsize -i 1)))
+  (sign +++ (Sail.BitVec.truncate all_ones_exp (bitsize -i 1)))
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, k_n ∈ {16, 32, 64, 128} -/
 def float_round_and_compose (sign : (BitVec 1)) (exp : (BitVec k_n)) (mantissa : (BitVec k_n)) (rounding_mode : (BitVec 5)) : ((BitVec k_n) × (BitVec 5)) :=
@@ -356,7 +356,7 @@ def float_add_same_exp_internal (op_0 : (BitVec k_n)) (op_1 : (BitVec k_n)) : Sa
     let exp :=
       (fp_0.exp + (Sail.BitVec.zeroExtend (1#1 : (BitVec 1)) (Sail.BitVec.length fp_0.exp)))
     let mantissa := (Sail.BitVec.truncate mantissa_shift mantissa_bitsize)
-    (pure ((sign ++ (exp ++ mantissa)), fp_eflag_none)))
+    (pure ((sign +++ (exp +++ mantissa)), fp_eflag_none)))
   else
     (do
       let exp := (Sail.BitVec.zeroExtend fp_0.exp bitsize)

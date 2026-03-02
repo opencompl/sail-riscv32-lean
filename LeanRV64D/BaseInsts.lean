@@ -558,7 +558,7 @@ def shiftiwop_mnemonic_backwards_matches (arg_ : String) : Bool :=
 def effective_fence_set (set : (BitVec 4)) (fiom : Bool) : (BitVec 4) :=
   if (fiom : Bool)
   then
-    ((Sail.BitVec.extractLsb set 3 2) ++ ((Sail.BitVec.extractLsb set 1 0) ||| (Sail.BitVec.extractLsb
+    ((Sail.BitVec.extractLsb set 3 2) +++ ((Sail.BitVec.extractLsb set 1 0) ||| (Sail.BitVec.extractLsb
           set 3 2)))
   else set
 

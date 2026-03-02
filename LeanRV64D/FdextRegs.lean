@@ -205,10 +205,10 @@ open AmocasOddRegisterReservedBehavior
 /-- Type quantifiers: n : Nat, n ≥ 0, n ∈ {16, 32, 64, 128} -/
 def canonical_NaN {n : _} : (BitVec n) :=
   match n with
-  | 16 => (0#1 ++ ((ones (n := 5)) ++ (1#1 ++ (zeros (n := 9)))))
-  | 32 => (0#1 ++ ((ones (n := 8)) ++ (1#1 ++ (zeros (n := 22)))))
-  | 64 => (0#1 ++ ((ones (n := 11)) ++ (1#1 ++ (zeros (n := 51)))))
-  | _ => (0#1 ++ ((ones (n := 15)) ++ (1#1 ++ (zeros (n := 111)))))
+  | 16 => (0#1 +++ ((ones (n := 5)) +++ (1#1 +++ (zeros (n := 9)))))
+  | 32 => (0#1 +++ ((ones (n := 8)) +++ (1#1 +++ (zeros (n := 22)))))
+  | 64 => (0#1 +++ ((ones (n := 11)) +++ (1#1 +++ (zeros (n := 51)))))
+  | _ => (0#1 +++ ((ones (n := 15)) +++ (1#1 +++ (zeros (n := 111)))))
 
 def canonical_NaN_BF16 : (BitVec 16) := 0x7FC0#16
 
@@ -226,7 +226,7 @@ def canonical_NaN_Q (_ : Unit) : (BitVec 128) :=
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, n : Nat, n ≥ 0, k_n ≤ n -/
 def nan_box {n : _} (x : (BitVec k_n)) : (BitVec n) :=
-  ((ones (n := (n -i (Sail.BitVec.length x)))) ++ x)
+  ((ones (n := (n -i (Sail.BitVec.length x)))) +++ x)
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, m : Nat, m ≥ 0, m ∈ {16, 32, 64, 128} ∧ k_n ≥ m -/
 def nan_unbox {m : _} (x : (BitVec k_n)) : (BitVec m) :=
@@ -244,7 +244,7 @@ def fregidx_bits (app_0 : fregidx) : (BitVec 5) :=
 
 def cfregidx_to_fregidx (app_0 : cfregidx) : fregidx :=
   let .Cfregidx b := app_0
-  (Fregidx (0b01#2 ++ b))
+  (Fregidx (0b01#2 +++ b))
 
 def encdec_cfreg_forwards (arg_ : cfregidx) : (BitVec 3) :=
   match arg_ with

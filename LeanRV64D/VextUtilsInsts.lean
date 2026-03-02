@@ -328,8 +328,8 @@ def get_scalar (rs1 : regidx) (SEW : Nat) : SailM (BitVec SEW) := do
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, k_m : Nat, k_m ≥ 0, i : Nat, k_n > 0 ∧
   k_m > 0 ∧ i ≥ 0 ∧ (4 * i + 3) < k_n -/
 def get_velem_quad (v : (Vector (BitVec k_m) k_n)) (i : Nat) : (BitVec (4 * k_m)) :=
-  ((GetElem?.getElem! v ((4 *i i) +i 3)) ++ ((GetElem?.getElem! v ((4 *i i) +i 2)) ++ ((GetElem?.getElem!
-          v ((4 *i i) +i 1)) ++ (GetElem?.getElem! v (4 *i i)))))
+  ((GetElem?.getElem! v ((4 *i i) +i 3)) +++ ((GetElem?.getElem! v ((4 *i i) +i 2)) +++ ((GetElem?.getElem!
+          v ((4 *i i) +i 1)) +++ (GetElem?.getElem! v (4 *i i)))))
 
 /-- Type quantifiers: i : Nat, SEW : Nat, k_n : Nat, k_n ≥ 0, k_n > 0, SEW ∈ {8, 16, 32, 64}, 0
   ≤ i -/
@@ -724,18 +724,18 @@ def unsigned_saturation (len : Nat) (elem : (BitVec k_n)) : SailM (BitVec len) :
 
 /-- Type quantifiers: len : Nat, k_n : Nat, k_n ≥ len ∧ len > 1 -/
 def signed_saturation (len : Nat) (elem : (BitVec k_n)) : SailM (BitVec len) := do
-  if (((BitVec.toInt elem) >b (BitVec.toInt (0#1 ++ (ones (n := (len -i 1)))))) : Bool)
+  if (((BitVec.toInt elem) >b (BitVec.toInt (0#1 +++ (ones (n := (len -i 1)))))) : Bool)
   then
     (do
       writeReg vcsr (Sail.BitVec.updateSubrange (← readReg vcsr) 0 0 1#1)
-      (pure (0#1 ++ (ones (n := (len -i 1))))))
+      (pure (0#1 +++ (ones (n := (len -i 1))))))
   else
     (do
-      if (((BitVec.toInt elem) <b (BitVec.toInt (1#1 ++ (zeros (n := (len -i 1)))))) : Bool)
+      if (((BitVec.toInt elem) <b (BitVec.toInt (1#1 +++ (zeros (n := (len -i 1)))))) : Bool)
       then
         (do
           writeReg vcsr (Sail.BitVec.updateSubrange (← readReg vcsr) 0 0 1#1)
-          (pure (1#1 ++ (zeros (n := (len -i 1))))))
+          (pure (1#1 +++ (zeros (n := (len -i 1))))))
       else (pure (Sail.BitVec.extractLsb elem (len -i 1) 0)))
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, _m : Nat, _m ≥ 0, k_n ≥ 0 ∧ _m ≥ 0 -/

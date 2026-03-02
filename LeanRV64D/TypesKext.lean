@@ -216,10 +216,10 @@ def gfmul (x : (BitVec 8)) (y : (BitVec 4)) : (BitVec 8) :=
         else 0x00#8))))
 
 def aes_mixcolumn_byte_fwd (so : (BitVec 8)) : (BitVec 32) :=
-  ((gfmul so 0x3#4) ++ (so ++ (so ++ (gfmul so 0x2#4))))
+  ((gfmul so 0x3#4) +++ (so +++ (so +++ (gfmul so 0x2#4))))
 
 def aes_mixcolumn_byte_inv (so : (BitVec 8)) : (BitVec 32) :=
-  ((gfmul so 0xB#4) ++ ((gfmul so 0xD#4) ++ ((gfmul so 0x9#4) ++ (gfmul so 0xE#4))))
+  ((gfmul so 0xB#4) +++ ((gfmul so 0xD#4) +++ ((gfmul so 0x9#4) +++ (gfmul so 0xE#4))))
 
 def aes_mixcolumn_fwd (x : (BitVec 32)) : (BitVec 32) :=
   let s0 : (BitVec 8) := (Sail.BitVec.extractLsb x 7 0)
@@ -230,7 +230,7 @@ def aes_mixcolumn_fwd (x : (BitVec 32)) : (BitVec 32) :=
   let b1 : (BitVec 8) := (s0 ^^^ ((xt2 s1) ^^^ ((xt3 s2) ^^^ s3)))
   let b2 : (BitVec 8) := (s0 ^^^ (s1 ^^^ ((xt2 s2) ^^^ (xt3 s3))))
   let b3 : (BitVec 8) := ((xt3 s0) ^^^ (s1 ^^^ (s2 ^^^ (xt2 s3))))
-  (b3 ++ (b2 ++ (b1 ++ b0)))
+  (b3 +++ (b2 +++ (b1 +++ b0)))
 
 def aes_mixcolumn_inv (x : (BitVec 32)) : (BitVec 32) :=
   let s0 : (BitVec 8) := (Sail.BitVec.extractLsb x 7 0)
@@ -245,7 +245,7 @@ def aes_mixcolumn_inv (x : (BitVec 32)) : (BitVec 32) :=
     ((gfmul s0 0xD#4) ^^^ ((gfmul s1 0x9#4) ^^^ ((gfmul s2 0xE#4) ^^^ (gfmul s3 0xB#4))))
   let b3 : (BitVec 8) :=
     ((gfmul s0 0xB#4) ^^^ ((gfmul s1 0xD#4) ^^^ ((gfmul s2 0x9#4) ^^^ (gfmul s3 0xE#4))))
-  (b3 ++ (b2 ++ (b1 ++ b0)))
+  (b3 +++ (b2 +++ (b1 +++ b0)))
 
 def aes_decode_rcon (r : (BitVec 4)) : SailM (BitVec 32) := do
   assert (zopz0zI_u r 0xA#4) "extensions/K/types_kext.sail:77.18-77.19"
@@ -281,13 +281,13 @@ def aes_sbox_inv (x : (BitVec 8)) : (BitVec 8) :=
   (sbox_lookup x aes_sbox_inv_table)
 
 def aes_subword_fwd (x : (BitVec 32)) : (BitVec 32) :=
-  ((aes_sbox_fwd (Sail.BitVec.extractLsb x 31 24)) ++ ((aes_sbox_fwd
-        (Sail.BitVec.extractLsb x 23 16)) ++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 15 8)) ++ (aes_sbox_fwd
+  ((aes_sbox_fwd (Sail.BitVec.extractLsb x 31 24)) +++ ((aes_sbox_fwd
+        (Sail.BitVec.extractLsb x 23 16)) +++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 15 8)) +++ (aes_sbox_fwd
           (Sail.BitVec.extractLsb x 7 0)))))
 
 def aes_subword_inv (x : (BitVec 32)) : (BitVec 32) :=
-  ((aes_sbox_inv (Sail.BitVec.extractLsb x 31 24)) ++ ((aes_sbox_inv
-        (Sail.BitVec.extractLsb x 23 16)) ++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 15 8)) ++ (aes_sbox_inv
+  ((aes_sbox_inv (Sail.BitVec.extractLsb x 31 24)) +++ ((aes_sbox_inv
+        (Sail.BitVec.extractLsb x 23 16)) +++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 15 8)) +++ (aes_sbox_inv
           (Sail.BitVec.extractLsb x 7 0)))))
 
 def sm4_sbox (x : (BitVec 8)) : (BitVec 8) :=
@@ -298,17 +298,17 @@ def aes_get_column (state : (BitVec 128)) (c : Nat) : (BitVec 32) :=
   (Sail.BitVec.extractLsb state ((32 *i c) +i 31) (32 *i c))
 
 def aes_apply_fwd_sbox_to_each_byte (x : (BitVec 64)) : (BitVec 64) :=
-  ((aes_sbox_fwd (Sail.BitVec.extractLsb x 63 56)) ++ ((aes_sbox_fwd
-        (Sail.BitVec.extractLsb x 55 48)) ++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 47 40)) ++ ((aes_sbox_fwd
-            (Sail.BitVec.extractLsb x 39 32)) ++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 31 24)) ++ ((aes_sbox_fwd
-                (Sail.BitVec.extractLsb x 23 16)) ++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 15 8)) ++ (aes_sbox_fwd
+  ((aes_sbox_fwd (Sail.BitVec.extractLsb x 63 56)) +++ ((aes_sbox_fwd
+        (Sail.BitVec.extractLsb x 55 48)) +++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 47 40)) +++ ((aes_sbox_fwd
+            (Sail.BitVec.extractLsb x 39 32)) +++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 31 24)) +++ ((aes_sbox_fwd
+                (Sail.BitVec.extractLsb x 23 16)) +++ ((aes_sbox_fwd (Sail.BitVec.extractLsb x 15 8)) +++ (aes_sbox_fwd
                   (Sail.BitVec.extractLsb x 7 0)))))))))
 
 def aes_apply_inv_sbox_to_each_byte (x : (BitVec 64)) : (BitVec 64) :=
-  ((aes_sbox_inv (Sail.BitVec.extractLsb x 63 56)) ++ ((aes_sbox_inv
-        (Sail.BitVec.extractLsb x 55 48)) ++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 47 40)) ++ ((aes_sbox_inv
-            (Sail.BitVec.extractLsb x 39 32)) ++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 31 24)) ++ ((aes_sbox_inv
-                (Sail.BitVec.extractLsb x 23 16)) ++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 15 8)) ++ (aes_sbox_inv
+  ((aes_sbox_inv (Sail.BitVec.extractLsb x 63 56)) +++ ((aes_sbox_inv
+        (Sail.BitVec.extractLsb x 55 48)) +++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 47 40)) +++ ((aes_sbox_inv
+            (Sail.BitVec.extractLsb x 39 32)) +++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 31 24)) +++ ((aes_sbox_inv
+                (Sail.BitVec.extractLsb x 23 16)) +++ ((aes_sbox_inv (Sail.BitVec.extractLsb x 15 8)) +++ (aes_sbox_inv
                   (Sail.BitVec.extractLsb x 7 0)))))))))
 
 /-- Type quantifiers: i : Nat, 0 ≤ i ∧ i ≤ 7 -/
@@ -316,12 +316,12 @@ def getbyte (x : (BitVec 64)) (i : Nat) : (BitVec 8) :=
   (Sail.BitVec.extractLsb x ((8 *i i) +i 7) (8 *i i))
 
 def aes_rv64_shiftrows_fwd (rs2 : (BitVec 64)) (rs1 : (BitVec 64)) : (BitVec 64) :=
-  ((getbyte rs1 3) ++ ((getbyte rs2 6) ++ ((getbyte rs2 1) ++ ((getbyte rs1 4) ++ ((getbyte rs2 7) ++ ((getbyte
-                rs2 2) ++ ((getbyte rs1 5) ++ (getbyte rs1 0))))))))
+  ((getbyte rs1 3) +++ ((getbyte rs2 6) +++ ((getbyte rs2 1) +++ ((getbyte rs1 4) +++ ((getbyte rs2
+              7) +++ ((getbyte rs2 2) +++ ((getbyte rs1 5) +++ (getbyte rs1 0))))))))
 
 def aes_rv64_shiftrows_inv (rs2 : (BitVec 64)) (rs1 : (BitVec 64)) : (BitVec 64) :=
-  ((getbyte rs2 3) ++ ((getbyte rs2 6) ++ ((getbyte rs1 1) ++ ((getbyte rs1 4) ++ ((getbyte rs1 7) ++ ((getbyte
-                rs2 2) ++ ((getbyte rs2 5) ++ (getbyte rs1 0))))))))
+  ((getbyte rs2 3) +++ ((getbyte rs2 6) +++ ((getbyte rs1 1) +++ ((getbyte rs1 4) +++ ((getbyte rs1
+              7) +++ ((getbyte rs2 2) +++ ((getbyte rs2 5) +++ (getbyte rs1 0))))))))
 
 def aes_shift_rows_fwd (x : (BitVec 128)) : (BitVec 128) :=
   let ic3 : (BitVec 32) := (aes_get_column x 3)
@@ -329,18 +329,18 @@ def aes_shift_rows_fwd (x : (BitVec 128)) : (BitVec 128) :=
   let ic1 : (BitVec 32) := (aes_get_column x 1)
   let ic0 : (BitVec 32) := (aes_get_column x 0)
   let oc0 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic3 31 24) ++ ((Sail.BitVec.extractLsb ic2 23 16) ++ ((Sail.BitVec.extractLsb
-            ic1 15 8) ++ (Sail.BitVec.extractLsb ic0 7 0))))
+    ((Sail.BitVec.extractLsb ic3 31 24) +++ ((Sail.BitVec.extractLsb ic2 23 16) +++ ((Sail.BitVec.extractLsb
+            ic1 15 8) +++ (Sail.BitVec.extractLsb ic0 7 0))))
   let oc1 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic0 31 24) ++ ((Sail.BitVec.extractLsb ic3 23 16) ++ ((Sail.BitVec.extractLsb
-            ic2 15 8) ++ (Sail.BitVec.extractLsb ic1 7 0))))
+    ((Sail.BitVec.extractLsb ic0 31 24) +++ ((Sail.BitVec.extractLsb ic3 23 16) +++ ((Sail.BitVec.extractLsb
+            ic2 15 8) +++ (Sail.BitVec.extractLsb ic1 7 0))))
   let oc2 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic1 31 24) ++ ((Sail.BitVec.extractLsb ic0 23 16) ++ ((Sail.BitVec.extractLsb
-            ic3 15 8) ++ (Sail.BitVec.extractLsb ic2 7 0))))
+    ((Sail.BitVec.extractLsb ic1 31 24) +++ ((Sail.BitVec.extractLsb ic0 23 16) +++ ((Sail.BitVec.extractLsb
+            ic3 15 8) +++ (Sail.BitVec.extractLsb ic2 7 0))))
   let oc3 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic2 31 24) ++ ((Sail.BitVec.extractLsb ic1 23 16) ++ ((Sail.BitVec.extractLsb
-            ic0 15 8) ++ (Sail.BitVec.extractLsb ic3 7 0))))
-  (oc3 ++ (oc2 ++ (oc1 ++ oc0)))
+    ((Sail.BitVec.extractLsb ic2 31 24) +++ ((Sail.BitVec.extractLsb ic1 23 16) +++ ((Sail.BitVec.extractLsb
+            ic0 15 8) +++ (Sail.BitVec.extractLsb ic3 7 0))))
+  (oc3 +++ (oc2 +++ (oc1 +++ oc0)))
 
 def aes_shift_rows_inv (x : (BitVec 128)) : (BitVec 128) :=
   let ic3 : (BitVec 32) := (aes_get_column x 3)
@@ -348,44 +348,44 @@ def aes_shift_rows_inv (x : (BitVec 128)) : (BitVec 128) :=
   let ic1 : (BitVec 32) := (aes_get_column x 1)
   let ic0 : (BitVec 32) := (aes_get_column x 0)
   let oc0 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic1 31 24) ++ ((Sail.BitVec.extractLsb ic2 23 16) ++ ((Sail.BitVec.extractLsb
-            ic3 15 8) ++ (Sail.BitVec.extractLsb ic0 7 0))))
+    ((Sail.BitVec.extractLsb ic1 31 24) +++ ((Sail.BitVec.extractLsb ic2 23 16) +++ ((Sail.BitVec.extractLsb
+            ic3 15 8) +++ (Sail.BitVec.extractLsb ic0 7 0))))
   let oc1 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic2 31 24) ++ ((Sail.BitVec.extractLsb ic3 23 16) ++ ((Sail.BitVec.extractLsb
-            ic0 15 8) ++ (Sail.BitVec.extractLsb ic1 7 0))))
+    ((Sail.BitVec.extractLsb ic2 31 24) +++ ((Sail.BitVec.extractLsb ic3 23 16) +++ ((Sail.BitVec.extractLsb
+            ic0 15 8) +++ (Sail.BitVec.extractLsb ic1 7 0))))
   let oc2 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic3 31 24) ++ ((Sail.BitVec.extractLsb ic0 23 16) ++ ((Sail.BitVec.extractLsb
-            ic1 15 8) ++ (Sail.BitVec.extractLsb ic2 7 0))))
+    ((Sail.BitVec.extractLsb ic3 31 24) +++ ((Sail.BitVec.extractLsb ic0 23 16) +++ ((Sail.BitVec.extractLsb
+            ic1 15 8) +++ (Sail.BitVec.extractLsb ic2 7 0))))
   let oc3 : (BitVec 32) :=
-    ((Sail.BitVec.extractLsb ic0 31 24) ++ ((Sail.BitVec.extractLsb ic1 23 16) ++ ((Sail.BitVec.extractLsb
-            ic2 15 8) ++ (Sail.BitVec.extractLsb ic3 7 0))))
-  (oc3 ++ (oc2 ++ (oc1 ++ oc0)))
+    ((Sail.BitVec.extractLsb ic0 31 24) +++ ((Sail.BitVec.extractLsb ic1 23 16) +++ ((Sail.BitVec.extractLsb
+            ic2 15 8) +++ (Sail.BitVec.extractLsb ic3 7 0))))
+  (oc3 +++ (oc2 +++ (oc1 +++ oc0)))
 
 def aes_subbytes_fwd (x : (BitVec 128)) : (BitVec 128) :=
   let oc0 : (BitVec 32) := (aes_subword_fwd (aes_get_column x 0))
   let oc1 : (BitVec 32) := (aes_subword_fwd (aes_get_column x 1))
   let oc2 : (BitVec 32) := (aes_subword_fwd (aes_get_column x 2))
   let oc3 : (BitVec 32) := (aes_subword_fwd (aes_get_column x 3))
-  (oc3 ++ (oc2 ++ (oc1 ++ oc0)))
+  (oc3 +++ (oc2 +++ (oc1 +++ oc0)))
 
 def aes_subbytes_inv (x : (BitVec 128)) : (BitVec 128) :=
   let oc0 : (BitVec 32) := (aes_subword_inv (aes_get_column x 0))
   let oc1 : (BitVec 32) := (aes_subword_inv (aes_get_column x 1))
   let oc2 : (BitVec 32) := (aes_subword_inv (aes_get_column x 2))
   let oc3 : (BitVec 32) := (aes_subword_inv (aes_get_column x 3))
-  (oc3 ++ (oc2 ++ (oc1 ++ oc0)))
+  (oc3 +++ (oc2 +++ (oc1 +++ oc0)))
 
 def aes_mixcolumns_fwd (x : (BitVec 128)) : (BitVec 128) :=
   let oc0 : (BitVec 32) := (aes_mixcolumn_fwd (aes_get_column x 0))
   let oc1 : (BitVec 32) := (aes_mixcolumn_fwd (aes_get_column x 1))
   let oc2 : (BitVec 32) := (aes_mixcolumn_fwd (aes_get_column x 2))
   let oc3 : (BitVec 32) := (aes_mixcolumn_fwd (aes_get_column x 3))
-  (oc3 ++ (oc2 ++ (oc1 ++ oc0)))
+  (oc3 +++ (oc2 +++ (oc1 +++ oc0)))
 
 def aes_mixcolumns_inv (x : (BitVec 128)) : (BitVec 128) :=
   let oc0 : (BitVec 32) := (aes_mixcolumn_inv (aes_get_column x 0))
   let oc1 : (BitVec 32) := (aes_mixcolumn_inv (aes_get_column x 1))
   let oc2 : (BitVec 32) := (aes_mixcolumn_inv (aes_get_column x 2))
   let oc3 : (BitVec 32) := (aes_mixcolumn_inv (aes_get_column x 3))
-  (oc3 ++ (oc2 ++ (oc1 ++ oc0)))
+  (oc3 +++ (oc2 +++ (oc1 +++ oc0)))
 

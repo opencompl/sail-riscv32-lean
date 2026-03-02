@@ -268,7 +268,7 @@ def float_decompose (op : (BitVec k_n)) : (float_bits k_n) :=
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, is_fp_bits(k_n) -/
 def float_compose (op : (float_bits k_n)) : (BitVec k_n) :=
-  (op.sign ++ (op.exp ++ op.mantissa))
+  (op.sign +++ (op.exp +++ op.mantissa))
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, is_fp_bits(k_n) -/
 def float_has_max_exp (op : (BitVec k_n)) : Bool :=

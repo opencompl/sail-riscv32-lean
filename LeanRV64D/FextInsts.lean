@@ -305,7 +305,7 @@ def fsplit_S (x32 : (BitVec 32)) : ((BitVec 1) × (BitVec 8) × (BitVec 23)) :=
     x32 22 0))
 
 def fmake_S (sign : (BitVec 1)) (exp : (BitVec 8)) (mant : (BitVec 23)) : (BitVec 32) :=
-  (sign ++ (exp ++ mant))
+  (sign +++ (exp +++ mant))
 
 def f_is_neg_inf_S (x32 : (BitVec 32)) : Bool :=
   let (sign, exp, mant) := (fsplit_S x32)

@@ -296,25 +296,25 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
           if (((Sail.BitVec.extractLsb v__3768 11 4) == (0x3B#8 : (BitVec 8))) : Bool)
           then
             (let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3768 3 0)
-            (pure (sys_pmp_count >b (BitVec.toNatInt (0b00#2 ++ idx)))))
+            (pure (sys_pmp_count >b (BitVec.toNatInt (0b00#2 +++ idx)))))
           else
             (do
               if (((Sail.BitVec.extractLsb v__3768 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
               then
                 (let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3768 3 0)
-                (pure (sys_pmp_count >b (BitVec.toNatInt (0b01#2 ++ idx)))))
+                (pure (sys_pmp_count >b (BitVec.toNatInt (0b01#2 +++ idx)))))
               else
                 (do
                   if (((Sail.BitVec.extractLsb v__3768 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                   then
                     (let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3768 3 0)
-                    (pure (sys_pmp_count >b (BitVec.toNatInt (0b10#2 ++ idx)))))
+                    (pure (sys_pmp_count >b (BitVec.toNatInt (0b10#2 +++ idx)))))
                   else
                     (do
                       if (((Sail.BitVec.extractLsb v__3768 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                       then
                         (let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3768 3 0)
-                        (pure (sys_pmp_count >b (BitVec.toNatInt (0b11#2 ++ idx)))))
+                        (pure (sys_pmp_count >b (BitVec.toNatInt (0b11#2 +++ idx)))))
                       else
                         (do
                           match (v__3768, g__72, g__73) with

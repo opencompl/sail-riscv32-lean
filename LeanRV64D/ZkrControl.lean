@@ -247,7 +247,7 @@ def read_seed_csr (_ : Unit) : SailM (BitVec 64) := do
   let custom_bits : (BitVec 8) := 0x00#8
   let seed ← (( do (get_16_random_bits ()) ) : SailM (BitVec 16) )
   (pure (zero_extend (m := 64)
-      ((opst_code_forwards ES16) ++ (reserved_bits ++ (custom_bits ++ seed)))))
+      ((opst_code_forwards ES16) +++ (reserved_bits +++ (custom_bits +++ seed)))))
 
 def write_seed_csr (_ : Unit) : (BitVec 64) :=
   (zeros (n := 64))

@@ -272,8 +272,8 @@ def zvk_sm4_sbox (x : (BitVec 5)) : (BitVec 32) :=
   (zvksed_box_lookup x zvksed_ck)
 
 def zvk_sm4_subword (x : (BitVec 32)) : (BitVec 32) :=
-  ((sm4_sbox (Sail.BitVec.extractLsb x 31 24)) ++ ((sm4_sbox (Sail.BitVec.extractLsb x 23 16)) ++ ((sm4_sbox
-          (Sail.BitVec.extractLsb x 15 8)) ++ (sm4_sbox (Sail.BitVec.extractLsb x 7 0)))))
+  ((sm4_sbox (Sail.BitVec.extractLsb x 31 24)) +++ ((sm4_sbox (Sail.BitVec.extractLsb x 23 16)) +++ ((sm4_sbox
+          (Sail.BitVec.extractLsb x 15 8)) +++ (sm4_sbox (Sail.BitVec.extractLsb x 7 0)))))
 
 def zvk_p0 (X : (BitVec 32)) : (BitVec 32) :=
   (X ^^^ ((rotatel X 9) ^^^ (rotatel X 17)))

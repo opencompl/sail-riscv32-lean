@@ -202,7 +202,7 @@ def fsplit_BF16 (v : (BitVec 16)) : ((BitVec 1) × (BitVec 8) × (BitVec 7)) :=
   ((Sail.BitVec.extractLsb v 15 15), (Sail.BitVec.extractLsb v 14 7), (Sail.BitVec.extractLsb v 6 0))
 
 def fmake_BF16 (sign : (BitVec 1)) (exp : (BitVec 8)) (mant : (BitVec 7)) : (BitVec 16) :=
-  (sign ++ (exp ++ mant))
+  (sign +++ (exp +++ mant))
 
 def bf16_to_f32 (v : (BitVec 16)) : ((BitVec 5) × (BitVec 32)) :=
   let (sign, exp, mant) := (fsplit_BF16 v)
@@ -218,7 +218,7 @@ def bf16_to_f32 (v : (BitVec 16)) : ((BitVec 5) × (BitVec 32)) :=
     else
       (if (is_inf : Bool)
       then (fmake_S sign (ones (n := 8)) (zeros (n := 23)))
-      else (fmake_S sign exp (mant ++ (zeros (n := 16)))))
+      else (fmake_S sign exp (mant +++ (zeros (n := 16)))))
   (fflags, value)
 
 def bf16_to_f32_set_flags (nval : (BitVec 16)) : SailM (BitVec 32) := do

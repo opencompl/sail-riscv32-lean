@@ -1240,7 +1240,7 @@ def _set_Mcause_IsInterrupt (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec (64
   writeRegRef r_ref (_update_Mcause_IsInterrupt r v)
 
 def tvec_addr (m : (BitVec 64)) (c : (BitVec 64)) : (Option (BitVec 64)) :=
-  let base : xlenbits := ((_get_Mtvec_Base m) ++ 0b00#2)
+  let base : xlenbits := ((_get_Mtvec_Base m) +++ 0b00#2)
   match (trapVectorMode_of_bits (_get_Mtvec_Mode m)) with
   | TV_Direct => (some base)
   | TV_Vector =>
@@ -1336,11 +1336,11 @@ def _set_Counteren_TM (r_ref : (RegisterRef (BitVec 32))) (v : (BitVec 1)) : Sai
   writeRegRef r_ref (_update_Counteren_TM r v)
 
 def legalize_scounteren (_c : (BitVec 32)) (v : (BitVec 64)) : (BitVec 32) :=
-  let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) ++ 0b111#3)
+  let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) +++ 0b111#3)
   (Mk_Counteren ((Sail.BitVec.extractLsb v 31 0) &&& supported_counters))
 
 def legalize_mcounteren (_c : (BitVec 32)) (v : (BitVec 64)) : (BitVec 32) :=
-  let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) ++ 0b111#3)
+  let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) +++ 0b111#3)
   (Mk_Counteren ((Sail.BitVec.extractLsb v 31 0) &&& supported_counters))
 
 def undefined_Counterin (_ : Unit) : SailM (BitVec 32) := do
@@ -1350,7 +1350,7 @@ def Mk_Counterin (v : (BitVec 32)) : (BitVec 32) :=
   v
 
 def legalize_mcountinhibit (_c : (BitVec 32)) (v : (BitVec 64)) : (BitVec 32) :=
-  let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) ++ 0b101#3)
+  let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) +++ 0b101#3)
   (Mk_Counterin ((Sail.BitVec.extractLsb v 31 0) &&& supported_counters))
 
 def undefined_Sstatus (_ : Unit) : SailM (BitVec 64) := do

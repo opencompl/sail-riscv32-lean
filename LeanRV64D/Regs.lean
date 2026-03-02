@@ -702,7 +702,7 @@ def wX_bits (typ_0 : regidx) (data : (BitVec 64)) : SailM Unit := do
 
 def rX_pair_bits (i : regidx) : SailM (BitVec (64 * 2)) := do
   if ((bne i zreg) : Bool)
-  then (pure ((← (rX_bits (regidx_offset_range i 1))) ++ (← (rX_bits i))))
+  then (pure ((← (rX_bits (regidx_offset_range i 1))) +++ (← (rX_bits i))))
   else (pure (zeros (n := (64 *i 2))))
 
 def wX_pair_bits (i : regidx) (data : (BitVec (64 * 2))) : SailM Unit := do

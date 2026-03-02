@@ -292,7 +292,7 @@ def vtype_assembly_backwards_matches (arg_ : ((BitVec 1) × (BitVec 1) × (BitVe
     else true)
 
 def handle_illegal_vtype (rd : regidx) : SailM Unit := do
-  writeReg vtype (1#1 ++ (zeros (n := (xlen -i 1))))
+  writeReg vtype (1#1 +++ (zeros (n := (xlen -i 1))))
   writeReg vl (zeros (n := 64))
   (csr_name_write_callback "vtype" (← readReg vtype))
   (csr_name_write_callback "vl" (← readReg vl))

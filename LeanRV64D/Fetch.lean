@@ -240,5 +240,5 @@ def fetch (_ : Unit) : SailM FetchResult := SailME.run do
                         (do
                           match (← (mem_read (InstructionFetch ()) ppchi 2 false false false)) with
                           | .Err e => (pure (F_Error (e, PC_hi)))
-                          | .Ok ihi => (pure (F_Base (ihi ++ ilo)))))))))
+                          | .Ok ihi => (pure (F_Base (ihi +++ ilo)))))))))
 
