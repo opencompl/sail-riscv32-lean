@@ -208,7 +208,7 @@ open AmocasOddRegisterReservedBehavior
 
 def cbo_clean_flush_enabled (p : Privilege) : SailM Bool := do
   (feature_enabled_for_priv p (BitVec.access (_get_MEnvcfg_CBCFE (← readReg menvcfg)) 0)
-    (BitVec.access (_get_SEnvcfg_CBCFE (← readReg senvcfg)) 0))
+    (BitVec.access (_get_SEnvcfg_CBCFE (← (read_senvcfg ()))) 0))
 
 def encdec_cbop_backwards (arg_ : (BitVec 12)) : SailM cbop_zicbom := do
   match arg_ with
@@ -322,7 +322,7 @@ def cbop_priv_check (p : Privilege) : SailM checked_cbop := do
     cbie )
   let sCBIE ← (( do
     if ((← (currentlyEnabled Ext_S)) : Bool)
-    then (encdec_cbie_backwards (_get_SEnvcfg_CBIE (← readReg senvcfg)))
+    then (encdec_cbie_backwards (_get_SEnvcfg_CBIE (← (read_senvcfg ()))))
     else (encdec_cbie_backwards (_get_MEnvcfg_CBIE (← readReg menvcfg))) ) : SailM cbie )
   match (p, mCBIE, sCBIE) with
   | (VirtualUser, _, _) =>

@@ -218,7 +218,7 @@ def is_aligned_vaddr (typ_0 : virtaddr) (width : Nat) : Bool :=
   let .Virtaddr addr : virtaddr := typ_0
   ((Int.tmod (BitVec.toNatInt addr) width) == 0)
 
-/-- Type quantifiers: k_ex791626_ : Bool, k_ex791625_ : Bool, k_ex791624_ : Bool -/
+/-- Type quantifiers: k_ex803695_ : Bool, k_ex803694_ : Bool, k_ex803693_ : Bool -/
 def read_kind_of_flags (aq : Bool) (rl : Bool) (res : Bool) : SailM read_kind := do
   match (aq, rl, res) with
   | (false, false, false) => (pure Read_plain)
@@ -235,7 +235,7 @@ def read_kind_of_flags (aq : Bool) (rl : Bool) (res : Bool) : SailM read_kind :=
   | (false, true, true) =>
     (internal_error "sys/mem.sail" 59 "Load-reserved with release semantics should be unreachable")
 
-/-- Type quantifiers: k_ex791632_ : Bool, k_ex791631_ : Bool, k_ex791630_ : Bool -/
+/-- Type quantifiers: k_ex803701_ : Bool, k_ex803700_ : Bool, k_ex803699_ : Bool -/
 def write_kind_of_flags (aq : Bool) (rl : Bool) (con : Bool) : SailM write_kind := do
   match (aq, rl, con) with
   | (false, false, false) => (pure Write_plain)
@@ -255,10 +255,10 @@ def write_kind_of_flags (aq : Bool) (rl : Bool) (con : Bool) : SailM write_kind 
     (internal_error "sys/mem.sail" 72
       "Store-conditional with acquire semantics should be unreachable")
 
-/-- Type quantifiers: k_ex791636_ : Bool, width : Nat, 0 < width ∧ width ≤ max_mem_access -/
+/-- Type quantifiers: k_ex803705_ : Bool, width : Nat, 0 < width ∧ width ≤ max_mem_access -/
 def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_payload)) (res_or_con : Bool) : SailM (Option ExceptionType) := do
   match (matching_pma (← readReg pma_regions) paddr width) with
-  | none => (pure (some (accessFaultFromAccessType access)))
+  | none => (pure (some (← (accessFaultFromAccessType access))))
   | .some { attributes := attributes, size := _, include_in_device_tree := _, base := _ } =>
     (do
       let misaligned := (not (is_aligned_paddr paddr width))
@@ -266,29 +266,41 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
       | AccessFault =>
         (do
           if (misaligned : Bool)
-          then (pure (some (accessFaultFromAccessType access)))
+          then (pure (some (← (accessFaultFromAccessType access))))
           else
             (do
               let canAccess ← (( do
                 match access with
                 | .InstructionFetch () => (pure attributes.executable)
-                | .Load _ =>
+                | .Load Data =>
                   (do
-                    assert (not res_or_con) "sys/mem.sail:96.58-96.59"
+                    assert (not res_or_con) "sys/mem.sail:96.61-96.62"
                     (pure attributes.readable))
-                | .Store _ => (pure attributes.writable)
-                | .LoadReserved _ =>
+                | .Store Data => (pure attributes.writable)
+                | .LoadReserved Data =>
                   (do
-                    assert res_or_con "sys/mem.sail:102.53-102.54"
+                    assert res_or_con "sys/mem.sail:102.56-102.57"
                     (pure (attributes.readable && (bne attributes.reservability RsrvNone))))
-                | .StoreConditional _ =>
+                | .StoreConditional Data =>
                   (do
-                    assert res_or_con "sys/mem.sail:103.53-103.54"
+                    assert res_or_con "sys/mem.sail:103.56-103.57"
                     (pure (attributes.writable && (bne attributes.reservability RsrvNone))))
-                | .Atomic (_, _, _) =>
+                | .Atomic (_, Data, Data) =>
                   (do
-                    assert res_or_con "sys/mem.sail:106.53-106.54"
+                    assert res_or_con "sys/mem.sail:106.56-106.57"
                     (pure (attributes.readable && attributes.writable)))
+                | .Load ShadowStack =>
+                  (do
+                    assert (not res_or_con) "sys/mem.sail:110.61-110.62"
+                    (pure (attributes.readable && attributes.read_idempotent)))
+                | .Store ShadowStack =>
+                  (do
+                    assert (not res_or_con) "sys/mem.sail:111.61-111.62"
+                    (pure (attributes.writable && attributes.write_idempotent)))
+                | .Atomic (_, ShadowStack, ShadowStack) =>
+                  (do
+                    assert res_or_con "sys/mem.sail:115.69-115.70"
+                    (pure (attributes.readable && (attributes.writable && (attributes.read_idempotent && attributes.write_idempotent)))))
                 | .CacheAccess (.CB_zero ()) =>
                   (pure (attributes.writable && attributes.supports_cbo_zero))
                 | .CacheAccess (.CB_manage _) => (pure (attributes.readable || attributes.writable))
@@ -296,7 +308,19 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
                   (match p with
                   | PREFETCH_R => (pure attributes.readable)
                   | PREFETCH_W => (pure attributes.writable)
-                  | PREFETCH_I => (pure attributes.executable)) ) : SailM Bool )
+                  | PREFETCH_I => (pure attributes.executable))
+                | .LoadReserved ShadowStack =>
+                  (internal_error "sys/mem.sail" 153
+                    "Invalid payload (ShadowStack) for LoadReserved.")
+                | .StoreConditional ShadowStack =>
+                  (internal_error "sys/mem.sail" 154
+                    "Invalid payload (ShadowStack) for StoreConditional.")
+                | .Atomic (_, ShadowStack, Data) =>
+                  (internal_error "sys/mem.sail" 155
+                    "Invalid payloads (ShadowStack, Data) for Atomic.")
+                | .Atomic (_, Data, ShadowStack) =>
+                  (internal_error "sys/mem.sail" 156
+                    "Invalid payloads (Data, ShadowStack) for Atomic.") ) : SailM Bool )
               let _ : Unit :=
                 if (((get_config_print_pma ()) && (not canAccess)) : Bool)
                 then
@@ -307,33 +331,45 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
                 else ()
               if (canAccess : Bool)
               then (pure none)
-              else (pure (some (accessFaultFromAccessType access)))))
+              else (pure (some (← (accessFaultFromAccessType access))))))
       | AlignmentFault =>
         (do
           if (misaligned : Bool)
-          then (pure (some (alignmentFaultFromAccessType access)))
+          then (pure (some (← (alignmentFaultFromAccessType access))))
           else
             (do
               let canAccess ← (( do
                 match access with
                 | .InstructionFetch () => (pure attributes.executable)
-                | .Load _ =>
+                | .Load Data =>
                   (do
-                    assert (not res_or_con) "sys/mem.sail:96.58-96.59"
+                    assert (not res_or_con) "sys/mem.sail:96.61-96.62"
                     (pure attributes.readable))
-                | .Store _ => (pure attributes.writable)
-                | .LoadReserved _ =>
+                | .Store Data => (pure attributes.writable)
+                | .LoadReserved Data =>
                   (do
-                    assert res_or_con "sys/mem.sail:102.53-102.54"
+                    assert res_or_con "sys/mem.sail:102.56-102.57"
                     (pure (attributes.readable && (bne attributes.reservability RsrvNone))))
-                | .StoreConditional _ =>
+                | .StoreConditional Data =>
                   (do
-                    assert res_or_con "sys/mem.sail:103.53-103.54"
+                    assert res_or_con "sys/mem.sail:103.56-103.57"
                     (pure (attributes.writable && (bne attributes.reservability RsrvNone))))
-                | .Atomic (_, _, _) =>
+                | .Atomic (_, Data, Data) =>
                   (do
-                    assert res_or_con "sys/mem.sail:106.53-106.54"
+                    assert res_or_con "sys/mem.sail:106.56-106.57"
                     (pure (attributes.readable && attributes.writable)))
+                | .Load ShadowStack =>
+                  (do
+                    assert (not res_or_con) "sys/mem.sail:110.61-110.62"
+                    (pure (attributes.readable && attributes.read_idempotent)))
+                | .Store ShadowStack =>
+                  (do
+                    assert (not res_or_con) "sys/mem.sail:111.61-111.62"
+                    (pure (attributes.writable && attributes.write_idempotent)))
+                | .Atomic (_, ShadowStack, ShadowStack) =>
+                  (do
+                    assert res_or_con "sys/mem.sail:115.69-115.70"
+                    (pure (attributes.readable && (attributes.writable && (attributes.read_idempotent && attributes.write_idempotent)))))
                 | .CacheAccess (.CB_zero ()) =>
                   (pure (attributes.writable && attributes.supports_cbo_zero))
                 | .CacheAccess (.CB_manage _) => (pure (attributes.readable || attributes.writable))
@@ -341,7 +377,19 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
                   (match p with
                   | PREFETCH_R => (pure attributes.readable)
                   | PREFETCH_W => (pure attributes.writable)
-                  | PREFETCH_I => (pure attributes.executable)) ) : SailM Bool )
+                  | PREFETCH_I => (pure attributes.executable))
+                | .LoadReserved ShadowStack =>
+                  (internal_error "sys/mem.sail" 153
+                    "Invalid payload (ShadowStack) for LoadReserved.")
+                | .StoreConditional ShadowStack =>
+                  (internal_error "sys/mem.sail" 154
+                    "Invalid payload (ShadowStack) for StoreConditional.")
+                | .Atomic (_, ShadowStack, Data) =>
+                  (internal_error "sys/mem.sail" 155
+                    "Invalid payloads (ShadowStack, Data) for Atomic.")
+                | .Atomic (_, Data, ShadowStack) =>
+                  (internal_error "sys/mem.sail" 156
+                    "Invalid payloads (Data, ShadowStack) for Atomic.") ) : SailM Bool )
               let _ : Unit :=
                 if (((get_config_print_pma ()) && (not canAccess)) : Bool)
                 then
@@ -352,29 +400,41 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
                 else ()
               if (canAccess : Bool)
               then (pure none)
-              else (pure (some (accessFaultFromAccessType access)))))
+              else (pure (some (← (accessFaultFromAccessType access))))))
       | _ =>
         (do
           let canAccess ← (( do
             match access with
             | .InstructionFetch () => (pure attributes.executable)
-            | .Load _ =>
+            | .Load Data =>
               (do
-                assert (not res_or_con) "sys/mem.sail:96.58-96.59"
+                assert (not res_or_con) "sys/mem.sail:96.61-96.62"
                 (pure attributes.readable))
-            | .Store _ => (pure attributes.writable)
-            | .LoadReserved _ =>
+            | .Store Data => (pure attributes.writable)
+            | .LoadReserved Data =>
               (do
-                assert res_or_con "sys/mem.sail:102.53-102.54"
+                assert res_or_con "sys/mem.sail:102.56-102.57"
                 (pure (attributes.readable && (bne attributes.reservability RsrvNone))))
-            | .StoreConditional _ =>
+            | .StoreConditional Data =>
               (do
-                assert res_or_con "sys/mem.sail:103.53-103.54"
+                assert res_or_con "sys/mem.sail:103.56-103.57"
                 (pure (attributes.writable && (bne attributes.reservability RsrvNone))))
-            | .Atomic (_, _, _) =>
+            | .Atomic (_, Data, Data) =>
               (do
-                assert res_or_con "sys/mem.sail:106.53-106.54"
+                assert res_or_con "sys/mem.sail:106.56-106.57"
                 (pure (attributes.readable && attributes.writable)))
+            | .Load ShadowStack =>
+              (do
+                assert (not res_or_con) "sys/mem.sail:110.61-110.62"
+                (pure (attributes.readable && attributes.read_idempotent)))
+            | .Store ShadowStack =>
+              (do
+                assert (not res_or_con) "sys/mem.sail:111.61-111.62"
+                (pure (attributes.writable && attributes.write_idempotent)))
+            | .Atomic (_, ShadowStack, ShadowStack) =>
+              (do
+                assert res_or_con "sys/mem.sail:115.69-115.70"
+                (pure (attributes.readable && (attributes.writable && (attributes.read_idempotent && attributes.write_idempotent)))))
             | .CacheAccess (.CB_zero ()) =>
               (pure (attributes.writable && attributes.supports_cbo_zero))
             | .CacheAccess (.CB_manage _) => (pure (attributes.readable || attributes.writable))
@@ -382,7 +442,17 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
               (match p with
               | PREFETCH_R => (pure attributes.readable)
               | PREFETCH_W => (pure attributes.writable)
-              | PREFETCH_I => (pure attributes.executable)) ) : SailM Bool )
+              | PREFETCH_I => (pure attributes.executable))
+            | .LoadReserved ShadowStack =>
+              (internal_error "sys/mem.sail" 153 "Invalid payload (ShadowStack) for LoadReserved.")
+            | .StoreConditional ShadowStack =>
+              (internal_error "sys/mem.sail" 154
+                "Invalid payload (ShadowStack) for StoreConditional.")
+            | .Atomic (_, ShadowStack, Data) =>
+              (internal_error "sys/mem.sail" 155 "Invalid payloads (ShadowStack, Data) for Atomic.")
+            | .Atomic (_, Data, ShadowStack) =>
+              (internal_error "sys/mem.sail" 156 "Invalid payloads (Data, ShadowStack) for Atomic.")
+            ) : SailM Bool )
           let _ : Unit :=
             if (((get_config_print_pma ()) && (not canAccess)) : Bool)
             then
@@ -393,7 +463,7 @@ def pmaCheck (paddr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pa
             else ()
           if (canAccess : Bool)
           then (pure none)
-          else (pure (some (accessFaultFromAccessType access)))))
+          else (pure (some (← (accessFaultFromAccessType access))))))
 
 def alignmentOrAccessFaultPriority (exc : ExceptionType) : SailM Nat := do
   match exc with
@@ -404,7 +474,7 @@ def alignmentOrAccessFaultPriority (exc : ExceptionType) : SailM Nat := do
   | .E_Load_Addr_Align () => (pure 0)
   | .E_SAMO_Addr_Align () => (pure 0)
   | _ =>
-    (internal_error "sys/mem.sail" 162
+    (internal_error "sys/mem.sail" 177
       (HAppend.hAppend "Invalid exception: " (exceptionType_to_str exc)))
 
 def highestPriorityAlignmentOrAccessFault (l : ExceptionType) (r : ExceptionType) : SailM ExceptionType := do
@@ -412,7 +482,7 @@ def highestPriorityAlignmentOrAccessFault (l : ExceptionType) (r : ExceptionType
   then (pure l)
   else (pure r)
 
-/-- Type quantifiers: k_ex791732_ : Bool, width : Nat, 0 < width ∧ width ≤ max_mem_access -/
+/-- Type quantifiers: k_ex803882_ : Bool, width : Nat, 0 < width ∧ width ≤ max_mem_access -/
 def phys_access_check (access : (MemoryAccessType mem_payload)) (priv : Privilege) (paddr : physaddr) (width : Nat) (res_or_con : Bool) : SailM (Option ExceptionType) := do
   let pmpError ← (( do (pmpCheck paddr width access priv) ) : SailM (Option ExceptionType) )
   let pmaError ← (( do (pmaCheck paddr width access res_or_con) ) : SailM (Option ExceptionType) )
@@ -422,7 +492,7 @@ def phys_access_check (access : (MemoryAccessType mem_payload)) (priv : Privileg
   | (none, .some e) => (pure (some e))
   | (.some e0, .some e1) => (pure (some (← (highestPriorityAlignmentOrAccessFault e0 e1))))
 
-/-- Type quantifiers: k_ex791737_ : Bool, k_ex791736_ : Bool, k_ex791735_ : Bool, k_ex791734_ : Bool, width
+/-- Type quantifiers: k_ex803887_ : Bool, k_ex803886_ : Bool, k_ex803885_ : Bool, k_ex803884_ : Bool, width
   : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def checked_mem_read (access : (MemoryAccessType mem_payload)) (priv : Privilege) (paddr : physaddr) (width : Nat) (aq : Bool) (rl : Bool) (res : Bool) (meta' : Bool) : SailM (Result ((BitVec (8 * width)) × Unit) ExceptionType) := do
   match (← (phys_access_check access priv paddr width res)) with
@@ -436,7 +506,7 @@ def checked_mem_read (access : (MemoryAccessType mem_payload)) (priv : Privilege
           let rk ← do (read_kind_of_flags aq rl res)
           (pure (Ok (← (read_ram rk paddr width meta'))))))
 
-/-- Type quantifiers: k_ex791746_ : Bool, k_ex791745_ : Bool, k_ex791744_ : Bool, k_ex791743_ : Bool, width
+/-- Type quantifiers: k_ex803896_ : Bool, k_ex803895_ : Bool, k_ex803894_ : Bool, k_ex803893_ : Bool, width
   : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_read_priv_meta (access : (MemoryAccessType mem_payload)) (priv : Privilege) (paddr : physaddr) (width : Nat) (aq : Bool) (rl : Bool) (res : Bool) (meta' : Bool) : SailM (Result ((BitVec (8 * width)) × Unit) ExceptionType) := do
   let result ← (( do
@@ -456,33 +526,33 @@ def mem_read_priv_meta (access : (MemoryAccessType mem_payload)) (priv : Privile
     | .Err e => (mem_exception_callback (bits_of_physaddr paddr) (exceptionType_bits_forwards e))
   (pure result)
 
-/-- Type quantifiers: k_ex791800_ : Bool, k_ex791799_ : Bool, k_ex791798_ : Bool, k_ex791797_ : Bool, width
+/-- Type quantifiers: k_ex803950_ : Bool, k_ex803949_ : Bool, k_ex803948_ : Bool, k_ex803947_ : Bool, width
   : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_read_meta (access : (MemoryAccessType mem_payload)) (paddr : physaddr) (width : Nat) (aq : Bool) (rl : Bool) (res : Bool) (meta' : Bool) : SailM (Result ((BitVec (8 * width)) × Unit) ExceptionType) := do
   (mem_read_priv_meta access
     (← (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))) paddr width
     aq rl res meta')
 
-/-- Type quantifiers: k_ex791803_ : Bool, k_ex791802_ : Bool, k_ex791801_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex803953_ : Bool, k_ex803952_ : Bool, k_ex803951_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_read_priv (access : (MemoryAccessType mem_payload)) (priv : Privilege) (paddr : physaddr) (width : Nat) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result (BitVec (8 * width)) ExceptionType) := do
   (pure (MemoryOpResult_drop_meta (← (mem_read_priv_meta access priv paddr width aq rl res false))))
 
-/-- Type quantifiers: k_ex791806_ : Bool, k_ex791805_ : Bool, k_ex791804_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex803956_ : Bool, k_ex803955_ : Bool, k_ex803954_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_read (access : (MemoryAccessType mem_payload)) (paddr : physaddr) (width : Nat) (aq : Bool) (rel : Bool) (res : Bool) : SailM (Result (BitVec (8 * width)) ExceptionType) := do
   (mem_read_priv access
     (← (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))) paddr width
     aq rel res)
 
-/-- Type quantifiers: k_ex791809_ : Bool, k_ex791808_ : Bool, k_ex791807_ : Bool, width : Nat, 0 <
+/-- Type quantifiers: k_ex803959_ : Bool, k_ex803958_ : Bool, k_ex803957_ : Bool, width : Nat, 0 <
   width ∧ width ≤ max_mem_access -/
 def mem_write_ea (addr : physaddr) (width : Nat) (aq : Bool) (rl : Bool) (con : Bool) : SailM (Result Unit ExceptionType) := do
   if (((rl || con) && (not (is_aligned_paddr addr width))) : Bool)
   then (pure (Err (E_SAMO_Addr_Align ())))
   else (pure (Ok (write_ram_ea (← (write_kind_of_flags aq rl con)) addr width)))
 
-/-- Type quantifiers: k_ex791820_ : Bool, k_ex791819_ : Bool, k_ex791818_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex803970_ : Bool, k_ex803969_ : Bool, k_ex803968_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def checked_mem_write (paddr : physaddr) (width : Nat) (data : (BitVec (8 * width))) (access : (MemoryAccessType mem_payload)) (priv : Privilege) (meta' : Unit) (aq : Bool) (rl : Bool) (con : Bool) : SailM (Result Bool ExceptionType) := do
   match (← (phys_access_check access priv paddr width con)) with
@@ -496,7 +566,7 @@ def checked_mem_write (paddr : physaddr) (width : Nat) (data : (BitVec (8 * widt
           let wk ← do (write_kind_of_flags aq rl con)
           (pure (Ok (← (write_ram wk paddr width data meta'))))))
 
-/-- Type quantifiers: k_ex791832_ : Bool, k_ex791831_ : Bool, k_ex791830_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex803982_ : Bool, k_ex803981_ : Bool, k_ex803980_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_write_value_priv_meta (paddr : physaddr) (width : Nat) (value : (BitVec (8 * width))) (access : (MemoryAccessType mem_payload)) (priv : Privilege) (meta' : Unit) (aq : Bool) (rl : Bool) (con : Bool) : SailM (Result Bool ExceptionType) := do
   if (((rl || con) && (not (is_aligned_paddr paddr width))) : Bool)
@@ -512,19 +582,19 @@ def mem_write_value_priv_meta (paddr : physaddr) (width : Nat) (value : (BitVec 
           (mem_exception_callback (bits_of_physaddr paddr) (exceptionType_bits_forwards e))
       (pure result))
 
-/-- Type quantifiers: k_ex791844_ : Bool, k_ex791843_ : Bool, k_ex791842_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex803994_ : Bool, k_ex803993_ : Bool, k_ex803992_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_write_value_priv (paddr : physaddr) (width : Nat) (value : (BitVec (8 * width))) (priv : Privilege) (aq : Bool) (rl : Bool) (con : Bool) : SailM (Result Bool ExceptionType) := do
   (mem_write_value_priv_meta paddr width value (Store default_write_acc) priv default_meta aq rl con)
 
-/-- Type quantifiers: k_ex791847_ : Bool, k_ex791846_ : Bool, k_ex791845_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex803997_ : Bool, k_ex803996_ : Bool, k_ex803995_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_write_value_meta (paddr : physaddr) (width : Nat) (value : (BitVec (8 * width))) (payload : mem_payload) (meta' : Unit) (aq : Bool) (rl : Bool) (con : Bool) : SailM (Result Bool ExceptionType) := do
   let access := (Store payload)
   let ep ← do (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
   (mem_write_value_priv_meta paddr width value access ep meta' aq rl con)
 
-/-- Type quantifiers: k_ex791850_ : Bool, k_ex791849_ : Bool, k_ex791848_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex804000_ : Bool, k_ex803999_ : Bool, k_ex803998_ : Bool, width : Nat, width
   ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mem_write_value (paddr : physaddr) (width : Nat) (value : (BitVec (8 * width))) (aq : Bool) (rl : Bool) (con : Bool) : SailM (Result Bool ExceptionType) := do
   (mem_write_value_meta paddr width value default_write_acc default_meta aq rl con)

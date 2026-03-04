@@ -1135,6 +1135,14 @@ def _set_MEnvcfg_PBMTE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : Sa
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_MEnvcfg_PBMTE r v)
 
+def _set_MEnvcfg_SSE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
+  let r ← do (reg_deref r_ref)
+  writeRegRef r_ref (_update_MEnvcfg_SSE r v)
+
+def _set_SEnvcfg_SSE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
+  let r ← do (reg_deref r_ref)
+  writeRegRef r_ref (_update_SEnvcfg_SSE r v)
+
 def _set_MEnvcfg_STCE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_MEnvcfg_STCE r v)
@@ -1148,9 +1156,9 @@ def is_fiom_active (_ : Unit) : SailM Bool := do
   | Supervisor => (pure ((_get_MEnvcfg_FIOM (← readReg menvcfg)) == 1#1))
   | User =>
     (pure (((_get_MEnvcfg_FIOM (← readReg menvcfg)) ||| (_get_SEnvcfg_FIOM (← readReg senvcfg))) == 1#1))
-  | VirtualUser => (internal_error "core/sys_regs.sail" 451 "Hypervisor extension not supported")
+  | VirtualUser => (internal_error "core/sys_regs.sail" 469 "Hypervisor extension not supported")
   | VirtualSupervisor =>
-    (internal_error "core/sys_regs.sail" 452 "Hypervisor extension not supported")
+    (internal_error "core/sys_regs.sail" 470 "Hypervisor extension not supported")
 
 def undefined_Mtvec (_ : Unit) : SailM (BitVec 64) := do
   (undefined_bitvector 64)
@@ -1484,8 +1492,8 @@ def feature_enabled_for_priv (p : Privilege) (machine_enable_bit : (BitVec 1)) (
   | User =>
     (pure ((machine_enable_bit == 1#1) && ((not (← (currentlyEnabled Ext_S))) || (supervisor_enable_bit == 1#1))))
   | VirtualSupervisor =>
-    (internal_error "core/sys_regs.sail" 808 "Hypervisor extension not supported")
-  | VirtualUser => (internal_error "core/sys_regs.sail" 809 "Hypervisor extension not supported")
+    (internal_error "core/sys_regs.sail" 826 "Hypervisor extension not supported")
+  | VirtualUser => (internal_error "core/sys_regs.sail" 827 "Hypervisor extension not supported")
 
 /-- Type quantifiers: index : Nat, 0 ≤ index ∧ index ≤ 31 -/
 def counter_enabled (index : Nat) (priv : Privilege) : SailM Bool := do

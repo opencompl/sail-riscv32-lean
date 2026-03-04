@@ -228,6 +228,8 @@ def ra : regidx := (Regidx (zero_extend (m := 5) 0b01#2))
 
 def sp : regidx := (Regidx (zero_extend (m := 5) 0b10#2))
 
+def t0 : regidx := (Regidx (zero_extend (m := 5) 0b101#3))
+
 def undefined_Architecture (_ : Unit) : SailM Architecture := do
   (internal_pick [RV32, RV64, RV128])
 
@@ -255,7 +257,7 @@ def architecture_bits_backwards (arg_ : (BitVec 2)) : SailM Architecture := do
   | 0b01 => (pure RV32)
   | 0b10 => (pure RV64)
   | 0b11 => (pure RV128)
-  | _ => (internal_error "core/types.sail" 61 "architecture(0b00) is invalid")
+  | _ => (internal_error "core/types.sail" 62 "architecture(0b00) is invalid")
 
 def architecture_bits_forwards_matches (arg_ : Architecture) : Bool :=
   match arg_ with
@@ -298,7 +300,7 @@ def privLevel_bits_forwards (arg_ : ((BitVec 2) × (BitVec 1))) : SailM Privileg
   | (0b01, 0) => (pure Supervisor)
   | (0b01, 1) => (pure VirtualSupervisor)
   | (0b11, 0) => (pure Machine)
-  | _ => (internal_error "core/types.sail" 78 "Invalid privilege level or virtual mode")
+  | _ => (internal_error "core/types.sail" 79 "Invalid privilege level or virtual mode")
 
 def privLevel_bits_backwards (arg_ : Privilege) : ((BitVec 2) × (BitVec 1)) :=
   match arg_ with
@@ -405,6 +407,9 @@ def _get_MEnvcfg_FIOM (v : (BitVec 64)) : (BitVec 1) :=
 def _get_MEnvcfg_LPE (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 2 2)
 
+def _get_MEnvcfg_SSE (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 3 3)
+
 def _get_MEnvcfg_STCE (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 63 63)
 
@@ -422,6 +427,9 @@ def _update_MEnvcfg_FIOM (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
 
 def _update_MEnvcfg_LPE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 2 2 x)
+
+def _update_MEnvcfg_SSE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v 3 3 x)
 
 def _update_MEnvcfg_STCE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 63 63 x)
@@ -458,6 +466,9 @@ def _update_Seccfg_SSEED (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
 def _update_Seccfg_USEED (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 8 8 x)
 
+def _get_SEnvcfg_LPE (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 2 2)
+
 def Mk_SEnvcfg (v : (BitVec 64)) : (BitVec 64) :=
   v
 
@@ -473,8 +484,8 @@ def _get_SEnvcfg_CBZE (v : (BitVec 64)) : (BitVec 1) :=
 def _get_SEnvcfg_FIOM (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 0 0)
 
-def _get_SEnvcfg_LPE (v : (BitVec 64)) : (BitVec 1) :=
-  (Sail.BitVec.extractLsb v 2 2)
+def _get_SEnvcfg_SSE (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 3 3)
 
 def _update_SEnvcfg_CBCFE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 6 6 x)
@@ -490,6 +501,9 @@ def _update_SEnvcfg_FIOM (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
 
 def _update_SEnvcfg_LPE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 2 2 x)
+
+def _update_SEnvcfg_SSE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v 3 3 x)
 
 def Mk_Hstateen0 (v : (BitVec 64)) : (BitVec 64) :=
   v
@@ -548,6 +562,10 @@ def stateen_bit_index_forwards (arg_ : stateen_bit) : Nat :=
   | STATEEN_ENVCFG => 62
   | STATEEN_SRMCFG => 55
   | STATEEN_FCSR => 1
+
+def read_senvcfg (_ : Unit) : SailM (BitVec 64) := do
+  (pure (_update_SEnvcfg_SSE (← readReg senvcfg)
+      ((_get_MEnvcfg_SSE (← readReg menvcfg)) &&& (_get_SEnvcfg_SSE (← readReg senvcfg)))))
 
 
 mutual
@@ -706,6 +724,9 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zihpm => (pure ((hartSupports Ext_Zihpm) && (← (currentlyEnabled Ext_Zicsr))))
   | Ext_Sscofpmf => (pure ((hartSupports Ext_Sscofpmf) && (← (currentlyEnabled Ext_Zihpm))))
   | Ext_Zawrs => (pure (hartSupports Ext_Zawrs))
+  | Ext_Zicfiss =>
+    (pure ((hartSupports Ext_Zicfiss) && ((← (currentlyEnabled Ext_Zicsr)) && ((← (currentlyEnabled
+                Ext_Zimop)) && (← (currentlyEnabled Ext_Zaamo))))))
   | Ext_Zicond => (pure (hartSupports Ext_Zicond))
   | Ext_Zicntr => (pure ((hartSupports Ext_Zicntr) && (← (currentlyEnabled Ext_Zicsr))))
   | Ext_Zicbom => (pure (hartSupports Ext_Zicbom))
@@ -753,7 +774,7 @@ def get_xLPE (p : Privilege) : SailM Bool := do
   | User =>
     (do
       if ((← (currentlyEnabled Ext_S)) : Bool)
-      then (pure (bool_bit_backwards (_get_SEnvcfg_LPE (← readReg senvcfg))))
+      then (pure (bool_bit_backwards (_get_SEnvcfg_LPE (← (read_senvcfg ())))))
       else (pure (bool_bit_backwards (_get_MEnvcfg_LPE (← readReg menvcfg)))))
   | VirtualSupervisor =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 31 "Hypervisor extension not supported")
@@ -783,13 +804,17 @@ def legalize_menvcfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := 
       (_update_MEnvcfg_CBIE
         (_update_MEnvcfg_CBCFE
           (_update_MEnvcfg_CBZE
-            (_update_MEnvcfg_LPE
-              (_update_MEnvcfg_FIOM o
-                (if (sys_enable_writable_fiom : Bool)
-                then (_get_MEnvcfg_FIOM v)
+            (_update_MEnvcfg_SSE
+              (_update_MEnvcfg_LPE
+                (_update_MEnvcfg_FIOM o
+                  (if (sys_enable_writable_fiom : Bool)
+                  then (_get_MEnvcfg_FIOM v)
+                  else 0#1))
+                (if ((hartSupports Ext_Zicfilp) : Bool)
+                then (_get_MEnvcfg_LPE v)
                 else 0#1))
-              (if ((hartSupports Ext_Zicfilp) : Bool)
-              then (_get_MEnvcfg_LPE v)
+              (if ((hartSupports Ext_Zicfiss) : Bool)
+              then (_get_MEnvcfg_SSE v)
               else 0#1))
             (← do
               if ((← (currentlyEnabled Ext_Zicboz)) : Bool)
@@ -834,13 +859,17 @@ def legalize_senvcfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := 
   (pure (_update_SEnvcfg_CBIE
       (_update_SEnvcfg_CBCFE
         (_update_SEnvcfg_CBZE
-          (_update_SEnvcfg_LPE
-            (_update_SEnvcfg_FIOM o
-              (if (sys_enable_writable_fiom : Bool)
-              then (_get_SEnvcfg_FIOM v)
+          (_update_SEnvcfg_SSE
+            (_update_SEnvcfg_LPE
+              (_update_SEnvcfg_FIOM o
+                (if (sys_enable_writable_fiom : Bool)
+                then (_get_SEnvcfg_FIOM v)
+                else 0#1))
+              (if ((hartSupports Ext_Zicfilp) : Bool)
+              then (_get_SEnvcfg_LPE v)
               else 0#1))
-            (if ((hartSupports Ext_Zicfilp) : Bool)
-            then (_get_SEnvcfg_LPE v)
+            (if ((hartSupports Ext_Zicfiss) : Bool)
+            then (_get_SEnvcfg_SSE v)
             else 0#1))
           (← do
             if ((← (currentlyEnabled Ext_Zicboz)) : Bool)
@@ -870,6 +899,7 @@ def privLevel_to_str (p : Privilege) : SailM String := do
 def mem_payload_str_forwards (arg_ : mem_payload) : String :=
   match arg_ with
   | Data => ""
+  | ShadowStack => ".ss"
 
 def accessType_to_str (access : (MemoryAccessType mem_payload)) : String :=
   match access with
@@ -1241,6 +1271,7 @@ def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   | 0xDA0 => (pure "scountovf")
   | 0x14D => (pure "stimecmp")
   | 0x15D => (pure "stimecmph")
+  | 0x011 => (pure "ssp")
   | 0xC00 => (pure "cycle")
   | 0xC01 => (pure "time")
   | 0xC02 => (pure "instret")
@@ -1868,7 +1899,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex778727_ : Bool -/
+/-- Type quantifiers: k_ex790706_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -5047,6 +5078,43 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
   | .SFENCE_INVAL_IR () => (pure "sfence.inval.ir")
   | .WRS WRS_STO => (pure "wrs.sto")
   | .WRS WRS_NTO => (pure "wrs.nto")
+  | .SSPUSH rs2 =>
+    (pure (String.append "sspush"
+        (String.append (spc_forwards ()) (String.append (← (reg_name_forwards rs2)) ""))))
+  | .C_SSPUSH () =>
+    (pure (String.append "c.sspush"
+        (String.append (spc_forwards ())
+          (String.append (← (reg_name_forwards (← (encdec_reg_backwards 0b00001#5)))) ""))))
+  | .SSPOPCHK rs1 =>
+    (pure (String.append "sspopchk"
+        (String.append (spc_forwards ()) (String.append (← (reg_name_forwards rs1)) ""))))
+  | .C_SSPOPCHK () =>
+    (pure (String.append "c.sspopchk"
+        (String.append (spc_forwards ())
+          (String.append (← (reg_name_forwards (← (encdec_reg_backwards 0b00101#5)))) ""))))
+  | .SSRDP rd =>
+    (pure (String.append "ssrdp"
+        (String.append (spc_forwards ()) (String.append (← (reg_name_forwards rd)) ""))))
+  | .SSAMOSWAP (aq, rl, rs2, rs1, width, rd) =>
+    (do
+      if (((width == 4) || (width == 8)) : Bool)
+      then
+        (pure (String.append "ssamoswap."
+            (String.append (width_mnemonic_forwards width)
+              (String.append (maybe_aqrl_forwards (aq, rl))
+                (String.append (spc_forwards ())
+                  (String.append (← (reg_name_forwards rd))
+                    (String.append (sep_forwards ())
+                      (String.append (← (reg_name_forwards rs2))
+                        (String.append (sep_forwards ())
+                          (String.append "("
+                            (String.append (opt_spc_forwards ())
+                              (String.append (← (reg_name_forwards rs1))
+                                (String.append (opt_spc_forwards ()) (String.append ")" ""))))))))))))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
   | .ZICOND_RTYPE (rs2, rs1, rd, op) =>
     (pure (String.append (zicond_mnemonic_forwards op)
         (String.append (spc_forwards ())
@@ -5559,6 +5627,15 @@ def assembly_forwards_matches (arg_ : instruction) : Bool :=
   | .SFENCE_INVAL_IR () => true
   | .WRS WRS_STO => true
   | .WRS WRS_NTO => true
+  | .SSPUSH rs2 => true
+  | .C_SSPUSH () => true
+  | .SSPOPCHK rs1 => true
+  | .C_SSPOPCHK () => true
+  | .SSRDP rd => true
+  | .SSAMOSWAP (aq, rl, rs2, rs1, width, rd) =>
+    (if (((width == 4) || (width == 8)) : Bool)
+    then true
+    else false)
   | .ZICOND_RTYPE (rs2, rs1, rd, op) => true
   | .ZICBOM (cbop, rs1) => true
   | .BITYPE (imm, 0b00000, rs1, op) => true
@@ -6314,7 +6391,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex779878_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex791861_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -6439,6 +6516,16 @@ def width_enc_wide_forwards (arg_ : Nat) : (BitVec 3) :=
   | 4 => 0b010#3
   | 8 => 0b011#3
   | _ => 0b100#3
+
+def zicfiss_xSSE (priv : Privilege) : SailM Bool := do
+  (pure ((← (currentlyEnabled Ext_S)) && (← do
+        match priv with
+        | Machine => (pure false)
+        | Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))))
+        | VirtualSupervisor =>
+          (internal_error "extensions/cfi/zicfiss_regs.sail" 27 "Hypervisor extension not supported")
+        | User => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ())))))
+        | VirtualUser => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ()))))))))
 
 /-- Type quantifiers: EGS : Nat, EGW : Nat, 0 ≤ EGW, EGS > 0 -/
 def zvk_check_encdec (EGW : Nat) (EGS : Nat) : SailM Bool := do
@@ -10262,6 +10349,46 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
       if ((← (currentlyEnabled Ext_Zawrs)) : Bool)
       then
         (pure ((encdec_wrsop_forwards op) +++ (0b00000#5 +++ (0b000#3 +++ (0b00000#5 +++ 0b1110011#7)))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .SSPUSH rs2 =>
+    (do
+      if ((((rs2 == ra) || (rs2 == t0)) && ((← (currentlyEnabled Ext_Zicfiss)) && (← (zicfiss_xSSE
+                 (← readReg cur_privilege))))) : Bool)
+      then
+        (pure (0b1100111#7 +++ ((encdec_reg_forwards rs2) +++ (0b00000#5 +++ (0b100#3 +++ (0b00000#5 +++ 0b1110011#7))))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .SSPOPCHK rs1 =>
+    (do
+      if ((((rs1 == ra) || (rs1 == t0)) && ((← (currentlyEnabled Ext_Zicfiss)) && (← (zicfiss_xSSE
+                 (← readReg cur_privilege))))) : Bool)
+      then
+        (pure (0b110011011100#12 +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ (0b00000#5 +++ 0b1110011#7)))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .SSRDP rd =>
+    (do
+      if (((← (currentlyEnabled Ext_Zicfiss)) && (← (zicfiss_xSSE (← readReg cur_privilege)))) : Bool)
+      then
+        (pure (0b110011011100#12 +++ (0b00000#5 +++ (0b100#3 +++ ((encdec_reg_forwards rd) +++ 0b1110011#7)))))
+      else
+        (do
+          assert false "Pattern match failure at unknown location"
+          throw Error.Exit))
+  | .SSAMOSWAP (aq, rl, rs2, rs1, width, rd) =>
+    (do
+      if ((((width == 4) || ((xlen == 64) && (width == 8))) && (← (currentlyEnabled Ext_Zicfiss))) : Bool)
+      then
+        (pure (0b01001#5 +++ ((bool_bit_forwards aq) +++ ((bool_bit_forwards rl) +++ ((encdec_reg_forwards
+                    rs2) +++ ((encdec_reg_forwards rs1) +++ (0#1 +++ ((width_enc_forwards width) +++ ((encdec_reg_forwards
+                            rd) +++ 0b0101111#7)))))))))
       else
         (do
           assert false "Pattern match failure at unknown location"

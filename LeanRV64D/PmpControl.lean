@@ -1,5 +1,6 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
+import LeanRV64D.Errors
 import LeanRV64D.MemTypeUtils
 import LeanRV64D.SysRegs
 import LeanRV64D.PmpRegs
@@ -199,22 +200,35 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : Bool :=
+def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : SailM Bool := do
   match access with
-  | .Load _ => ((_get_Pmpcfg_ent_R ent) == 1#1)
-  | .LoadReserved _ => ((_get_Pmpcfg_ent_R ent) == 1#1)
-  | .Store _ => ((_get_Pmpcfg_ent_W ent) == 1#1)
-  | .StoreConditional _ => ((_get_Pmpcfg_ent_W ent) == 1#1)
-  | .Atomic _ => (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .InstructionFetch () => ((_get_Pmpcfg_ent_X ent) == 1#1)
+  | .Load Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .LoadReserved Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .Store Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .StoreConditional Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .Atomic (_, Data, Data) =>
+    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
+  | .InstructionFetch () => (pure ((_get_Pmpcfg_ent_X ent) == 1#1))
+  | .Load ShadowStack =>
+    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
+  | .Store ShadowStack =>
+    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
+  | .Atomic (_, ShadowStack, _) =>
+    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
+  | .Atomic (_, _, ShadowStack) =>
+    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
+  | .LoadReserved ShadowStack =>
+    (internal_error "pmp/pmp_control.sail" 28 "Invalid payload (ShadowStack) for LoadReserved.")
+  | .StoreConditional ShadowStack =>
+    (internal_error "pmp/pmp_control.sail" 29 "Invalid payload (ShadowStack) for StoreConditional.")
   | .CacheAccess (.CB_manage _) =>
-    (((_get_Pmpcfg_ent_R ent) == 1#1) || ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .CacheAccess (.CB_zero ()) => ((_get_Pmpcfg_ent_W ent) == 1#1)
+    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) || ((_get_Pmpcfg_ent_W ent) == 1#1)))
+  | .CacheAccess (.CB_zero ()) => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
   | .CacheAccess (.CB_prefetch p) =>
     (match p with
-    | PREFETCH_I => ((_get_Pmpcfg_ent_X ent) == 1#1)
-    | PREFETCH_R => ((_get_Pmpcfg_ent_R ent) == 1#1)
-    | PREFETCH_W => ((_get_Pmpcfg_ent_W ent) == 1#1))
+    | PREFETCH_I => (pure ((_get_Pmpcfg_ent_X ent) == 1#1))
+    | PREFETCH_R => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+    | PREFETCH_W => (pure ((_get_Pmpcfg_ent_W ent) == 1#1)))
 
 def undefined_pmpAddrMatch (_ : Unit) : SailM pmpAddrMatch := do
   (internal_pick [PMP_NoMatch, PMP_PartialMatch, PMP_Match])
@@ -286,16 +300,17 @@ def pmpCheck (addr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pay
           match (← (pmpMatchAddr addr width cfg (← (pmpReadAddrReg i)) prev_pmpaddr)) with
           | PMP_NoMatch => (pure ())
           | PMP_PartialMatch =>
-            SailME.throw ((some (accessFaultFromAccessType access)) : (Option ExceptionType))
+            SailME.throw (← do
+                (pure (some (← (accessFaultFromAccessType access)))))
           | PMP_Match =>
-            SailME.throw (if (((pmpCheckRWX cfg access) || ((priv == Machine) && (not
-                       (pmpLocked cfg)))) : Bool)
-              then none
-              else (some (accessFaultFromAccessType access)) : (Option ExceptionType))
+            SailME.throw (← do
+                if (((← (pmpCheckRWX cfg access)) || ((priv == Machine) && (not (pmpLocked cfg)))) : Bool)
+                then (pure none)
+                else (pure (some (← (accessFaultFromAccessType access)))))
       (pure loop_vars)
       if ((priv == Machine) : Bool)
       then (pure none)
-      else (pure (some (accessFaultFromAccessType access))))
+      else (pure (some (← (accessFaultFromAccessType access)))))
 
 def reset_pmp (_ : Unit) : SailM Unit := do
   let loop_i_lower := 0

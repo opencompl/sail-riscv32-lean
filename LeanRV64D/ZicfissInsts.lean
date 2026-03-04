@@ -1,4 +1,5 @@
-import LeanRV64D.Common
+import LeanRV64D.Prelude
+import LeanRV64D.CfiTypes
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -195,8 +196,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex787840_ : Nat, k_ex787840_ ∈ {16, 32, 64, 128} -/
-def float_is_inf (op : (BitVec k_ex787840_)) : Bool :=
-  let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
-  ((is_all_ones exp) && (is_all_zeros mantissa))
+def make_shadow_stack_exception (_ : Unit) : sync_exception :=
+  { trap := (E_Software_Check ())
+    excinfo := (some (zero_extend (m := 64) (software_check_cause_forwards SWC_SHADOW_STACK_FAULT)))
+    ext := none }
 

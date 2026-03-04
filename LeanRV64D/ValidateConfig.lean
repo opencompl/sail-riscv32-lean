@@ -503,7 +503,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex895332_ : Bool -/
+/-- Type quantifiers: k_ex908868_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -569,6 +569,17 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       let _ : Unit :=
         (print_endline
           "The Zicfilp extension is enabled but Zicsr is disabled: supporting Zicfilp requires Zicsr.")
+      valid)
+    else valid
+  let valid : Bool :=
+    if (((hartSupports Ext_Zicfiss) && (not
+           ((hartSupports Ext_Zicsr) && ((hartSupports Ext_Zimop) && ((hartSupports Ext_Zaamo) || (hartSupports
+                   Ext_A)))))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Zicfiss extension is enabled but one or more of Zicsr, Zimop and (Zaamo or A) are disabled: supporting Zicfiss requires Zicsr, Zimop and (Zaamo or A).")
       valid)
     else valid
   let valid : Bool :=

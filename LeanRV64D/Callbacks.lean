@@ -227,7 +227,7 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 64)
 def redirect_callback (x_0 : (BitVec 64)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex788183_ : Bool -/
+/-- Type quantifiers: k_ex800225_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
@@ -566,6 +566,7 @@ def csr_name_map_backwards (arg_ : String) : SailM (BitVec 12) := do
     | "scountovf" => (pure (some 0xDA0#12))
     | "stimecmp" => (pure (some 0x14D#12))
     | "stimecmph" => (pure (some 0x15D#12))
+    | "ssp" => (pure (some 0x011#12))
     | "cycle" => (pure (some 0xC00#12))
     | "time" => (pure (some 0xC01#12))
     | "instret" => (pure (some 0xC02#12))

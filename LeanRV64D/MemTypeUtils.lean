@@ -1,8 +1,4 @@
-import Sail
-import LeanRV64D.Defs
-import LeanRV64D.Specialization
-import LeanRV64D.FakeReal
-import LeanRV64D.RiscvExtras
+import LeanRV64D.Errors
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -199,35 +195,59 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def accessFaultFromAccessType (access : (MemoryAccessType mem_payload)) : ExceptionType :=
+def accessFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM ExceptionType := do
   match access with
-  | .InstructionFetch () => (E_Fetch_Access_Fault ())
-  | .Load _ => (E_Load_Access_Fault ())
-  | .LoadReserved _ => (E_Load_Access_Fault ())
-  | .Store _ => (E_SAMO_Access_Fault ())
-  | .StoreConditional _ => (E_SAMO_Access_Fault ())
-  | .Atomic _ => (E_SAMO_Access_Fault ())
-  | .CacheAccess (.CB_manage _) => (E_SAMO_Access_Fault ())
-  | .CacheAccess (.CB_zero ()) => (E_SAMO_Access_Fault ())
+  | .InstructionFetch () => (pure (E_Fetch_Access_Fault ()))
+  | .Load Data => (pure (E_Load_Access_Fault ()))
+  | .LoadReserved Data => (pure (E_Load_Access_Fault ()))
+  | .Store Data => (pure (E_SAMO_Access_Fault ()))
+  | .StoreConditional Data => (pure (E_SAMO_Access_Fault ()))
+  | .Atomic (_, Data, Data) => (pure (E_SAMO_Access_Fault ()))
+  | .Load ShadowStack => (pure (E_SAMO_Access_Fault ()))
+  | .Store ShadowStack => (pure (E_SAMO_Access_Fault ()))
+  | .Atomic (_, ShadowStack, ShadowStack) => (pure (E_SAMO_Access_Fault ()))
+  | .LoadReserved ShadowStack =>
+    (internal_error "core/mem_type_utils.sail" 26 "Invalid payload (ShadowStack) for LoadReserved.")
+  | .StoreConditional ShadowStack =>
+    (internal_error "core/mem_type_utils.sail" 27
+      "Invalid payload (ShadowStack) for StoreConditional.")
+  | .Atomic (_, ShadowStack, Data) =>
+    (internal_error "core/mem_type_utils.sail" 28 "Invalid payloads (ShadowStack, Data) for Atomic.")
+  | .Atomic (_, Data, ShadowStack) =>
+    (internal_error "core/mem_type_utils.sail" 29 "Invalid payloads (Data, ShadowStack) for Atomic.")
+  | .CacheAccess (.CB_manage _) => (pure (E_SAMO_Access_Fault ()))
+  | .CacheAccess (.CB_zero ()) => (pure (E_SAMO_Access_Fault ()))
   | .CacheAccess (.CB_prefetch p) =>
     (match p with
-    | PREFETCH_R => (E_Load_Access_Fault ())
-    | PREFETCH_W => (E_SAMO_Access_Fault ())
-    | PREFETCH_I => (E_Fetch_Access_Fault ()))
+    | PREFETCH_R => (pure (E_Load_Access_Fault ()))
+    | PREFETCH_W => (pure (E_SAMO_Access_Fault ()))
+    | PREFETCH_I => (pure (E_Fetch_Access_Fault ())))
 
-def alignmentFaultFromAccessType (access : (MemoryAccessType mem_payload)) : ExceptionType :=
+def alignmentFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM ExceptionType := do
   match access with
-  | .InstructionFetch () => (E_Fetch_Addr_Align ())
-  | .Load _ => (E_Load_Addr_Align ())
-  | .LoadReserved _ => (E_Load_Addr_Align ())
-  | .Store _ => (E_SAMO_Addr_Align ())
-  | .StoreConditional _ => (E_SAMO_Addr_Align ())
-  | .Atomic _ => (E_SAMO_Addr_Align ())
-  | .CacheAccess (.CB_manage _) => (E_SAMO_Addr_Align ())
-  | .CacheAccess (.CB_zero ()) => (E_SAMO_Addr_Align ())
+  | .InstructionFetch () => (pure (E_Fetch_Addr_Align ()))
+  | .Load Data => (pure (E_Load_Addr_Align ()))
+  | .LoadReserved Data => (pure (E_Load_Addr_Align ()))
+  | .Store Data => (pure (E_SAMO_Addr_Align ()))
+  | .StoreConditional Data => (pure (E_SAMO_Addr_Align ()))
+  | .Atomic (_, Data, Data) => (pure (E_SAMO_Addr_Align ()))
+  | .Load ShadowStack => (pure (E_SAMO_Addr_Align ()))
+  | .Store ShadowStack => (pure (E_SAMO_Addr_Align ()))
+  | .Atomic (_, ShadowStack, ShadowStack) => (pure (E_SAMO_Addr_Align ()))
+  | .LoadReserved ShadowStack =>
+    (internal_error "core/mem_type_utils.sail" 63 "Invalid payload (ShadowStack) for LoadReserved.")
+  | .StoreConditional ShadowStack =>
+    (internal_error "core/mem_type_utils.sail" 64
+      "Invalid payload (ShadowStack) for StoreConditional.")
+  | .Atomic (_, ShadowStack, Data) =>
+    (internal_error "core/mem_type_utils.sail" 65 "Invalid payloads (ShadowStack, Data) for Atomic.")
+  | .Atomic (_, Data, ShadowStack) =>
+    (internal_error "core/mem_type_utils.sail" 66 "Invalid payloads (Data, ShadowStack) for Atomic.")
+  | .CacheAccess (.CB_manage _) => (pure (E_SAMO_Addr_Align ()))
+  | .CacheAccess (.CB_zero ()) => (pure (E_SAMO_Addr_Align ()))
   | .CacheAccess (.CB_prefetch p) =>
     (match p with
-    | PREFETCH_R => (E_Load_Addr_Align ())
-    | PREFETCH_W => (E_SAMO_Addr_Align ())
-    | PREFETCH_I => (E_Fetch_Addr_Align ()))
+    | PREFETCH_R => (pure (E_Load_Addr_Align ()))
+    | PREFETCH_W => (pure (E_SAMO_Addr_Align ()))
+    | PREFETCH_I => (pure (E_Fetch_Addr_Align ())))
 

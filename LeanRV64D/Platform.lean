@@ -344,16 +344,17 @@ def clint_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (wid
                                   (zero_extend (m := 32)
                                     (Sail.BitVec.extractLsb (← readReg mtime) 63 32)))))
                           else
-                            (let _ : Unit :=
-                              if ((get_config_print_clint ()) : Bool)
-                              then
-                                (print_endline
-                                  (HAppend.hAppend "clint["
-                                    (HAppend.hAppend (BitVec.toFormatted addr) "] -> <not-mapped>")))
-                              else ()
-                            (pure (Err (accessFaultFromAccessType access))))))))))
+                            (do
+                              let _ : Unit :=
+                                if ((get_config_print_clint ()) : Bool)
+                                then
+                                  (print_endline
+                                    (HAppend.hAppend "clint["
+                                      (HAppend.hAppend (BitVec.toFormatted addr) "] -> <not-mapped>")))
+                                else ()
+                              (pure (Err (← (accessFaultFromAccessType access)))))))))))
 
-/-- Type quantifiers: k_ex791291_ : Bool -/
+/-- Type quantifiers: k_ex803360_ : Bool -/
 def clint_dispatch (mip_was_written : Bool) : SailM Unit := do
   let old_mip ← do readReg mip
   writeReg mip (Sail.BitVec.updateSubrange (← readReg mip) 7 7
@@ -594,7 +595,7 @@ def htif_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (widt
           then
             (pure (Ok
                 (zero_extend (m := 32) (Sail.BitVec.extractLsb (← readReg htif_tohost) 63 32))))
-          else (pure (Err (accessFaultFromAccessType access)))))
+          else (pure (Err (← (accessFaultFromAccessType access))))))
 
 /-- Type quantifiers: width : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def htif_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) : SailM (Result Bool ExceptionType) := SailME.run do
@@ -699,7 +700,7 @@ def mmio_read (access : (MemoryAccessType mem_payload)) (paddr : physaddr) (widt
     (do
       if ((← (within_htif_readable paddr width)) : Bool)
       then (htif_load access paddr width)
-      else (pure (Err (accessFaultFromAccessType access))))
+      else (pure (Err (← (accessFaultFromAccessType access)))))
 
 /-- Type quantifiers: width : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
 def mmio_write (paddr : physaddr) (width : Nat) (data : (BitVec (8 * width))) : SailM (Result Bool ExceptionType) := do

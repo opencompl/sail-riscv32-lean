@@ -198,5 +198,5 @@ open AmocasOddRegisterReservedBehavior
 
 def cbo_zero_enabled (p : Privilege) : SailM Bool := do
   (feature_enabled_for_priv p (BitVec.access (_get_MEnvcfg_CBZE (← readReg menvcfg)) 0)
-    (BitVec.access (_get_SEnvcfg_CBZE (← readReg senvcfg)) 0))
+    (BitVec.access (_get_SEnvcfg_CBZE (← (read_senvcfg ()))) 0))
 

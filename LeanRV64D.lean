@@ -442,6 +442,7 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                                                                                                     supports_cbo_zero := true }
                                                                                                     include_in_device_tree := true }]
   writeReg tlb (vectorInit none)
+  writeReg ssp (zeros (n := 64))
   writeReg hart_state (HART_ACTIVE ())
   (initialize_registers ())
 

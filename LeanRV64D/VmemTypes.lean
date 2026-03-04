@@ -1,8 +1,4 @@
-import Sail
-import LeanRV64D.Defs
-import LeanRV64D.Specialization
-import LeanRV64D.FakeReal
-import LeanRV64D.RiscvExtras
+import LeanRV64D.Errors
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -200,20 +196,23 @@ open Architecture
 open AmocasOddRegisterReservedBehavior
 
 def undefined_mem_payload (_ : Unit) : SailM mem_payload := do
-  (internal_pick [Data])
+  (internal_pick [Data, ShadowStack])
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 0 -/
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
 def mem_payload_of_num (arg_ : Nat) : mem_payload :=
   match arg_ with
-  | _ => Data
+  | 0 => Data
+  | _ => ShadowStack
 
 def num_of_mem_payload (arg_ : mem_payload) : Int :=
   match arg_ with
   | Data => 0
+  | ShadowStack => 1
 
 def mem_payload_str_backwards (arg_ : String) : SailM mem_payload := do
   match arg_ with
   | "" => (pure Data)
+  | ".ss" => (pure ShadowStack)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -222,11 +221,47 @@ def mem_payload_str_backwards (arg_ : String) : SailM mem_payload := do
 def mem_payload_str_forwards_matches (arg_ : mem_payload) : Bool :=
   match arg_ with
   | Data => true
+  | ShadowStack => true
 
 def mem_payload_str_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
   | "" => true
+  | ".ss" => true
   | _ => false
 
 def default_write_acc : mem_payload := Data
+
+def is_shadow_stack_access (access : (MemoryAccessType mem_payload)) : SailM Bool := do
+  match access with
+  | .Load ShadowStack => (pure true)
+  | .Store ShadowStack => (pure true)
+  | .Atomic (_, ShadowStack, ShadowStack) => (pure true)
+  | .InstructionFetch () => (pure false)
+  | .Load Data => (pure false)
+  | .LoadReserved Data => (pure false)
+  | .Store Data => (pure false)
+  | .StoreConditional Data => (pure false)
+  | .Atomic (_, Data, Data) => (pure false)
+  | .CacheAccess _ => (pure false)
+  | .LoadReserved ShadowStack =>
+    (internal_error "core/vmem_types.sail" 75 "Invalid payload (ShadowStack) for LoadReserved.")
+  | .StoreConditional ShadowStack =>
+    (internal_error "core/vmem_types.sail" 76 "Invalid payload (ShadowStack) for StoreConditional.")
+  | .Atomic (_, ShadowStack, Data) =>
+    (internal_error "core/vmem_types.sail" 77 "Invalid payloads (ShadowStack, Data) for Atomic.")
+  | .Atomic (_, Data, ShadowStack) =>
+    (internal_error "core/vmem_types.sail" 78 "Invalid payloads (Data, ShadowStack) for Atomic.")
+
+def is_shadow_stack_amo (access : (MemoryAccessType mem_payload)) : SailM Bool := do
+  match access with
+  | .Atomic (_, ShadowStack, ShadowStack) => (pure true)
+  | .LoadReserved ShadowStack =>
+    (internal_error "core/vmem_types.sail" 85 "Invalid payload (ShadowStack) for LoadReserved.")
+  | .StoreConditional ShadowStack =>
+    (internal_error "core/vmem_types.sail" 86 "Invalid payload (ShadowStack) for StoreConditional.")
+  | .Atomic (_, ShadowStack, Data) =>
+    (internal_error "core/vmem_types.sail" 87 "Invalid payloads (ShadowStack, Data) for Atomic.")
+  | .Atomic (_, Data, ShadowStack) =>
+    (internal_error "core/vmem_types.sail" 88 "Invalid payloads (Data, ShadowStack) for Atomic.")
+  | _ => (pure false)
 

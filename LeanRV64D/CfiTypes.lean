@@ -200,28 +200,32 @@ open Architecture
 open AmocasOddRegisterReservedBehavior
 
 def undefined_Software_Check_Code (_ : Unit) : SailM Software_Check_Code := do
-  (internal_pick [SWC_NO_INFO, SWC_LANDING_PAD_FAULT])
+  (internal_pick [SWC_NO_INFO, SWC_LANDING_PAD_FAULT, SWC_SHADOW_STACK_FAULT])
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
 def Software_Check_Code_of_num (arg_ : Nat) : Software_Check_Code :=
   match arg_ with
   | 0 => SWC_NO_INFO
-  | _ => SWC_LANDING_PAD_FAULT
+  | 1 => SWC_LANDING_PAD_FAULT
+  | _ => SWC_SHADOW_STACK_FAULT
 
 def num_of_Software_Check_Code (arg_ : Software_Check_Code) : Int :=
   match arg_ with
   | SWC_NO_INFO => 0
   | SWC_LANDING_PAD_FAULT => 1
+  | SWC_SHADOW_STACK_FAULT => 2
 
 def software_check_cause_forwards (arg_ : Software_Check_Code) : (BitVec 2) :=
   match arg_ with
   | SWC_NO_INFO => 0b00#2
   | SWC_LANDING_PAD_FAULT => 0b10#2
+  | SWC_SHADOW_STACK_FAULT => 0b11#2
 
 def software_check_cause_backwards (arg_ : (BitVec 2)) : SailM Software_Check_Code := do
   match arg_ with
   | 0b00 => (pure SWC_NO_INFO)
   | 0b10 => (pure SWC_LANDING_PAD_FAULT)
+  | 0b11 => (pure SWC_SHADOW_STACK_FAULT)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -231,10 +235,12 @@ def software_check_cause_forwards_matches (arg_ : Software_Check_Code) : Bool :=
   match arg_ with
   | SWC_NO_INFO => true
   | SWC_LANDING_PAD_FAULT => true
+  | SWC_SHADOW_STACK_FAULT => true
 
 def software_check_cause_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
   | 0b00 => true
   | 0b10 => true
+  | 0b11 => true
   | _ => false
 
