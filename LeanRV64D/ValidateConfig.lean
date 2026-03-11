@@ -5,6 +5,7 @@ import LeanRV64D.Xlen
 import LeanRV64D.Vlen
 import LeanRV64D.PlatformConfig
 import LeanRV64D.Extensions
+import LeanRV64D.SysRegs
 import LeanRV64D.PmpRegs
 import LeanRV64D.Pma
 
@@ -504,7 +505,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex929217_ : Bool -/
+/-- Type quantifiers: k_ex929568_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -653,12 +654,23 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       (valid && (check_required_sstvala_option "illegal instruction exceptions"
           illegal_instruction_writes_xtval)))
     else valid
-  if (((hartSupports Ext_Ssqosid) && (not (hartSupports Ext_Zicsr))) : Bool)
+  let valid : Bool :=
+    if (((hartSupports Ext_Ssqosid) && (not (hartSupports Ext_Zicsr))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Ssqosid extensions is enabled but Zicsr is disabled: supporting Ssqosid requires Zicsr.")
+      valid)
+    else valid
+  if (((true : Bool) && (((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) &&& (Sail.BitVec.extractLsb
+             sys_scounteren_writable_bits 31 3)) != (Sail.BitVec.extractLsb
+           sys_writable_hpm_counters 31 3))) : Bool)
   then
     (let valid : Bool := false
     let _ : Unit :=
       (print_endline
-        "The Ssqosid extensions is enabled but Zicsr is disabled: supporting Ssqosid requires Zicsr.")
+        "The Sscounterenw extension is enabled but `scounteren` is not writable (via `base.scounteren_writable_bits`) for some supported HPM counters (specified in `base.writable_hpm_counters`).")
     valid)
   else valid
 
