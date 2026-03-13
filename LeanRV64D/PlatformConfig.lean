@@ -210,6 +210,8 @@ def plat_clint_size : physaddrbits := unwrapValue ((to_bits_checked (l := 64) (7
 
 def plat_insns_per_tick : nat1 := 2
 
+def max_wait_time : Nat := 10
+
 def illegal_instruction_writes_xtval : Bool := true
 
 def virtual_instruction_writes_xtval : Bool := false
