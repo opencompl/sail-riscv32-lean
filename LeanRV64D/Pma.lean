@@ -213,16 +213,6 @@ def AtomicSupport_of_num (arg_ : Nat) : AtomicSupport :=
   | 5 => AMOCASD
   | _ => AMOCASQ
 
-def num_of_AtomicSupport (arg_ : AtomicSupport) : Int :=
-  match arg_ with
-  | AMONone => 0
-  | AMOSwap => 1
-  | AMOLogical => 2
-  | AMOArithmetic => 3
-  | AMOCASW => 4
-  | AMOCASD => 5
-  | AMOCASQ => 6
-
 def atomic_support_str_forwards_matches (arg_ : AtomicSupport) : Bool :=
   match arg_ with
   | AMONone => true

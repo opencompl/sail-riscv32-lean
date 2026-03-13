@@ -5,6 +5,7 @@ import LeanRV64D.Xlen
 import LeanRV64D.Vlen
 import LeanRV64D.PlatformConfig
 import LeanRV64D.Extensions
+import LeanRV64D.Types
 import LeanRV64D.SysRegs
 import LeanRV64D.PmpRegs
 import LeanRV64D.Pma
@@ -243,13 +244,37 @@ def check_mmu_config (_ : Unit) : Bool :=
       (let valid : Bool := false
       (print_endline "Sv32 is enabled: Sv32 is not supported on RV64."))
     else ()
-  if (((hartSupports Ext_Svrsw60t59b) && (not (hartSupports Ext_Sv39))) : Bool)
+  let valid : Bool :=
+    if (((hartSupports Ext_Svrsw60t59b) && (not (hartSupports Ext_Sv39))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "Svrsw60t59b is enabled but Sv39 is disabled: supporting Svrsw60t59b requires supporting Sv39.")
+      valid)
+    else valid
+  let valid : Bool :=
+    if ((true : Bool) : Bool)
+    then
+      (if ((not (true : Bool)) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "The Svnapot extension is enabled but Sv39 is disabled: supporting Svnapot requires Sv39.")
+        valid)
+      else valid)
+    else valid
+  if ((true : Bool) : Bool)
   then
-    (let valid : Bool := false
-    let _ : Unit :=
-      (print_endline
-        "Svrsw60t59b is enabled but Sv39 is disabled: supporting Svrsw60t59b requires supporting Sv39.")
-    valid)
+    (if (((xlen == 64) && (not (true : Bool))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Svvptc extension is enabled but Sv39 is disabled: Svvptc depends on Sv39 on RV64.")
+      valid)
+    else valid)
   else valid
 
 def check_vlen_elen (_ : Unit) : Bool :=
@@ -460,22 +485,70 @@ def check_vext_config (_ : Unit) : Bool :=
     valid)
   else valid
 
-def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) : Bool :=
+/-- Type quantifiers: k_ex930632_ : Bool, k_ex930631_ : Bool, k_ex930630_ : Bool -/
+def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_ziccamoa : Bool) (check_ziccamoc : Bool) (check_ziccrse : Bool) : Bool := ExceptM.run do
   match pmas with
-  | [] => true
+  | [] => (pure true)
   | (pma :: rest) =>
-    (if ((zopz0zI_u pma.base (prev_base + prev_size)) : Bool)
-    then
-      (let _ : Unit :=
-        (print_endline
-          (HAppend.hAppend "Memory region starting at "
-            (HAppend.hAppend (BitVec.toFormatted pma.base)
-              (HAppend.hAppend " is not above the end of the previous region starting at "
-                (HAppend.hAppend (BitVec.toFormatted prev_base)
-                  (HAppend.hAppend " and ending at "
-                    (HAppend.hAppend (BitVec.toFormatted (prev_base + prev_size)) ".")))))))
-      false)
-    else (check_pma_regions rest pma.base pma.size))
+    (do
+      if ((zopz0zI_u pma.base (prev_base + prev_size)) : Bool)
+      then
+        (let _ : Unit :=
+          (print_endline
+            (HAppend.hAppend "Memory region starting at "
+              (HAppend.hAppend (BitVec.toFormatted pma.base)
+                (HAppend.hAppend " is not above the end of the previous region starting at "
+                  (HAppend.hAppend (BitVec.toFormatted prev_base)
+                    (HAppend.hAppend " and ending at "
+                      (HAppend.hAppend (BitVec.toFormatted (prev_base + prev_size)) ".")))))))
+        (pure false))
+      else
+        (do
+          let attributes := pma.attributes
+          if ((attributes.cacheable && attributes.coherent) : Bool)
+          then
+            (do
+              if ((check_ziccamoa && (pma_atomicity_support_lt attributes.atomic_support
+                     AMOArithmetic)) : Bool)
+              then
+                throw (let _ : Unit :=
+                    (print_endline
+                      (HAppend.hAppend "Memory region starting at "
+                        (HAppend.hAppend (BitVec.toFormatted pma.base)
+                          (HAppend.hAppend " is coherent and cacheable with "
+                            (HAppend.hAppend (atomic_support_str_forwards attributes.atomic_support)
+                              " atomicity support, but Ziccamoa is enabled which requires AMOArithmetic support.")))))
+                  false : Bool)
+              else
+                (do
+                  if ((check_ziccamoc && (bne attributes.atomic_support AMOCASQ)) : Bool)
+                  then
+                    throw (let _ : Unit :=
+                        (print_endline
+                          (HAppend.hAppend "Memory region starting at "
+                            (HAppend.hAppend (BitVec.toFormatted pma.base)
+                              (HAppend.hAppend " is coherent and cacheable with "
+                                (HAppend.hAppend
+                                  (atomic_support_str_forwards attributes.atomic_support)
+                                  " atomicity support, but Ziccamoc is enabled which requires AMOCASQ support.")))))
+                      false : Bool)
+                  else
+                    (do
+                      if ((check_ziccrse && (bne attributes.reservability RsrvEventual)) : Bool)
+                      then
+                        throw (let _ : Unit :=
+                            (print_endline
+                              (HAppend.hAppend "Memory region starting at "
+                                (HAppend.hAppend (BitVec.toFormatted pma.base)
+                                  (HAppend.hAppend " is coherent and cacheable with "
+                                    (HAppend.hAppend
+                                      (reservability_str_forwards attributes.reservability)
+                                      " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
+                          false : Bool)
+                      else (pure ()))))
+          else (pure ())
+          (pure (check_pma_regions rest pma.base pma.size check_ziccamoc check_ziccamoa
+              check_ziccrse))))
 
 def dtb_within_configured_pma_memory (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
   (pure (is_some (matching_pma_bits_range (← readReg pma_regions) addr size)))
@@ -485,7 +558,13 @@ def check_mem_layout (_ : Unit) : SailM Bool := do
   then
     (let _ : Unit := (print_endline "No memory regions specified.")
     (pure false))
-  else (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))))
+  else
+    (do
+      let ziccamoa_is_supported : Bool := true
+      let ziccamoc_is_supported : Bool := true
+      let ziccrse_is_supported : Bool := true
+      (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))
+          ziccamoa_is_supported ziccamoc_is_supported ziccrse_is_supported)))
 
 def check_pmp (_ : Unit) : Bool :=
   let valid : Bool := true
@@ -505,7 +584,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex929872_ : Bool -/
+/-- Type quantifiers: k_ex930697_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -660,30 +739,18 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       (let valid : Bool := false
       let _ : Unit :=
         (print_endline
-          "The Ssqosid extensions is enabled but Zicsr is disabled: supporting Ssqosid requires Zicsr.")
+          "The Ssqosid extension is enabled but Zicsr is disabled: supporting Ssqosid requires Zicsr.")
       valid)
     else valid
-  let valid : Bool :=
-    if (((true : Bool) && (((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) &&& (Sail.BitVec.extractLsb
-               sys_scounteren_writable_bits 31 3)) != (Sail.BitVec.extractLsb
-             sys_writable_hpm_counters 31 3))) : Bool)
-    then
-      (let valid : Bool := false
-      let _ : Unit :=
-        (print_endline
-          "The Sscounterenw extension is enabled but `scounteren` is not writable (via `base.scounteren_writable_bits`) for some supported HPM counters (specified in `base.writable_hpm_counters`).")
-      valid)
-    else valid
-  if ((true : Bool) : Bool)
+  if (((true : Bool) && (((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) &&& (Sail.BitVec.extractLsb
+             sys_scounteren_writable_bits 31 3)) != (Sail.BitVec.extractLsb
+           sys_writable_hpm_counters 31 3))) : Bool)
   then
-    (if (((xlen == 64) && (not (true : Bool))) : Bool)
-    then
-      (let valid : Bool := false
-      let _ : Unit :=
-        (print_endline
-          "The Svvptc extension is enabled but Sv39 is disabled: Svvptc depends on Sv39 on RV64.")
-      valid)
-    else valid)
+    (let valid : Bool := false
+    let _ : Unit :=
+      (print_endline
+        "The Sscounterenw extension is enabled but `scounteren` is not writable (via `base.scounteren_writable_bits`) for some supported HPM counters (specified in `base.writable_hpm_counters`).")
+    valid)
   else valid
 
 def check_extension_param_constraints (_ : Unit) : Bool :=

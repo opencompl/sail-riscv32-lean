@@ -200,9 +200,22 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex805324_ : Bool, k_ex805323_ : Bool -/
+/-- Type quantifiers: k_ex806039_ : Bool, k_ex806038_ : Bool -/
 def neq_bool (x : Bool) (y : Bool) : Bool :=
   (! (x == y))
+
+def num_of_AtomicSupport (arg_ : AtomicSupport) : Int :=
+  match arg_ with
+  | AMONone => 0
+  | AMOSwap => 1
+  | AMOLogical => 2
+  | AMOArithmetic => 3
+  | AMOCASW => 4
+  | AMOCASD => 5
+  | AMOCASQ => 6
+
+def pma_atomicity_support_le (x : AtomicSupport) (y : AtomicSupport) : Bool :=
+  ((num_of_AtomicSupport x) ≤b (num_of_AtomicSupport y))
 
 def num_of_vector_support (arg_ : vector_support) : Int :=
   match arg_ with
@@ -215,11 +228,20 @@ def num_of_vector_support (arg_ : vector_support) : Int :=
 def vector_support_le (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) ≤b (num_of_vector_support y))
 
+def pma_atomicity_support_lt (x : AtomicSupport) (y : AtomicSupport) : Bool :=
+  ((num_of_AtomicSupport x) <b (num_of_AtomicSupport y))
+
 def vector_support_lt (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) <b (num_of_vector_support y))
 
+def pma_atomicity_support_ge (x : AtomicSupport) (y : AtomicSupport) : Bool :=
+  ((num_of_AtomicSupport x) ≥b (num_of_AtomicSupport y))
+
 def vector_support_ge (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) ≥b (num_of_vector_support y))
+
+def pma_atomicity_support_gt (x : AtomicSupport) (y : AtomicSupport) : Bool :=
+  ((num_of_AtomicSupport x) >b (num_of_AtomicSupport y))
 
 def vector_support_gt (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) >b (num_of_vector_support y))

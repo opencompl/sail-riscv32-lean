@@ -657,12 +657,12 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zicfilp =>
     (pure ((← (currentlyEnabled Ext_Zicsr)) && ((hartSupports Ext_Zicfilp) && (← (get_xLPE
               (← readReg cur_privilege))))))
+  | Ext_Svpbmt => (pure false)
+  | Ext_Svnapot => (pure ((hartSupports Ext_Svnapot) && (← (currentlyEnabled Ext_Sv39))))
+  | Ext_Svrsw60t59b => (pure ((hartSupports Ext_Svrsw60t59b) && (← (currentlyEnabled Ext_Sv39))))
   | Ext_Svvptc =>
     (pure ((hartSupports Ext_Svvptc) && ((← (currentlyEnabled Ext_Sv32)) || (← (currentlyEnabled
               Ext_Sv39)))))
-  | Ext_Svnapot => (pure false)
-  | Ext_Svpbmt => (pure false)
-  | Ext_Svrsw60t59b => (pure ((hartSupports Ext_Svrsw60t59b) && (← (currentlyEnabled Ext_Sv39))))
   | Ext_Zicbop => (pure (hartSupports Ext_Zicbop))
   | Ext_Zihintntl => (pure (hartSupports Ext_Zihintntl))
   | Ext_Zihintpause => (pure (hartSupports Ext_Zihintpause))
@@ -673,9 +673,12 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zaamo => (pure ((hartSupports Ext_Zaamo) || (← (currentlyEnabled Ext_A))))
   | Ext_Zabha => (pure ((hartSupports Ext_Zabha) && (← (currentlyEnabled Ext_Zaamo))))
   | Ext_Zacas => (pure ((hartSupports Ext_Zacas) && (← (currentlyEnabled Ext_Zaamo))))
+  | Ext_Ziccamoa => (pure (hartSupports Ext_Ziccamoa))
+  | Ext_Ziccamoc => (pure (hartSupports Ext_Ziccamoc))
   | Ext_Zalrsc => (pure ((hartSupports Ext_Zalrsc) || (← (currentlyEnabled Ext_A))))
   | Ext_Za64rs => (pure ((hartSupports Ext_Za64rs) && (← (currentlyEnabled Ext_Zalrsc))))
   | Ext_Za128rs => (pure ((hartSupports Ext_Za128rs) && (← (currentlyEnabled Ext_Zalrsc))))
+  | Ext_Ziccrse => (pure (hartSupports Ext_Ziccrse))
   | Ext_M => (pure ((hartSupports Ext_M) && ((_get_Misa_M (← readReg misa)) == 1#1)))
   | Ext_Zmmul => (pure ((hartSupports Ext_Zmmul) || (← (currentlyEnabled Ext_M))))
   | Ext_B => (pure ((hartSupports Ext_B) && ((_get_Misa_B (← readReg misa)) == 1#1)))
@@ -1891,7 +1894,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex809142_ : Bool -/
+/-- Type quantifiers: k_ex809901_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6383,7 +6386,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex810297_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex811056_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 

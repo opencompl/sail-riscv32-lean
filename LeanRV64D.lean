@@ -408,7 +408,7 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
   writeReg pma_regions [{ base := 0b0000000000000000000000000000000000000000000000000001000000000000#64
                           size := 0b0000000000000000000000000000000000000000000000000001000000000000#64
                           attributes := { cacheable := true
-                                          coherent := true
+                                          coherent := false
                                           executable := false
                                           readable := true
                                           writable := false
