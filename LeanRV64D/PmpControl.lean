@@ -1,6 +1,8 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
 import LeanRV64D.Errors
+import LeanRV64D.Types
+import LeanRV64D.VmemTypes
 import LeanRV64D.MemTypeUtils
 import LeanRV64D.SysRegs
 import LeanRV64D.PmpRegs
@@ -204,8 +206,10 @@ open AmocasOddRegisterReservedBehavior
 def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : SailM Bool := do
   match access with
   | .Load Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .Load PageTableEntry => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
   | .LoadReserved Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
   | .Store Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .Store PageTableEntry => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
   | .StoreConditional Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
   | .Atomic (_, Data, Data) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
@@ -214,14 +218,21 @@ def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : S
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
   | .Store ShadowStack =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .Atomic (_, ShadowStack, _) =>
+  | .Atomic (_, ShadowStack, ShadowStack) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .Atomic (_, _, ShadowStack) =>
-    (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .LoadReserved ShadowStack =>
-    (internal_error "pmp/pmp_control.sail" 28 "Invalid payload (ShadowStack) for LoadReserved.")
-  | .StoreConditional ShadowStack =>
-    (internal_error "pmp/pmp_control.sail" 29 "Invalid payload (ShadowStack) for StoreConditional.")
+  | .LoadReserved p =>
+    (internal_error "pmp/pmp_control.sail" 30
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+  | .StoreConditional p =>
+    (internal_error "pmp/pmp_control.sail" 31
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+  | .Atomic (_, rp, wp) =>
+    (internal_error "pmp/pmp_control.sail" 32
+      (HAppend.hAppend "Invalid payloads ("
+        (HAppend.hAppend (mem_payload_name_forwards rp)
+          (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
   | .CacheAccess (.CB_manage _) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) || ((_get_Pmpcfg_ent_W ent) == 1#1)))
   | .CacheAccess (.CB_zero ()) => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))

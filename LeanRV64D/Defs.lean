@@ -284,7 +284,7 @@ inductive stateen_bit where | STATEEN_FCSR | STATEEN_SRMCFG | STATEEN_ENVCFG | S
   deriving BEq, Inhabited, Repr
   open stateen_bit
 
-inductive mem_payload where | Data | ShadowStack
+inductive mem_payload where | Data | PageTableEntry | ShadowStack
   deriving BEq, Inhabited, Repr
   open mem_payload
 
@@ -1201,6 +1201,8 @@ structure PMA where
   atomic_support : AtomicSupport
   reservability : Reservability
   supports_cbo_zero : Bool
+  supports_pte_read : Bool
+  supports_pte_write : Bool
   deriving BEq, Inhabited, Repr
 
 structure PMA_Region where

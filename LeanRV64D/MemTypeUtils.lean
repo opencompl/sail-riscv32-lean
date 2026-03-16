@@ -1,4 +1,6 @@
 import LeanRV64D.Errors
+import LeanRV64D.Types
+import LeanRV64D.VmemTypes
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -200,22 +202,28 @@ def accessFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM 
   match access with
   | .InstructionFetch () => (pure (E_Fetch_Access_Fault ()))
   | .Load Data => (pure (E_Load_Access_Fault ()))
+  | .Load PageTableEntry => (pure (E_Load_Access_Fault ()))
   | .LoadReserved Data => (pure (E_Load_Access_Fault ()))
   | .Store Data => (pure (E_SAMO_Access_Fault ()))
+  | .Store PageTableEntry => (pure (E_SAMO_Access_Fault ()))
   | .StoreConditional Data => (pure (E_SAMO_Access_Fault ()))
   | .Atomic (_, Data, Data) => (pure (E_SAMO_Access_Fault ()))
   | .Load ShadowStack => (pure (E_SAMO_Access_Fault ()))
   | .Store ShadowStack => (pure (E_SAMO_Access_Fault ()))
   | .Atomic (_, ShadowStack, ShadowStack) => (pure (E_SAMO_Access_Fault ()))
-  | .LoadReserved ShadowStack =>
-    (internal_error "core/mem_type_utils.sail" 26 "Invalid payload (ShadowStack) for LoadReserved.")
-  | .StoreConditional ShadowStack =>
-    (internal_error "core/mem_type_utils.sail" 27
-      "Invalid payload (ShadowStack) for StoreConditional.")
-  | .Atomic (_, ShadowStack, Data) =>
-    (internal_error "core/mem_type_utils.sail" 28 "Invalid payloads (ShadowStack, Data) for Atomic.")
-  | .Atomic (_, Data, ShadowStack) =>
-    (internal_error "core/mem_type_utils.sail" 29 "Invalid payloads (Data, ShadowStack) for Atomic.")
+  | .LoadReserved p =>
+    (internal_error "core/mem_type_utils.sail" 28
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+  | .StoreConditional p =>
+    (internal_error "core/mem_type_utils.sail" 29
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+  | .Atomic (_, rp, wp) =>
+    (internal_error "core/mem_type_utils.sail" 30
+      (HAppend.hAppend "Invalid payloads ("
+        (HAppend.hAppend (mem_payload_name_forwards rp)
+          (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
   | .CacheAccess (.CB_manage _) => (pure (E_SAMO_Access_Fault ()))
   | .CacheAccess (.CB_zero ()) => (pure (E_SAMO_Access_Fault ()))
   | .CacheAccess (.CB_prefetch p) =>
@@ -228,22 +236,28 @@ def alignmentFaultFromAccessType (access : (MemoryAccessType mem_payload)) : Sai
   match access with
   | .InstructionFetch () => (pure (E_Fetch_Addr_Align ()))
   | .Load Data => (pure (E_Load_Addr_Align ()))
+  | .Load PageTableEntry => (pure (E_Load_Addr_Align ()))
   | .LoadReserved Data => (pure (E_Load_Addr_Align ()))
   | .Store Data => (pure (E_SAMO_Addr_Align ()))
+  | .Store PageTableEntry => (pure (E_SAMO_Addr_Align ()))
   | .StoreConditional Data => (pure (E_SAMO_Addr_Align ()))
   | .Atomic (_, Data, Data) => (pure (E_SAMO_Addr_Align ()))
   | .Load ShadowStack => (pure (E_SAMO_Addr_Align ()))
   | .Store ShadowStack => (pure (E_SAMO_Addr_Align ()))
   | .Atomic (_, ShadowStack, ShadowStack) => (pure (E_SAMO_Addr_Align ()))
-  | .LoadReserved ShadowStack =>
-    (internal_error "core/mem_type_utils.sail" 63 "Invalid payload (ShadowStack) for LoadReserved.")
-  | .StoreConditional ShadowStack =>
-    (internal_error "core/mem_type_utils.sail" 64
-      "Invalid payload (ShadowStack) for StoreConditional.")
-  | .Atomic (_, ShadowStack, Data) =>
-    (internal_error "core/mem_type_utils.sail" 65 "Invalid payloads (ShadowStack, Data) for Atomic.")
-  | .Atomic (_, Data, ShadowStack) =>
-    (internal_error "core/mem_type_utils.sail" 66 "Invalid payloads (Data, ShadowStack) for Atomic.")
+  | .LoadReserved p =>
+    (internal_error "core/mem_type_utils.sail" 66
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+  | .StoreConditional p =>
+    (internal_error "core/mem_type_utils.sail" 67
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+  | .Atomic (_, rp, wp) =>
+    (internal_error "core/mem_type_utils.sail" 68
+      (HAppend.hAppend "Invalid payloads ("
+        (HAppend.hAppend (mem_payload_name_forwards rp)
+          (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
   | .CacheAccess (.CB_manage _) => (pure (E_SAMO_Addr_Align ()))
   | .CacheAccess (.CB_zero ()) => (pure (E_SAMO_Addr_Align ()))
   | .CacheAccess (.CB_prefetch p) =>

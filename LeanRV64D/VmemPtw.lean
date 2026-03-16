@@ -1,5 +1,6 @@
 import LeanRV64D.Errors
 import LeanRV64D.TypesExt
+import LeanRV64D.VmemTypes
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -210,10 +211,14 @@ def translationException (access : (MemoryAccessType mem_payload)) (err : PTW_Er
   | (.Atomic (_, Data, Data), _) => (pure (E_SAMO_Page_Fault ()))
   | (.Load Data, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
   | (.Load Data, _) => (pure (E_Load_Page_Fault ()))
+  | (.Load PageTableEntry, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
+  | (.Load PageTableEntry, _) => (pure (E_Load_Page_Fault ()))
   | (.LoadReserved Data, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
   | (.LoadReserved Data, _) => (pure (E_Load_Page_Fault ()))
   | (.Store Data, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
   | (.Store Data, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Store PageTableEntry, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Store PageTableEntry, _) => (pure (E_SAMO_Page_Fault ()))
   | (.StoreConditional Data, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
   | (.StoreConditional Data, _) => (pure (E_SAMO_Page_Fault ()))
   | (.Atomic (_, ShadowStack, ShadowStack), .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
@@ -238,12 +243,17 @@ def translationException (access : (MemoryAccessType mem_payload)) (err : PTW_Er
     | PREFETCH_R => (pure (E_Load_Page_Fault ()))
     | PREFETCH_W => (pure (E_SAMO_Page_Fault ()))
     | PREFETCH_I => (pure (E_Fetch_Page_Fault ())))
-  | (.LoadReserved ShadowStack, _) =>
-    (internal_error "sys/vmem_ptw.sail" 105 "Invalid payload (ShadowStack) for LoadReserved.")
-  | (.StoreConditional ShadowStack, _) =>
-    (internal_error "sys/vmem_ptw.sail" 106 "Invalid payload (ShadowStack) for StoreConditional.")
-  | (.Atomic (_, ShadowStack, Data), _) =>
-    (internal_error "sys/vmem_ptw.sail" 107 "Invalid payloads (ShadowStack, Data) for Atomic.")
-  | (.Atomic (_, Data, ShadowStack), _) =>
-    (internal_error "sys/vmem_ptw.sail" 108 "Invalid payloads (Data, ShadowStack) for Atomic.")
+  | (.LoadReserved p, _) =>
+    (internal_error "sys/vmem_ptw.sail" 109
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+  | (.StoreConditional p, _) =>
+    (internal_error "sys/vmem_ptw.sail" 110
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+  | (.Atomic (_, rp, wp), _) =>
+    (internal_error "sys/vmem_ptw.sail" 111
+      (HAppend.hAppend "Invalid payloads ("
+        (HAppend.hAppend (mem_payload_name_forwards rp)
+          (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic.")))))
 

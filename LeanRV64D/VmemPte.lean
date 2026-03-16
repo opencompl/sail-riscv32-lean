@@ -267,7 +267,7 @@ def pte_is_invalid (pte_flags : (BitVec 8)) (pte_ext : (BitVec 10)) : SailM Bool
                       (← (currentlyEnabled Ext_Svrsw60t59b)))) || ((_get_PTE_Ext_reserved pte_ext) != (zeros
                       (n := 5)))))))))))
 
-/-- Type quantifiers: k_ex827175_ : Bool, k_ex827174_ : Bool -/
+/-- Type quantifiers: k_ex827177_ : Bool, k_ex827176_ : Bool -/
 def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := SailME.run do
   let pte_U := (bit_to_bool (_get_PTE_Flags_U pte_flags))
   let pte_R := (bit_to_bool (_get_PTE_Flags_R pte_flags))
@@ -294,6 +294,8 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
           let shadow_stack_ok ← (( do
             match access with
             | .InstructionFetch () => (pure false)
+            | .Load PageTableEntry => (pure false)
+            | .Store PageTableEntry => (pure false)
             | .Load Data => (pure true)
             | .Load ShadowStack => (pure true)
             | .LoadReserved Data => (pure true)
@@ -303,18 +305,21 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
             | .Store ShadowStack => (pure true)
             | .Atomic (_, ShadowStack, ShadowStack) => (pure true)
             | .CacheAccess _ => (pure false)
-            | .LoadReserved ShadowStack =>
-              (internal_error "sys/vmem_pte.sail" 183
-                "Invalid payload (ShadowStack) for LoadReserved.")
-            | .StoreConditional ShadowStack =>
-              (internal_error "sys/vmem_pte.sail" 184
-                "Invalid payload (ShadowStack) for StoreConditional.")
-            | .Atomic (_, ShadowStack, Data) =>
+            | .LoadReserved p =>
               (internal_error "sys/vmem_pte.sail" 185
-                "Invalid payloads (ShadowStack, Data) for Atomic.")
-            | .Atomic (_, Data, ShadowStack) =>
+                (HAppend.hAppend "Invalid payload ("
+                  (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+            | .StoreConditional p =>
               (internal_error "sys/vmem_pte.sail" 186
-                "Invalid payloads (Data, ShadowStack) for Atomic.") ) : SailME PTE_Check Bool )
+                (HAppend.hAppend "Invalid payload ("
+                  (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+            | .Atomic (_, rp, wp) =>
+              (internal_error "sys/vmem_pte.sail" 187
+                (HAppend.hAppend "Invalid payloads ("
+                  (HAppend.hAppend (mem_payload_name_forwards rp)
+                    (HAppend.hAppend ", "
+                      (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic."))))) ) :
+            SailME PTE_Check Bool )
           if ((not shadow_stack_ok) : Bool)
           then SailME.throw ((PTE_Check_Failure ((), (PTE_No_Access ()))) : PTE_Check)
           else (pure ()))

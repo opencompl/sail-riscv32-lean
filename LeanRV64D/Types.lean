@@ -907,6 +907,7 @@ def privLevel_to_str (p : Privilege) : SailM String := do
 def mem_payload_str_forwards (arg_ : mem_payload) : String :=
   match arg_ with
   | Data => ""
+  | PageTableEntry => ""
   | ShadowStack => ".ss"
 
 def accessType_to_str (access : (MemoryAccessType mem_payload)) : String :=
@@ -1894,7 +1895,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex809901_ : Bool -/
+/-- Type quantifiers: k_ex809903_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6386,7 +6387,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex811056_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex811058_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -10606,10 +10607,20 @@ def pma_attributes_to_str (attr : PMA) : String :=
                 (HAppend.hAppend " misaligned_fault:"
                   (HAppend.hAppend (misaligned_fault_str_forwards attr.misaligned_fault)
                     (HAppend.hAppend " "
-                      (HAppend.hAppend (reservability_str_forwards attr.reservability)
-                        (if (attr.supports_cbo_zero : Bool)
-                        then " supports_cbo_zero"
-                        else ""))))))))))))
+                      (HAppend.hAppend (atomic_support_str_forwards attr.atomic_support)
+                        (HAppend.hAppend " "
+                          (HAppend.hAppend (reservability_str_forwards attr.reservability)
+                            (HAppend.hAppend
+                              (if (attr.supports_cbo_zero : Bool)
+                              then " supports-cbo-zero"
+                              else "")
+                              (HAppend.hAppend
+                                (if (attr.supports_pte_read : Bool)
+                                then " supports-pte-read"
+                                else "")
+                                (if (attr.supports_pte_write : Bool)
+                                then " supports-pte-write"
+                                else ""))))))))))))))))
 
 def pma_region_to_str (region : PMA_Region) : String :=
   (HAppend.hAppend "base: "

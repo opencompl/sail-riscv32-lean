@@ -417,7 +417,9 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                           misaligned_fault := NoFault
                                           atomic_support := AMONone
                                           reservability := RsrvNone
-                                          supports_cbo_zero := false }
+                                          supports_cbo_zero := false
+                                          supports_pte_read := false
+                                          supports_pte_write := false }
                           include_in_device_tree := false }, { base := 0b0000000000000000000000000000000000000010000000000000000000000000#64
                                                                size := 0b0000000000000000000000000000000000000010000000000000000000000000#64
                                                                attributes := { cacheable := false
@@ -430,7 +432,9 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                                                                misaligned_fault := AlignmentFault
                                                                                atomic_support := AMONone
                                                                                reservability := RsrvNone
-                                                                               supports_cbo_zero := false }
+                                                                               supports_cbo_zero := false
+                                                                               supports_pte_read := false
+                                                                               supports_pte_write := false }
                                                                include_in_device_tree := false }, { base := 0b0000000000000000000000000000000010000000000000000000000000000000#64
                                                                                                     size := 0b0000000000000000000000000000000010000000000000000000000000000000#64
                                                                                                     attributes := { cacheable := true
@@ -443,7 +447,9 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                                                                                                     misaligned_fault := NoFault
                                                                                                                     atomic_support := AMOCASQ
                                                                                                                     reservability := RsrvEventual
-                                                                                                                    supports_cbo_zero := true }
+                                                                                                                    supports_cbo_zero := true
+                                                                                                                    supports_pte_read := true
+                                                                                                                    supports_pte_write := true }
                                                                                                     include_in_device_tree := true }]
   writeReg tlb (vectorInit none)
   writeReg ssp (zeros (n := 64))

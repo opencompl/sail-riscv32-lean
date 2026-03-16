@@ -314,7 +314,9 @@ def undefined_PMA (_ : Unit) : SailM PMA := do
           misaligned_fault := ← (undefined_misaligned_fault ())
           atomic_support := ← (undefined_AtomicSupport ())
           reservability := ← (undefined_Reservability ())
-          supports_cbo_zero := ← (undefined_bool ()) })
+          supports_cbo_zero := ← (undefined_bool ())
+          supports_pte_read := ← (undefined_bool ())
+          supports_pte_write := ← (undefined_bool ()) })
 
 def undefined_PMA_Region (_ : Unit) : SailM PMA_Region := do
   (pure { base := ← (undefined_bitvector 64)
