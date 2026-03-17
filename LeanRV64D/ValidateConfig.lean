@@ -214,7 +214,35 @@ def check_privs (_ : Unit) : Bool :=
     false)
   else true
 
-def check_mmu_config (_ : Unit) : Bool :=
+def require_Sv32 (ext_name : String) : Bool :=
+  if ((not (false : Bool)) : Bool)
+  then
+    (let _ : Unit :=
+      (print_endline
+        (HAppend.hAppend "The "
+          (HAppend.hAppend ext_name
+            (HAppend.hAppend " extension is enabled but Sv32 is disabled: "
+              (HAppend.hAppend ext_name " depends on Sv32 on RV32.")))))
+    false)
+  else true
+
+def require_Sv39 (ext_name : String) : Bool :=
+  if ((not (true : Bool)) : Bool)
+  then
+    (let _ : Unit :=
+      (print_endline
+        (HAppend.hAppend "The "
+          (HAppend.hAppend ext_name
+            (HAppend.hAppend " extension is enabled but Sv39 is disabled: "
+              (HAppend.hAppend ext_name " depends on Sv39 on RV64.")))))
+    false)
+  else true
+
+def require_virtual_memory (ext_name : String) : SailM Bool := do
+  assert (xlen == 64) "postlude/validate_config.sail:37.19-37.20"
+  (pure (require_Sv39 ext_name))
+
+def check_mmu_config (_ : Unit) : SailM Bool := do
   let valid : Bool := true
   let _ : Unit :=
     let _ : Unit :=
@@ -253,29 +281,21 @@ def check_mmu_config (_ : Unit) : Bool :=
           "Svrsw60t59b is enabled but Sv39 is disabled: supporting Svrsw60t59b requires supporting Sv39.")
       valid)
     else valid
-  let valid : Bool :=
+  let valid ← (( do
     if ((true : Bool) : Bool)
     then
-      (if ((not (true : Bool)) : Bool)
-      then
-        (let valid : Bool := false
-        let _ : Unit :=
-          (print_endline
-            "The Svnapot extension is enabled but Sv39 is disabled: supporting Svnapot requires Sv39.")
-        valid)
-      else valid)
+      (do
+        (pure (valid && (← (require_virtual_memory "Ssccptr")))))
+    else (pure valid) ) : SailM Bool )
+  let valid : Bool :=
+    if ((true : Bool) : Bool)
+    then (valid && (require_Sv39 "Svnapot"))
     else valid
   if ((true : Bool) : Bool)
   then
-    (if (((xlen == 64) && (not (true : Bool))) : Bool)
-    then
-      (let valid : Bool := false
-      let _ : Unit :=
-        (print_endline
-          "The Svvptc extension is enabled but Sv39 is disabled: Svvptc depends on Sv39 on RV64.")
-      valid)
-    else valid)
-  else valid
+    (do
+      (pure (valid && (← (require_virtual_memory "Svvptc")))))
+  else (pure valid)
 
 def check_vlen_elen (_ : Unit) : Bool :=
   if (((vlen_exp : Nat) <b (elen_exp : Nat)) : Bool)
@@ -485,8 +505,8 @@ def check_vext_config (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex930634_ : Bool, k_ex930633_ : Bool, k_ex930632_ : Bool -/
-def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_ziccamoa : Bool) (check_ziccamoc : Bool) (check_ziccrse : Bool) : Bool := ExceptM.run do
+/-- Type quantifiers: k_ex931045_ : Bool, k_ex931044_ : Bool, k_ex931043_ : Bool, k_ex931042_ : Bool -/
+def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_ziccamoa : Bool) (check_ziccamoc : Bool) (check_ziccrse : Bool) (check_ssccptr : Bool) : Bool := ExceptM.run do
   match pmas with
   | [] => (pure true)
   | (pma :: rest) =>
@@ -545,10 +565,20 @@ def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev
                                       (reservability_str_forwards attributes.reservability)
                                       " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
                           false : Bool)
-                      else (pure ()))))
+                      else
+                        (do
+                          if ((check_ssccptr && (not attributes.supports_pte_read)) : Bool)
+                          then
+                            throw (let _ : Unit :=
+                                (print_endline
+                                  (HAppend.hAppend "Memory region starting at "
+                                    (HAppend.hAppend (BitVec.toFormatted pma.base)
+                                      " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                              false : Bool)
+                          else (pure ())))))
           else (pure ())
           (pure (check_pma_regions rest pma.base pma.size check_ziccamoc check_ziccamoa
-              check_ziccrse))))
+              check_ziccrse check_ssccptr))))
 
 def dtb_within_configured_pma_memory (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
   (pure (is_some (matching_pma_bits_range (← readReg pma_regions) addr size)))
@@ -563,8 +593,9 @@ def check_mem_layout (_ : Unit) : SailM Bool := do
       let ziccamoa_is_supported : Bool := true
       let ziccamoc_is_supported : Bool := true
       let ziccrse_is_supported : Bool := true
+      let ssccptr_is_supported : Bool := true
       (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))
-          ziccamoa_is_supported ziccamoc_is_supported ziccrse_is_supported)))
+          ziccamoa_is_supported ziccamoc_is_supported ziccrse_is_supported ssccptr_is_supported)))
 
 def check_pmp (_ : Unit) : Bool :=
   let valid : Bool := true
@@ -584,7 +615,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex930699_ : Bool -/
+/-- Type quantifiers: k_ex931122_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -801,7 +832,7 @@ def check_stateen_config (_ : Unit) : Bool :=
     else valid)
 
 def config_is_valid (_ : Unit) : SailM Bool := do
-  (pure ((check_privs ()) && ((check_mmu_config ()) && ((← (check_mem_layout ())) && ((check_vlen_elen
+  (pure ((check_privs ()) && ((← (check_mmu_config ())) && ((← (check_mem_layout ())) && ((check_vlen_elen
               ()) && ((check_vext_config ()) && ((check_pmp ()) && ((check_misc_extension_dependencies
                     ()) && ((check_extension_param_constraints ()) && (check_stateen_config ()))))))))))
 

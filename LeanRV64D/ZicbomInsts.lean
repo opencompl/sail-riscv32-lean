@@ -208,8 +208,8 @@ open Architecture
 open AmocasOddRegisterReservedBehavior
 
 def cbo_clean_flush_enabled (p : Privilege) : SailM Bool := do
-  (feature_enabled_for_priv_bool p (BitVec.access (_get_MEnvcfg_CBCFE (← readReg menvcfg)) 0)
-    (BitVec.access (_get_SEnvcfg_CBCFE (← (read_senvcfg ()))) 0) 0#1)
+  (feature_enabled_for_priv_bool p (_get_MEnvcfg_CBCFE (← readReg menvcfg))
+    (_get_SEnvcfg_CBCFE (← (read_senvcfg ()))) 0#1)
 
 def encdec_cbop_backwards (arg_ : (BitVec 12)) : SailM cbop_zicbom := do
   match arg_ with
