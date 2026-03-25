@@ -196,13 +196,13 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex807388_ : Nat, k_ex807388_ ∈ {16, 32, 64, 128} -/
-def float_is_normal (op : (BitVec k_ex807388_)) : Bool :=
+/-- Type quantifiers: k_ex807339_ : Nat, k_ex807339_ ∈ {16, 32, 64, 128} -/
+def float_is_normal (op : (BitVec k_ex807339_)) : Bool :=
   let { exp := exp, sign := _, mantissa := _ } := (float_decompose op)
   ((! (is_all_ones exp)) && (! (is_all_zeros exp)))
 
-/-- Type quantifiers: k_ex807406_ : Nat, k_ex807406_ ∈ {16, 32, 64, 128} -/
-def float_is_subnormal (op : (BitVec k_ex807406_)) : Bool :=
+/-- Type quantifiers: k_ex807357_ : Nat, k_ex807357_ ∈ {16, 32, 64, 128} -/
+def float_is_subnormal (op : (BitVec k_ex807357_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (! (is_all_zeros mantissa)))
 

@@ -505,7 +505,7 @@ def check_vext_config (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931045_ : Bool, k_ex931044_ : Bool, k_ex931043_ : Bool, k_ex931042_ : Bool -/
+/-- Type quantifiers: k_ex930990_ : Bool, k_ex930989_ : Bool, k_ex930988_ : Bool, k_ex930987_ : Bool -/
 def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_ziccamoa : Bool) (check_ziccamoc : Bool) (check_ziccrse : Bool) (check_ssccptr : Bool) : Bool := ExceptM.run do
   match pmas with
   | [] => (pure true)
@@ -615,7 +615,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931122_ : Bool -/
+/-- Type quantifiers: k_ex931067_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
