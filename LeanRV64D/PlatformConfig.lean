@@ -200,8 +200,6 @@ def plat_cache_block_size_exp : Nat := 6
 
 def plat_reservation_set_size_exp : Nat := 3
 
-def plat_enable_dirty_update : Bool := false
-
 def plat_enable_misaligned_access : Bool := true
 
 def plat_clint_base : physaddrbits := unwrapValue ((to_bits_checked (l := 64) (33554432 : Int)))

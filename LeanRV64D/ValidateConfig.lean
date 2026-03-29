@@ -287,6 +287,18 @@ def check_mmu_config (_ : Unit) : SailM Bool := do
       (do
         (pure (valid && (← (require_virtual_memory "Ssccptr")))))
     else (pure valid) ) : SailM Bool )
+  let valid ← (( do
+    if ((true : Bool) : Bool)
+    then
+      (do
+        (pure (valid && (← (require_virtual_memory "Svade")))))
+    else (pure valid) ) : SailM Bool )
+  let valid ← (( do
+    if ((true : Bool) : Bool)
+    then
+      (do
+        (pure (valid && (← (require_virtual_memory "Svadu")))))
+    else (pure valid) ) : SailM Bool )
   let valid : Bool :=
     if ((true : Bool) : Bool)
     then (valid && (require_Sv39 "Svnapot"))
@@ -505,10 +517,18 @@ def check_vext_config (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex930990_ : Bool, k_ex930989_ : Bool, k_ex930988_ : Bool, k_ex930987_ : Bool -/
-def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_ziccamoa : Bool) (check_ziccamoc : Bool) (check_ziccrse : Bool) (check_ssccptr : Bool) : Bool := ExceptM.run do
+/-- Type quantifiers: k_ex931589_ : Bool, k_ex931588_ : Bool, k_ex931587_ : Bool, k_ex931586_ : Bool, k_ex931585_
+  : Bool, k_ex931584_ : Bool -/
+def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_ziccamoa : Bool) (check_ziccamoc : Bool) (check_ziccrse : Bool) (check_ssccptr : Bool) (check_svadu : Bool) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match pmas with
-  | [] => (pure true)
+  | [] =>
+    (if ((check_svadu && (not found_valid_svadu_pma)) : Bool)
+    then
+      (let _ : Unit :=
+        (print_endline
+          "The Svadu extension is enabled but no memory region supports hardware page-table writes: Svadu requires at least one region provide this support.")
+      (pure false))
+    else (pure true))
   | (pma :: rest) =>
     (do
       if ((zopz0zI_u pma.base (prev_base + prev_size)) : Bool)
@@ -577,8 +597,10 @@ def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev
                               false : Bool)
                           else (pure ())))))
           else (pure ())
+          let found_valid_svadu_pma :=
+            (found_valid_svadu_pma || (attributes.supports_pte_write && (attributes.reservability == RsrvEventual)))
           (pure (check_pma_regions rest pma.base pma.size check_ziccamoc check_ziccamoa
-              check_ziccrse check_ssccptr))))
+              check_ziccrse check_ssccptr check_svadu found_valid_svadu_pma))))
 
 def dtb_within_configured_pma_memory (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
   (pure (is_some (matching_pma_bits_range (← readReg pma_regions) addr size)))
@@ -594,8 +616,10 @@ def check_mem_layout (_ : Unit) : SailM Bool := do
       let ziccamoc_is_supported : Bool := true
       let ziccrse_is_supported : Bool := true
       let ssccptr_is_supported : Bool := true
+      let svadu_is_supported : Bool := true
       (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))
-          ziccamoa_is_supported ziccamoc_is_supported ziccrse_is_supported ssccptr_is_supported)))
+          ziccamoa_is_supported ziccamoc_is_supported ziccrse_is_supported ssccptr_is_supported
+          svadu_is_supported false)))
 
 def check_pmp (_ : Unit) : Bool :=
   let valid : Bool := true
@@ -615,7 +639,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931067_ : Bool -/
+/-- Type quantifiers: k_ex931678_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then

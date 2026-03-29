@@ -1086,6 +1086,10 @@ def _set_Seccfg_USEED (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : Sai
 def undefined_MEnvcfg (_ : Unit) : SailM (BitVec 64) := do
   (undefined_bitvector 64)
 
+def _set_MEnvcfg_ADUE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
+  let r ← do (reg_deref r_ref)
+  writeRegRef r_ref (_update_MEnvcfg_ADUE r v)
+
 def _set_MEnvcfg_CBCFE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_MEnvcfg_CBCFE r v)
@@ -1157,9 +1161,9 @@ def is_fiom_active (_ : Unit) : SailM Bool := do
   | Supervisor => (pure ((_get_MEnvcfg_FIOM (← readReg menvcfg)) == 1#1))
   | User =>
     (pure (((_get_MEnvcfg_FIOM (← readReg menvcfg)) ||| (_get_SEnvcfg_FIOM (← readReg senvcfg))) == 1#1))
-  | VirtualUser => (internal_error "core/sys_regs.sail" 469 "Hypervisor extension not supported")
+  | VirtualUser => (internal_error "core/sys_regs.sail" 472 "Hypervisor extension not supported")
   | VirtualSupervisor =>
-    (internal_error "core/sys_regs.sail" 470 "Hypervisor extension not supported")
+    (internal_error "core/sys_regs.sail" 473 "Hypervisor extension not supported")
 
 def undefined_Mtvec (_ : Unit) : SailM (BitVec 64) := do
   (undefined_bitvector 64)

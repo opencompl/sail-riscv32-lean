@@ -267,21 +267,21 @@ def pte_is_invalid (pte_flags : (BitVec 8)) (pte_ext : (BitVec 10)) : SailM Bool
                       (← (currentlyEnabled Ext_Svrsw60t59b)))) || ((_get_PTE_Ext_reserved pte_ext) != (zeros
                       (n := 5)))))))))))
 
-/-- Type quantifiers: k_ex827524_ : Bool, k_ex827523_ : Bool -/
+/-- Type quantifiers: k_ex828053_ : Bool, k_ex828052_ : Bool -/
 def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := SailME.run do
   let pte_U := (bit_to_bool (_get_PTE_Flags_U pte_flags))
   let pte_R := (bit_to_bool (_get_PTE_Flags_R pte_flags))
   let pte_W := (bit_to_bool (_get_PTE_Flags_W pte_flags))
   let pte_X := (bit_to_bool (_get_PTE_Flags_X pte_flags))
-  assert (zopz0zJzJzK pte_W pte_R) "sys/vmem_pte.sail:139.24-139.25"
+  assert (zopz0zJzJzK pte_W pte_R) "sys/vmem_pte.sail:144.24-144.25"
   let priv_ok ← (( do
     match priv with
     | User => (pure pte_U)
     | Supervisor => (pure ((not pte_U) || (do_sum && (is_load_store access))))
-    | Machine => (internal_error "sys/vmem_pte.sail" 147 "m-mode mem perm check")
-    | VirtualUser => (internal_error "sys/vmem_pte.sail" 148 "Hypervisor extension not supported")
+    | Machine => (internal_error "sys/vmem_pte.sail" 152 "m-mode mem perm check")
+    | VirtualUser => (internal_error "sys/vmem_pte.sail" 153 "Hypervisor extension not supported")
     | VirtualSupervisor =>
-      (internal_error "sys/vmem_pte.sail" 149 "Hypervisor extension not supported") ) : SailME
+      (internal_error "sys/vmem_pte.sail" 154 "Hypervisor extension not supported") ) : SailME
     PTE_Check Bool )
   if ((not priv_ok) : Bool)
   then (pure (PTE_Check_Failure ((), (PTE_No_Permission ()))))
@@ -290,7 +290,7 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
       if (((not pte_R) && (pte_W && (not pte_X))) : Bool)
       then
         (do
-          assert (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))) "sys/vmem_pte.sail:158.33-158.34"
+          assert (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))) "sys/vmem_pte.sail:163.33-163.34"
           let shadow_stack_ok ← (( do
             match access with
             | .InstructionFetch () => (pure false)
@@ -306,15 +306,15 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
             | .Atomic (_, ShadowStack, ShadowStack) => (pure true)
             | .CacheAccess _ => (pure false)
             | .LoadReserved p =>
-              (internal_error "sys/vmem_pte.sail" 185
+              (internal_error "sys/vmem_pte.sail" 190
                 (HAppend.hAppend "Invalid payload ("
                   (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
             | .StoreConditional p =>
-              (internal_error "sys/vmem_pte.sail" 186
+              (internal_error "sys/vmem_pte.sail" 191
                 (HAppend.hAppend "Invalid payload ("
                   (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
             | .Atomic (_, rp, wp) =>
-              (internal_error "sys/vmem_pte.sail" 187
+              (internal_error "sys/vmem_pte.sail" 192
                 (HAppend.hAppend "Invalid payloads ("
                   (HAppend.hAppend (mem_payload_name_forwards rp)
                     (HAppend.hAppend ", "
