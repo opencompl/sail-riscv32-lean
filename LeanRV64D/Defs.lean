@@ -1519,6 +1519,14 @@ inductive Step where
   deriving Inhabited, Repr
   open Step
 
+structure pma_check_opts where
+  ziccamoa : Bool
+  ziccamoc : Bool
+  ziccrse : Bool
+  ssccptr : Bool
+  svadu : Bool
+  deriving BEq, Inhabited, Repr
+
 inductive ISA_Format where | Canonical_Lowercase | DeviceTree_ISA_Extensions
   deriving BEq, Inhabited, Repr
   open ISA_Format

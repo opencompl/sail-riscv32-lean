@@ -4,7 +4,6 @@ import LeanRV64D.Errors
 import LeanRV64D.PlatformConfig
 import LeanRV64D.Types
 import LeanRV64D.Regs
-import LeanRV64D.SysRegs
 import LeanRV64D.AddrChecks
 import LeanRV64D.SysControl
 import LeanRV64D.Mem
@@ -207,10 +206,6 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def cbo_clean_flush_enabled (p : Privilege) : SailM Bool := do
-  (feature_enabled_for_priv_bool p (_get_MEnvcfg_CBCFE (← readReg menvcfg))
-    (_get_SEnvcfg_CBCFE (← (read_senvcfg ()))) 0#1)
-
 def encdec_cbop_backwards (arg_ : (BitVec 12)) : SailM cbop_zicbom := do
   match arg_ with
   | 0b000000000001 => (pure CBO_CLEAN)
@@ -284,7 +279,7 @@ def encdec_cbie_backwards (arg_ : (BitVec 2)) : SailM cbie := do
   | 0b00 => (pure CBIE_ILLEGAL)
   | 0b01 => (pure CBIE_EXEC_FLUSH)
   | 0b11 => (pure CBIE_EXEC_INVAL)
-  | _ => (internal_error "extensions/Zicbom/zicbom_insts.sail" 46 "reserved CBIE")
+  | _ => (internal_error "extensions/Zicbom/zicbom_insts.sail" 43 "reserved CBIE")
 
 def encdec_cbie_forwards_matches (arg_ : cbie) : Bool :=
   match arg_ with
@@ -327,9 +322,9 @@ def cbop_priv_check (p : Privilege) : SailM checked_cbop := do
     else (encdec_cbie_backwards (_get_MEnvcfg_CBIE (← readReg menvcfg))) ) : SailM cbie )
   match (p, mCBIE, sCBIE) with
   | (VirtualUser, _, _) =>
-    (internal_error "extensions/Zicbom/zicbom_insts.sail" 60 "Hypervisor extension not supported")
+    (internal_error "extensions/Zicbom/zicbom_insts.sail" 57 "Hypervisor extension not supported")
   | (VirtualSupervisor, _, _) =>
-    (internal_error "extensions/Zicbom/zicbom_insts.sail" 61 "Hypervisor extension not supported")
+    (internal_error "extensions/Zicbom/zicbom_insts.sail" 58 "Hypervisor extension not supported")
   | (Machine, _, _) => (pure CBOP_INVAL_INVAL)
   | (_, CBIE_ILLEGAL, _) => (pure CBOP_ILLEGAL)
   | (User, _, CBIE_ILLEGAL) => (pure CBOP_ILLEGAL)
