@@ -207,7 +207,7 @@ open Architecture
 open AmocasOddRegisterReservedBehavior
 
 def check_privs (_ : Unit) : Bool :=
-  if (((hartSupports Ext_S) && (not (hartSupports Ext_U))) : Bool)
+  if (((true : Bool) && (not (true : Bool))) : Bool)
   then
     (let _ : Unit :=
       (print_endline "User mode (U) should be enabled if supervisor mode (S) is enabled.")
@@ -246,40 +246,34 @@ def check_mmu_config (_ : Unit) : SailM Bool := do
   let valid : Bool := true
   let _ : Unit :=
     let _ : Unit :=
-      if (((not (hartSupports Ext_S)) && ((hartSupports Ext_Sv57) || ((hartSupports Ext_Sv48) || (hartSupports
-                 Ext_Sv39)))) : Bool)
+      if (((not (true : Bool)) && ((true : Bool) || ((true : Bool) || (true : Bool)))) : Bool)
       then
         (let valid : Bool := false
         (print_endline
           "Supervisor mode (S) disabled but one of (Sv57, Sv48, Sv39) is enabled: cannot support address translation without supervisor mode."))
       else ()
     let _ : Unit :=
-      if (((hartSupports Ext_Sv57) && (not (hartSupports Ext_Sv48))) : Bool)
+      if (((true : Bool) && (not (true : Bool))) : Bool)
       then
         (let valid : Bool := false
         (print_endline
           "Sv57 is enabled but Sv48 is disabled: supporting Sv57 requires supporting Sv48."))
       else ()
     let _ : Unit :=
-      if (((hartSupports Ext_Sv48) && (not (hartSupports Ext_Sv39))) : Bool)
+      if (((true : Bool) && (not (true : Bool))) : Bool)
       then
         (let valid : Bool := false
         (print_endline
           "Sv48 is enabled but Sv39 is disabled: supporting Sv48 requires supporting Sv39."))
       else ()
-    if ((hartSupports Ext_Sv32) : Bool)
+    if ((false : Bool) : Bool)
     then
       (let valid : Bool := false
       (print_endline "Sv32 is enabled: Sv32 is not supported on RV64."))
     else ()
   let valid : Bool :=
-    if (((hartSupports Ext_Svrsw60t59b) && (not (hartSupports Ext_Sv39))) : Bool)
-    then
-      (let valid : Bool := false
-      let _ : Unit :=
-        (print_endline
-          "Svrsw60t59b is enabled but Sv39 is disabled: supporting Svrsw60t59b requires supporting Sv39.")
-      valid)
+    if ((true : Bool) : Bool)
+    then (valid && (require_Sv39 "Svrsw60t59b"))
     else valid
   let valid ← (( do
     if ((true : Bool) : Bool)
@@ -350,7 +344,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((vector_support_ge vector_support_level Float_single) && (not (hartSupports Ext_F))) : Bool)
+    if (((vector_support_ge vector_support_level Float_single) && (not (true : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -379,7 +373,7 @@ def check_vext_config (_ : Unit) : Bool :=
       else valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zve32x) && (not (hartSupports Ext_Zicsr))) : Bool)
+    if (((hartSupports Ext_Zve32x) && (not (true : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -420,7 +414,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvfhmin) && (not (hartSupports Ext_Zve32f))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32f))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -428,8 +422,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvfh) && ((not (hartSupports Ext_Zve32f)) || (not
-             (hartSupports Ext_Zfhmin)))) : Bool)
+    if (((true : Bool) && ((not (hartSupports Ext_Zve32f)) || (not (true : Bool)))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -438,7 +431,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvbb) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -446,7 +439,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvbc) && (not ((hartSupports Ext_Zve64x) || (hartSupports Ext_V)))) : Bool)
+    if (((true : Bool) && (not ((hartSupports Ext_Zve64x) || (hartSupports Ext_V)))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -454,7 +447,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvkb) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((false : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -462,7 +455,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvkg) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -470,7 +463,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvkned) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -478,7 +471,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvknha) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -486,7 +479,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvknhb) && (not ((hartSupports Ext_Zve64x) || (hartSupports Ext_V)))) : Bool)
+    if (((true : Bool) && (not ((hartSupports Ext_Zve64x) || (hartSupports Ext_V)))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -495,7 +488,7 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvksed) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -503,14 +496,14 @@ def check_vext_config (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvksh) && (not (hartSupports Ext_Zve32x))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
         (print_endline "Zvksh is enabled but Zve32x is disabled: Zvksh requires Zve32x.")
       valid)
     else valid
-  if (((hartSupports Ext_Zvkt) && (not (hartSupports Ext_Zve32x))) : Bool)
+  if (((true : Bool) && (not (hartSupports Ext_Zve32x))) : Bool)
   then
     (let valid : Bool := false
     let _ : Unit := (print_endline "Zvkt is enabled but Zve32x is disabled: Zvkt requires Zve32x.")
@@ -524,7 +517,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex931347_ : Bool -/
+/-- Type quantifiers: k_ex931816_ : Bool -/
 def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match pmas with
   | [] =>
@@ -644,7 +637,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931426_ : Bool -/
+/-- Type quantifiers: k_ex931895_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -659,7 +652,14 @@ def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
 def check_misc_extension_dependencies (_ : Unit) : Bool :=
   let valid : Bool := true
   let valid : Bool :=
-    if (((hartSupports Ext_F) && (hartSupports Ext_Zfinx)) : Bool)
+    if (((false : Bool) && (xlen == 64)) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit := (print_endline "The Zcf extension is enabled: Zcf is not supported on RV64.")
+      valid)
+    else valid
+  let valid : Bool :=
+    if (((true : Bool) && (false : Bool)) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -668,7 +668,25 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zfinx) && (not (hartSupports Ext_Zicsr))) : Bool)
+    if (((true : Bool) && (not ((false : Bool) || (true : Bool)))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Zabha extension is enabled but Zaamo and A are disabled: supporting Zabha requires Zaamo or A.")
+      valid)
+    else valid
+  let valid : Bool :=
+    if (((true : Bool) && (not ((false : Bool) || (true : Bool)))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Zacas extension is enabled but Zaamo and A are disabled: supporting Zacas requires Zaamo or A.")
+      valid)
+    else valid
+  let valid : Bool :=
+    if (((false : Bool) && (not (true : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -677,7 +695,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zdinx) && (not (hartSupports Ext_Zfinx))) : Bool)
+    if (((false : Bool) && (not (false : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -686,7 +704,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zhinx) && (not (hartSupports Ext_Zfinx))) : Bool)
+    if (((false : Bool) && (not (false : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -695,7 +713,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zhinxmin) && (not (hartSupports Ext_Zfinx))) : Bool)
+    if (((false : Bool) && (not (false : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -704,7 +722,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zicfilp) && (not (hartSupports Ext_Zicsr))) : Bool)
+    if (((true : Bool) && (not (true : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -713,9 +731,8 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zicfiss) && (not
-           ((hartSupports Ext_Zicsr) && ((hartSupports Ext_Zimop) && ((hartSupports Ext_Zaamo) || (hartSupports
-                   Ext_A)))))) : Bool)
+    if (((true : Bool) && (not
+           ((true : Bool) && ((true : Bool) && ((false : Bool) || (true : Bool)))))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -724,7 +741,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zfbfmin) && (not (hartSupports Ext_F))) : Bool)
+    if (((true : Bool) && (not (true : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -733,7 +750,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvfbfmin) && (not (hartSupports Ext_Zve32f))) : Bool)
+    if (((true : Bool) && (not (hartSupports Ext_Zve32f))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -742,8 +759,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Zvfbfwma) && ((not (hartSupports Ext_Zfbfmin)) || (not
-             (hartSupports Ext_Zvfbfmin)))) : Bool)
+    if (((true : Bool) && ((not (true : Bool)) || (not (true : Bool)))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -752,10 +768,10 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
       valid)
     else valid
   let valid : Bool :=
-    if ((hartSupports Ext_Sstvala) : Bool)
+    if ((true : Bool) : Bool)
     then
       (let valid : Bool :=
-        if ((not (hartSupports Ext_S)) : Bool)
+        if ((not (true : Bool)) : Bool)
         then
           (let valid : Bool := false
           let _ : Unit :=
@@ -794,7 +810,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
           illegal_instruction_writes_xtval)))
     else valid
   let valid : Bool :=
-    if (((hartSupports Ext_Ssqosid) && (not (hartSupports Ext_Zicsr))) : Bool)
+    if (((true : Bool) && (not (true : Bool))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -816,7 +832,7 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
 def check_extension_param_constraints (_ : Unit) : Bool :=
   let valid : Bool := true
   let valid : Bool :=
-    if (((hartSupports Ext_Zic64b) && (plat_cache_block_size_exp != 6)) : Bool)
+    if (((true : Bool) && (plat_cache_block_size_exp != 6)) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
@@ -824,7 +840,7 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
       valid)
     else valid
   let min_rss_exp := (log2_xlen -i 3)
-  if ((((hartSupports Ext_A) || (hartSupports Ext_Zalrsc)) && (plat_reservation_set_size_exp <b min_rss_exp)) : Bool)
+  if ((((true : Bool) || (false : Bool)) && (plat_reservation_set_size_exp <b min_rss_exp)) : Bool)
   then
     (let valid : Bool := false
     let _ : Unit :=
@@ -838,7 +854,7 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
   else valid
 
 def check_stateen_config (_ : Unit) : Bool :=
-  if (((not (hartSupports Ext_Smstateen)) && (not (hartSupports Ext_Ssstateen))) : Bool)
+  if (((not (true : Bool)) && (not (true : Bool))) : Bool)
   then true
   else
     (let valid : Bool := true
@@ -851,7 +867,7 @@ def check_stateen_config (_ : Unit) : Bool :=
             "Stateen SE0_readonly_zero is true but H extension is supported: SE0 must be writable when H is implemented.")
         valid)
       else valid
-    if (((false : Bool) && ((hartSupports Ext_Zfinx) || (not (true : Bool)))) : Bool)
+    if (((false : Bool) && ((false : Bool) || (not (true : Bool)))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
