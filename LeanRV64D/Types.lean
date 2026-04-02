@@ -1911,7 +1911,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex811023_ : Bool -/
+/-- Type quantifiers: k_ex811031_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6403,7 +6403,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex812178_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex812186_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -10634,9 +10634,10 @@ def pma_attributes_to_str (attr : PMA) : String :=
                                 (if (attr.supports_pte_read : Bool)
                                 then " supports-pte-read"
                                 else "")
-                                (if (attr.supports_pte_write : Bool)
-                                then " supports-pte-write"
-                                else ""))))))))))))))))
+                                (HAppend.hAppend
+                                  (if (attr.supports_pte_write : Bool)
+                                  then " supports-pte-write"
+                                  else "") " "))))))))))))))))
 
 def pma_region_to_str (region : PMA_Region) : String :=
   (HAppend.hAppend "base: "

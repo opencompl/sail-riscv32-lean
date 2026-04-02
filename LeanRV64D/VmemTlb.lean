@@ -261,7 +261,7 @@ def lookup_TLB (sv_width : Nat) (asid : (BitVec (if ( 64 = 32  : Bool) then 9 el
     then (pure (some (index, entry)))
     else (pure none))
 
-/-- Type quantifiers: k_ex828476_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
+/-- Type quantifiers: k_ex828484_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
   level ∧
   level ≤
   (if ( sv_width = 32  : Bool) then 1 else (if ( sv_width = 39  : Bool) then 2 else (if ( sv_width =
@@ -273,6 +273,7 @@ def add_to_TLB (sv_width : Nat) (asid : (BitVec (if ( 64 = 32  : Bool) then 9 el
       then 10
       else 9))
   let levelMask := (ones (n := shift))
+  let index := (tlb_hash sv_width vpn)
   let vpn := (vpn &&& (Complement.complement (zero_extend (m := (sv_width -i 12)) levelMask)))
   let ppn :=
     (ppn &&& (Complement.complement
@@ -288,7 +289,6 @@ def add_to_TLB (sv_width : Nat) (asid : (BitVec (if ( 64 = 32  : Bool) then 9 el
       levelMask := (zero_extend (m := (57 -i 12)) levelMask)
       vpn := (sign_extend (m := (57 -i 12)) vpn)
       ppn := (zero_extend (m := 44) ppn) }
-  let index := (tlb_hash sv_width vpn)
   writeReg tlb (vectorUpdate (← readReg tlb) index (some entry))
 
 def flush_TLB (asid : (Option (BitVec (if ( 64 = 32  : Bool) then 9 else 16)))) (addr : (Option (BitVec 64))) : SailM Unit := do

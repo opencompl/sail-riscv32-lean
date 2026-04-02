@@ -241,9 +241,9 @@ def pma_allows_atomic_op (pma : AtomicSupport) (op : amoop) (width : Nat) : Bool
   | AMOSwap => (op == AMOSWAP)
   | AMOLogical => ((op == AMOSWAP) || ((op == AMOAND) || ((op == AMOOR) || (op == AMOXOR))))
   | AMOArithmetic => (bne op AMOCAS)
-  | AMOCASW => ((bne op AMOCAS) || (width == 4))
-  | AMOCASD => ((bne op AMOCAS) || ((width == 4) || (width == 8)))
-  | AMOCASQ => ((bne op AMOCAS) || ((width == 4) || ((width == 8) || (width == 16))))
+  | AMOCASW => ((bne op AMOCAS) || (width ≤b 4))
+  | AMOCASD => ((bne op AMOCAS) || (width ≤b 8))
+  | AMOCASQ => ((bne op AMOCAS) || (width ≤b 16))
 
 def undefined_Reservability (_ : Unit) : SailM Reservability := do
   (internal_pick [RsrvNone, RsrvNonEventual, RsrvEventual])
