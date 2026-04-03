@@ -1,4 +1,5 @@
 import LeanRV64D.Prelude
+import LeanRV64D.Errors
 import LeanRV64D.MemAddrtype
 import LeanRV64D.Common0
 import LeanRV64D.RvfiDii
@@ -217,7 +218,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex931159_ : Bool, _step_no : Int -/
+/-- Type quantifiers: k_ex931199_ : Bool, _step_no : Int -/
 def run_hart_waiting (_step_no : Int) (wr : WaitReason) (instbits : (BitVec 32)) (exit_wait : Bool) : SailM Step := do
   if ((← (shouldWakeForInterrupt ())) : Bool)
   then
@@ -393,7 +394,7 @@ def wait_is_nop (wr : WaitReason) : Bool :=
   | WAIT_WRS_STO => false
   | WAIT_WRS_NTO => false
 
-/-- Type quantifiers: k_ex931209_ : Bool, step_no : Nat, 0 ≤ step_no -/
+/-- Type quantifiers: k_ex931249_ : Bool, step_no : Nat, 0 ≤ step_no -/
 def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   let _ : Unit := (ext_pre_step_hook ())
   writeReg minstret_increment (← (should_inc_minstret (← readReg cur_privilege)))
@@ -415,7 +416,9 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
     assert (hart_is_waiting (← readReg hart_state)) "cannot be Waiting in a non-Wait state"
   | .Step_Execute (.Retire_Success (), _) =>
     assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:211.74-211.75"
-  | .Step_Execute (.ExecuteAs _, _) => assert false "postlude/step.sail:213.49-213.50"
+  | .Step_Execute (.ExecuteAs _, _) =>
+    (internal_error "postlude/step.sail" 215
+      "Multiple chained ExecuteAs (only one redirection is supported).")
   | .Step_Execute (.Trap (priv, ctl, pc), _) => (set_next_pc (← (exception_handler priv ctl pc)))
   | .Step_Execute (.Memory_Exception (vaddr, e), _) => (handle_exception (bits_of_virtaddr vaddr) e)
   | .Step_Execute (.Illegal_Instruction (), instbits) =>
@@ -425,7 +428,7 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   | .Step_Execute (.Enter_Wait wr, instbits) =>
     (do
       if ((wait_is_nop wr) : Bool)
-      then assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:223.41-223.42"
+      then assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:225.41-225.42"
       else
         (do
           if ((get_config_print_instr ()) : Bool)

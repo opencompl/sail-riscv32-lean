@@ -517,7 +517,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex931825_ : Bool -/
+/-- Type quantifiers: k_ex931865_ : Bool -/
 def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match pmas with
   | [] =>
@@ -637,7 +637,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931904_ : Bool -/
+/-- Type quantifiers: k_ex931944_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
