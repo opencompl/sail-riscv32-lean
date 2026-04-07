@@ -78,6 +78,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -228,7 +229,7 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 64)
 def redirect_callback (x_0 : (BitVec 64)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex820585_ : Bool -/
+/-- Type quantifiers: k_ex825444_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 

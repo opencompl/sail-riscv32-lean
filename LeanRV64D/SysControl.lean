@@ -94,6 +94,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -427,9 +428,8 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                                             (do
                                               let index : (BitVec 5) :=
                                                 (Sail.BitVec.extractLsb v__3840 4 0)
-                                              (pure ((← (currentlyEnabled Ext_Zihpm)) && ((← (currentlyEnabled
-                                                        Ext_U)) && (← (counter_enabled
-                                                        (BitVec.toNatInt index) g__143))))))
+                                              (pure ((← (currentlyEnabled Ext_Zihpm)) && (← (counter_enabled
+                                                      (BitVec.toNatInt index) g__143)))))
                                           else
                                             (do
                                               if ((((Sail.BitVec.extractLsb v__3840 11 5) == (0b1100100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
@@ -439,9 +439,8 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                                                 (do
                                                   let index : (BitVec 5) :=
                                                     (Sail.BitVec.extractLsb v__3840 4 0)
-                                                  (pure ((← (currentlyEnabled Ext_Zihpm)) && ((← (currentlyEnabled
-                                                            Ext_U)) && ((xlen == 32) && (← (counter_enabled
-                                                              (BitVec.toNatInt index) g__143)))))))
+                                                  (pure ((← (currentlyEnabled Ext_Zihpm)) && ((xlen == 32) && (← (counter_enabled
+                                                            (BitVec.toNatInt index) g__143))))))
                                               else
                                                 (do
                                                   if ((((Sail.BitVec.extractLsb v__3840 11 5) == (0b0111001#7 : (BitVec 7))) && (let index : (BitVec 5) :=

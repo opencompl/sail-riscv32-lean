@@ -80,6 +80,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -231,8 +232,8 @@ def num_of_float_class (arg_ : float_class) : Int :=
   | float_class_snan => 8
   | float_class_qnan => 9
 
-/-- Type quantifiers: k_ex808547_ : Nat, k_ex808547_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex808547_)) : SailM float_class := do
+/-- Type quantifiers: k_ex813393_ : Nat, k_ex813393_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex813393_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else

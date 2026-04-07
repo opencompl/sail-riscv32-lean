@@ -86,6 +86,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -345,11 +346,11 @@ def process_clean_inval (rs1 : regidx) (cbop : cbop_zicbom) : SailM ExecutionRes
     (do
       let vaddr_for_error := (sub_virtaddr_xlenbits vaddr negative_offset)
       match (← (translateAddr vaddr access)) with
-      | .Ok (paddr, _) =>
+      | .Ok (paddr, pbmt, _) =>
         (do
           let ep ← do
             (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
-          match (← (phys_access_check access ep paddr cache_block_size false)) with
+          match (← (phys_access_check access pbmt ep paddr cache_block_size false)) with
           | .some e => (pure (Memory_Exception (vaddr_for_error, e)))
           | none => (pure RETIRE_SUCCESS))
       | .Err (e, _) => (pure (Memory_Exception (vaddr_for_error, e))))

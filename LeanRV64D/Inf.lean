@@ -76,6 +76,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -196,8 +197,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex808135_ : Nat, k_ex808135_ ∈ {16, 32, 64, 128} -/
-def float_is_inf (op : (BitVec k_ex808135_)) : Bool :=
+/-- Type quantifiers: k_ex812981_ : Nat, k_ex812981_ ∈ {16, 32, 64, 128} -/
+def float_is_inf (op : (BitVec k_ex812981_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (is_all_zeros mantissa))
 

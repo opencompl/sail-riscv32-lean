@@ -79,6 +79,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -317,6 +318,12 @@ def undefined_PMA (_ : Unit) : SailM PMA := do
           supports_cbo_zero := ← (undefined_bool ())
           supports_pte_read := ← (undefined_bool ())
           supports_pte_write := ← (undefined_bool ()) })
+
+def override_PMA (pma : PMA) (pbmt : page_based_mem_type) : PMA :=
+  match pbmt with
+  | PBMT_PMA => pma
+  | PBMT_NC => { pma with cacheable := false, read_idempotent := true, write_idempotent := true }
+  | PBMT_IO => { pma with cacheable := false, read_idempotent := false, write_idempotent := false }
 
 def undefined_PMA_Region (_ : Unit) : SailM PMA_Region := do
   (pure { base := ← (undefined_bitvector 64)

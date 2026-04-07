@@ -80,6 +80,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -823,7 +824,7 @@ def hartSupports (merge_var : extension) : Bool :=
   | Ext_Svadu => true
   | Ext_Svinval => true
   | Ext_Svnapot => ((true : Bool) && (xlen == 64))
-  | Ext_Svpbmt => false
+  | Ext_Svpbmt => ((true : Bool) && (xlen == 64))
   | Ext_Svrsw60t59b => true
   | Ext_Svvptc => true
   | Ext_Smcntrpmf => true
@@ -863,6 +864,7 @@ def currentlyEnabled_measure (ext : extension) : Int :=
   | Ext_Zicfiss => 2
   | Ext_Ssccptr => 3
   | Ext_Svnapot => 3
+  | Ext_Svpbmt => 3
   | Ext_Svvptc => 3
   | Ext_Svrsw60t59b => 3
   | Ext_Zfhmin => 3

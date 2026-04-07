@@ -84,6 +84,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -225,7 +226,7 @@ def rvfi_fetch (_ : Unit) : SailM FetchResult := SailME.run do
       | .Err (e, _) =>
         SailME.throw (← do
             (pure (F_Error (e, (← readReg PC)))))
-      | .Ok (_, _) => (pure ())
+      | .Ok (_, _, _) => (pure ())
       let i ← do
         (pure (_get_RVFI_DII_Instruction_Packet_rvfi_insn (← readReg rvfi_instruction)))
       writeReg rvfi_inst_data (Sail.BitVec.updateSubrange (← readReg rvfi_inst_data) 127 64
@@ -240,5 +241,5 @@ def rvfi_fetch (_ : Unit) : SailM FetchResult := SailME.run do
           | none => (pure ())
           match (← (translateAddr (Virtaddr PC_hi) (InstructionFetch ()))) with
           | .Err (e, _) => (pure (F_Error (e, (← readReg PC))))
-          | .Ok (_, _) => (pure (F_Base i))))
+          | .Ok (_, _, _) => (pure (F_Base i))))
 

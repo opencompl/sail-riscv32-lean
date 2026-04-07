@@ -76,6 +76,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -308,4 +309,49 @@ def is_shadow_stack_amo (access : (MemoryAccessType mem_payload)) : SailM Bool :
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic.")))))
   | _ => (pure false)
+
+def undefined_page_based_mem_type (_ : Unit) : SailM page_based_mem_type := do
+  (internal_pick [PBMT_PMA, PBMT_NC, PBMT_IO])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
+def page_based_mem_type_of_num (arg_ : Nat) : page_based_mem_type :=
+  match arg_ with
+  | 0 => PBMT_PMA
+  | 1 => PBMT_NC
+  | _ => PBMT_IO
+
+def num_of_page_based_mem_type (arg_ : page_based_mem_type) : Int :=
+  match arg_ with
+  | PBMT_PMA => 0
+  | PBMT_NC => 1
+  | PBMT_IO => 2
+
+def page_based_mem_type_forwards (arg_ : (BitVec 2)) : SailM page_based_mem_type := do
+  match arg_ with
+  | 0b00 => (pure PBMT_PMA)
+  | 0b01 => (pure PBMT_NC)
+  | 0b10 => (pure PBMT_IO)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def page_based_mem_type_backwards (arg_ : page_based_mem_type) : (BitVec 2) :=
+  match arg_ with
+  | PBMT_PMA => 0b00#2
+  | PBMT_NC => 0b01#2
+  | PBMT_IO => 0b10#2
+
+def page_based_mem_type_forwards_matches (arg_ : (BitVec 2)) : Bool :=
+  match arg_ with
+  | 0b00 => true
+  | 0b01 => true
+  | 0b10 => true
+  | _ => false
+
+def page_based_mem_type_backwards_matches (arg_ : page_based_mem_type) : Bool :=
+  match arg_ with
+  | PBMT_PMA => true
+  | PBMT_NC => true
+  | PBMT_IO => true
 

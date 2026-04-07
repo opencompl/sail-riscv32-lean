@@ -81,6 +81,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -1130,12 +1131,6 @@ def _set_SEnvcfg_LPE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : Sail
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_SEnvcfg_LPE r v)
 
-def _get_MEnvcfg_PBMTE (v : (BitVec 64)) : (BitVec 1) :=
-  (Sail.BitVec.extractLsb v 62 62)
-
-def _update_MEnvcfg_PBMTE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
-  (Sail.BitVec.updateSubrange v 62 62 x)
-
 def _set_MEnvcfg_PBMTE (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_MEnvcfg_PBMTE r v)
@@ -1161,9 +1156,9 @@ def is_fiom_active (_ : Unit) : SailM Bool := do
   | Supervisor => (pure ((_get_MEnvcfg_FIOM (← readReg menvcfg)) == 1#1))
   | User =>
     (pure (((_get_MEnvcfg_FIOM (← readReg menvcfg)) ||| (_get_SEnvcfg_FIOM (← readReg senvcfg))) == 1#1))
-  | VirtualUser => (internal_error "core/sys_regs.sail" 472 "Hypervisor extension not supported")
+  | VirtualUser => (internal_error "core/sys_regs.sail" 473 "Hypervisor extension not supported")
   | VirtualSupervisor =>
-    (internal_error "core/sys_regs.sail" 473 "Hypervisor extension not supported")
+    (internal_error "core/sys_regs.sail" 474 "Hypervisor extension not supported")
 
 def undefined_Mtvec (_ : Unit) : SailM (BitVec 64) := do
   (undefined_bitvector 64)

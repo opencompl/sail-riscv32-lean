@@ -83,6 +83,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -221,9 +222,9 @@ def fetch (_ : Unit) : SailM FetchResult := SailME.run do
         (do
           match (← (translateAddr (Virtaddr (← readReg PC)) (InstructionFetch ()))) with
           | .Err (e, _) => (pure (F_Error (e, (← readReg PC))))
-          | .Ok (ppclo, _) =>
+          | .Ok (ppclo, pbmt, _) =>
             (do
-              match (← (mem_read (InstructionFetch ()) ppclo 2 false false false)) with
+              match (← (mem_read (InstructionFetch ()) pbmt ppclo 2 false false false)) with
               | .Err e => (pure (F_Error (e, (← readReg PC))))
               | .Ok ilo =>
                 (do
@@ -237,9 +238,9 @@ def fetch (_ : Unit) : SailM FetchResult := SailME.run do
                       | none => (pure ())
                       match (← (translateAddr (Virtaddr PC_hi) (InstructionFetch ()))) with
                       | .Err (e, _) => (pure (F_Error (e, PC_hi)))
-                      | .Ok (ppchi, _) =>
+                      | .Ok (ppchi, pbmt, _) =>
                         (do
-                          match (← (mem_read (InstructionFetch ()) ppchi 2 false false false)) with
+                          match (← (mem_read (InstructionFetch ()) pbmt ppchi 2 false false false)) with
                           | .Err e => (pure (F_Error (e, PC_hi)))
                           | .Ok ihi => (pure (F_Base (ihi +++ ilo)))))))))
 

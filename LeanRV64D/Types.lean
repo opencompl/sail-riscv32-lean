@@ -89,6 +89,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -411,6 +412,9 @@ def _get_MEnvcfg_FIOM (v : (BitVec 64)) : (BitVec 1) :=
 def _get_MEnvcfg_LPE (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 2 2)
 
+def _get_MEnvcfg_PBMTE (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 62 62)
+
 def _get_MEnvcfg_SSE (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 3 3)
 
@@ -434,6 +438,9 @@ def _update_MEnvcfg_FIOM (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
 
 def _update_MEnvcfg_LPE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 2 2 x)
+
+def _update_MEnvcfg_PBMTE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v 62 62 x)
 
 def _update_MEnvcfg_SSE (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
   (Sail.BitVec.updateSubrange v 3 3 x)
@@ -663,8 +670,8 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   | Ext_Zicfilp =>
     (pure ((← (currentlyEnabled Ext_Zicsr)) && ((hartSupports Ext_Zicfilp) && (← (get_xLPE
               (← readReg cur_privilege))))))
-  | Ext_Svpbmt => (pure false)
   | Ext_Svnapot => (pure ((hartSupports Ext_Svnapot) && (← (currentlyEnabled Ext_Sv39))))
+  | Ext_Svpbmt => (pure ((hartSupports Ext_Svpbmt) && (← (currentlyEnabled Ext_Sv39))))
   | Ext_Svrsw60t59b => (pure ((hartSupports Ext_Svrsw60t59b) && (← (currentlyEnabled Ext_Sv39))))
   | Ext_Svvptc =>
     (pure ((hartSupports Ext_Svvptc) && ((← (currentlyEnabled Ext_Sv32)) || (← (currentlyEnabled
@@ -819,42 +826,47 @@ end
 
 def legalize_menvcfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := do
   let v := (Mk_MEnvcfg v)
-  (pure (_update_MEnvcfg_ADUE
-      (_update_MEnvcfg_STCE
-        (_update_MEnvcfg_CBIE
-          (_update_MEnvcfg_CBCFE
-            (_update_MEnvcfg_CBZE
-              (_update_MEnvcfg_SSE
-                (_update_MEnvcfg_LPE
-                  (_update_MEnvcfg_FIOM o
-                    (if (sys_enable_writable_fiom : Bool)
-                    then (_get_MEnvcfg_FIOM v)
+  (pure (_update_MEnvcfg_PBMTE
+      (_update_MEnvcfg_ADUE
+        (_update_MEnvcfg_STCE
+          (_update_MEnvcfg_CBIE
+            (_update_MEnvcfg_CBCFE
+              (_update_MEnvcfg_CBZE
+                (_update_MEnvcfg_SSE
+                  (_update_MEnvcfg_LPE
+                    (_update_MEnvcfg_FIOM o
+                      (if (sys_enable_writable_fiom : Bool)
+                      then (_get_MEnvcfg_FIOM v)
+                      else 0#1))
+                    (if ((hartSupports Ext_Zicfilp) : Bool)
+                    then (_get_MEnvcfg_LPE v)
                     else 0#1))
-                  (if ((hartSupports Ext_Zicfilp) : Bool)
-                  then (_get_MEnvcfg_LPE v)
+                  (if ((hartSupports Ext_Zicfiss) : Bool)
+                  then (_get_MEnvcfg_SSE v)
                   else 0#1))
-                (if ((hartSupports Ext_Zicfiss) : Bool)
-                then (_get_MEnvcfg_SSE v)
-                else 0#1))
+                (← do
+                  if ((← (currentlyEnabled Ext_Zicboz)) : Bool)
+                  then (pure (_get_MEnvcfg_CBZE v))
+                  else (pure 0#1)))
               (← do
-                if ((← (currentlyEnabled Ext_Zicboz)) : Bool)
-                then (pure (_get_MEnvcfg_CBZE v))
+                if ((← (currentlyEnabled Ext_Zicbom)) : Bool)
+                then (pure (_get_MEnvcfg_CBCFE v))
                 else (pure 0#1)))
             (← do
               if ((← (currentlyEnabled Ext_Zicbom)) : Bool)
-              then (pure (_get_MEnvcfg_CBCFE v))
-              else (pure 0#1)))
+              then (legalize_xenvcfg_cbie (_get_MEnvcfg_CBIE v))
+              else (pure 0b00#2)))
           (← do
-            if ((← (currentlyEnabled Ext_Zicbom)) : Bool)
-            then (legalize_xenvcfg_cbie (_get_MEnvcfg_CBIE v))
-            else (pure 0b00#2)))
+            if ((← (currentlyEnabled Ext_Sstc)) : Bool)
+            then (pure (_get_MEnvcfg_STCE v))
+            else (pure 0#1)))
         (← do
-          if ((← (currentlyEnabled Ext_Sstc)) : Bool)
-          then (pure (_get_MEnvcfg_STCE v))
+          if ((← (currentlyEnabled Ext_Svadu)) : Bool)
+          then (pure (_get_MEnvcfg_ADUE v))
           else (pure 0#1)))
       (← do
-        if ((← (currentlyEnabled Ext_Svadu)) : Bool)
-        then (pure (_get_MEnvcfg_ADUE v))
+        if ((← (currentlyEnabled Ext_Svpbmt)) : Bool)
+        then (pure (_get_MEnvcfg_PBMTE v))
         else (pure 0#1))))
 
 def legalize_mseccfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := do
@@ -1911,7 +1923,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex811063_ : Bool -/
+/-- Type quantifiers: k_ex815919_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6403,7 +6415,7 @@ def lrsc_width_valid (width : Nat) : Bool :=
 def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : Bool :=
   true
 
-/-- Type quantifiers: k_ex812218_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex817074_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 

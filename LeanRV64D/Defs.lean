@@ -1277,6 +1277,10 @@ abbrev ppn_bits k_v := (BitVec (if ( k_v = 32  : Bool) then 22 else 44))
 
 abbrev vpn_bits k_v := (BitVec (k_v - 12))
 
+inductive page_based_mem_type where | PBMT_PMA | PBMT_NC | PBMT_IO
+  deriving BEq, Inhabited, Repr
+  open page_based_mem_type
+
 abbrev regtype := xlenbits
 
 abbrev Mtvec := (BitVec 64)
@@ -1454,12 +1458,14 @@ structure PTW_Output (k_v : Nat) where
   pte : (pte_bits k_v)
   pteAddr : physaddr
   level : (level_range k_v)
+  pbmt : page_based_mem_type
   global : Bool
   deriving BEq, Inhabited, Repr
 
 abbrev PTW_Result k_v := (Result ((PTW_Output k_v) × ext_ptw) (PTW_Error × ext_ptw))
 
-abbrev TR_Result k_paddr k_failure := (Result (k_paddr × ext_ptw) (k_failure × ext_ptw))
+abbrev TR_Result k_paddr k_failure :=
+  (Result (k_paddr × page_based_mem_type × ext_ptw) (k_failure × ext_ptw))
 
 inductive ExecutionResult where
   | Retire_Success (_ : Unit)

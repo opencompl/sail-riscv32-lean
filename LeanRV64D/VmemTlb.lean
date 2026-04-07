@@ -1,6 +1,8 @@
 import LeanRV64D.Flow
 import LeanRV64D.Prelude
 import LeanRV64D.Types
+import LeanRV64D.VmemTypes
+import LeanRV64D.VmemPte
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -78,6 +80,7 @@ open read_kind
 open pte_check_failure
 open pmpAddrMatch
 open physaddr
+open page_based_mem_type
 open option
 open nxsfunct6
 open nxfunct6
@@ -221,6 +224,10 @@ def tlb_get_ppn (sv_width : Nat) (ent : TLB_Entry) (vpn : (BitVec (sv_width - 12
     then 22
     else 44)) (ppn ||| (vpn &&& levelMask)))
 
+def tlb_get_pbmt (ent : TLB_Entry) : SailM page_based_mem_type := do
+  let pte_ext := (ext_bits_of_PTE ent.pte)
+  (page_based_mem_type_forwards (_get_PTE_Ext_PBMT pte_ext))
+
 def num_tlb_entries_exp := 6
 
 /-- Type quantifiers: _sv_mode : Nat, is_sv_mode(_sv_mode) -/
@@ -261,7 +268,7 @@ def lookup_TLB (sv_width : Nat) (asid : (BitVec (if ( 64 = 32  : Bool) then 9 el
     then (pure (some (index, entry)))
     else (pure none))
 
-/-- Type quantifiers: k_ex828516_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
+/-- Type quantifiers: k_ex834045_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
   level ∧
   level ≤
   (if ( sv_width = 32  : Bool) then 1 else (if ( sv_width = 39  : Bool) then 2 else (if ( sv_width =
