@@ -194,6 +194,7 @@ open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open MemoryRegionType
 open MemoryAccessType
 open InterruptType
 open ISA_Format
@@ -596,7 +597,8 @@ def check_stateen_bit (priv : Privilege) (bit_idx : stateen_bit) (stateen_reg : 
       (pure ((← (get_mstateen stateen_reg)) &&& ((← (get_hstateen stateen_reg)) &&& (← (get_sstateen
                 stateen_reg))))) ) : SailM (BitVec 64) )
   (pure ((BitVec.access mask (stateen_bit_index_forwards bit_idx)) == 1#1))
-termination_by let (_, _, _) := (priv, bit_idx, stateen_reg); (7).toNat
+termination_by (let (_, _, _) := (priv, bit_idx, stateen_reg)
+7).toNat
 def currentlyEnabled (merge_var : extension) : SailM Bool := do
   match merge_var with
   | Ext_Zic64b => (pure (hartSupports Ext_Zic64b))
@@ -767,7 +769,8 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
               Ext_Zfbfmin)))))
   | Ext_Zimop => (pure (hartSupports Ext_Zimop))
   | Ext_Zcmop => (pure ((hartSupports Ext_Zcmop) && (← (currentlyEnabled Ext_Zca))))
-termination_by let ext := merge_var; ((currentlyEnabled_measure ext)).toNat
+termination_by (let ext := merge_var
+(currentlyEnabled_measure ext)).toNat
 /-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
 def get_hstateen (idx : Nat) : SailM (BitVec 64) := do
   if ((not (← (is_hstateen_accessible ()))) : Bool)
@@ -779,7 +782,8 @@ def get_hstateen (idx : Nat) : SailM (BitVec 64) := do
       | 1 => readReg hstateen1
       | 2 => readReg hstateen2
       | _ => readReg hstateen3)
-termination_by let _ := idx; (6).toNat
+termination_by (let _ := idx
+6).toNat
 /-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
 def get_sstateen (idx : Nat) : SailM (BitVec 64) := do
   (pure (0xFFFFFFFF#32 +++ (← do
@@ -792,7 +796,8 @@ def get_sstateen (idx : Nat) : SailM (BitVec 64) := do
             | 1 => readReg sstateen1
             | 2 => readReg sstateen2
             | _ => readReg sstateen3))))
-termination_by let _ := idx; (3).toNat
+termination_by (let _ := idx
+3).toNat
 def get_xLPE (p : Privilege) : SailM Bool := do
   match p with
   | Machine => (pure (bool_bit_backwards (_get_Seccfg_MLPE (← readReg mseccfg))))
@@ -806,22 +811,27 @@ def get_xLPE (p : Privilege) : SailM Bool := do
     (internal_error "extensions/cfi/zicfilp_regs.sail" 31 "Hypervisor extension not supported")
   | VirtualUser =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 32 "Hypervisor extension not supported")
-termination_by let _ := p; (2).toNat
+termination_by (let _ := p
+2).toNat
 def is_hstateen_accessible (_ : Unit) : SailM Bool := do
   (pure ((← (currentlyEnabled Ext_H)) && ((← (currentlyEnabled Ext_Smstateen)) || (← (currentlyEnabled
             Ext_Ssstateen)))))
-termination_by let () := (); (5).toNat
+termination_by (let () := ()
+5).toNat
 def is_sstateen_accessible (_ : Unit) : SailM Bool := do
   (pure ((← (currentlyEnabled Ext_S)) && ((← (currentlyEnabled Ext_Smstateen)) || (← (currentlyEnabled
             Ext_Ssstateen)))))
-termination_by let () := (); (2).toNat
+termination_by (let () := ()
+2).toNat
 def is_zfinx_enabled_by_stateen (_ : Unit) : SailM Bool := do
   (check_stateen_bit (← readReg cur_privilege) STATEEN_FCSR 0)
-termination_by let () := (); (8).toNat
+termination_by (let () := ()
+8).toNat
 def virtual_memory_supported (_ : Unit) : SailM Bool := do
   (pure ((← (currentlyEnabled Ext_Sv32)) || ((← (currentlyEnabled Ext_Sv39)) || ((← (currentlyEnabled
               Ext_Sv48)) || (← (currentlyEnabled Ext_Sv57))))))
-termination_by let _ := (); (3).toNat
+termination_by (let _ := ()
+3).toNat
 end
 
 def legalize_menvcfg (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := do
@@ -1923,7 +1933,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | ORI => "ori"
   | ANDI => "andi"
 
-/-- Type quantifiers: k_ex681542_ : Bool -/
+/-- Type quantifiers: k_ex681808_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6498,7 +6508,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex682707_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex682973_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -10781,51 +10791,55 @@ def reservability_str_forwards (arg_ : Reservability) : String :=
 
 def pma_attributes_to_str (attr : PMA) : String :=
   (HAppend.hAppend
-    (if (attr.cacheable : Bool)
-    then " cacheable"
-    else "")
+    (match attr.mem_type with
+    | MainMemory => " main-memory"
+    | IOMemory => " io-memory")
     (HAppend.hAppend
-      (if (attr.coherent : Bool)
-      then " coherent"
+      (if (attr.cacheable : Bool)
+      then " cacheable"
       else "")
       (HAppend.hAppend
-        (if (attr.executable : Bool)
-        then " executable"
+        (if (attr.coherent : Bool)
+        then " coherent"
         else "")
         (HAppend.hAppend
-          (if (attr.readable : Bool)
-          then " readable"
+          (if (attr.executable : Bool)
+          then " executable"
           else "")
           (HAppend.hAppend
-            (if (attr.writable : Bool)
-            then " writable"
+            (if (attr.readable : Bool)
+            then " readable"
             else "")
             (HAppend.hAppend
-              (if (attr.read_idempotent : Bool)
-              then " read-idempotent"
+              (if (attr.writable : Bool)
+              then " writable"
               else "")
               (HAppend.hAppend
-                (if (attr.write_idempotent : Bool)
-                then " write-idempotent"
+                (if (attr.read_idempotent : Bool)
+                then " read-idempotent"
                 else "")
-                (HAppend.hAppend " misaligned_fault:"
-                  (HAppend.hAppend (misaligned_fault_str_forwards attr.misaligned_fault)
-                    (HAppend.hAppend " "
-                      (HAppend.hAppend (atomic_support_str_forwards attr.atomic_support)
-                        (HAppend.hAppend " "
-                          (HAppend.hAppend (reservability_str_forwards attr.reservability)
-                            (HAppend.hAppend
-                              (if (attr.supports_cbo_zero : Bool)
-                              then " supports-cbo-zero"
-                              else "")
+                (HAppend.hAppend
+                  (if (attr.write_idempotent : Bool)
+                  then " write-idempotent"
+                  else "")
+                  (HAppend.hAppend " misaligned_fault:"
+                    (HAppend.hAppend (misaligned_fault_str_forwards attr.misaligned_fault)
+                      (HAppend.hAppend " "
+                        (HAppend.hAppend (atomic_support_str_forwards attr.atomic_support)
+                          (HAppend.hAppend " "
+                            (HAppend.hAppend (reservability_str_forwards attr.reservability)
                               (HAppend.hAppend
-                                (if (attr.supports_pte_read : Bool)
-                                then " supports-pte-read"
+                                (if (attr.supports_cbo_zero : Bool)
+                                then " supports-cbo-zero"
                                 else "")
                                 (HAppend.hAppend
-                                  (if (attr.supports_pte_write : Bool)
-                                  then " supports-pte-write"
-                                  else "") " "))))))))))))))))
+                                  (if (attr.supports_pte_read : Bool)
+                                  then " supports-pte-read"
+                                  else "")
+                                  (HAppend.hAppend
+                                    (if (attr.supports_pte_write : Bool)
+                                    then " supports-pte-write"
+                                    else "") " ")))))))))))))))))
 
 def pma_region_to_str (region : PMA_Region) : String :=
   (HAppend.hAppend "base: "

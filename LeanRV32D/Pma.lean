@@ -184,6 +184,7 @@ open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open MemoryRegionType
 open MemoryAccessType
 open InterruptType
 open ISA_Format
@@ -304,8 +305,23 @@ def misaligned_fault_str_backwards_matches (arg_ : String) : Bool :=
   | "AlignmentFault" => true
   | _ => false
 
+def undefined_MemoryRegionType (_ : Unit) : SailM MemoryRegionType := do
+  (internal_pick [MainMemory, IOMemory])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def MemoryRegionType_of_num (arg_ : Nat) : MemoryRegionType :=
+  match arg_ with
+  | 0 => MainMemory
+  | _ => IOMemory
+
+def num_of_MemoryRegionType (arg_ : MemoryRegionType) : Int :=
+  match arg_ with
+  | MainMemory => 0
+  | IOMemory => 1
+
 def undefined_PMA (_ : Unit) : SailM PMA := do
-  (pure { cacheable := ← (undefined_bool ())
+  (pure { mem_type := ← (undefined_MemoryRegionType ())
+          cacheable := ← (undefined_bool ())
           coherent := ← (undefined_bool ())
           executable := ← (undefined_bool ())
           readable := ← (undefined_bool ())
@@ -322,8 +338,10 @@ def undefined_PMA (_ : Unit) : SailM PMA := do
 def override_PMA (pma : PMA) (pbmt : page_based_mem_type) : PMA :=
   match pbmt with
   | PBMT_PMA => pma
-  | PBMT_NC => { pma with cacheable := false, read_idempotent := true, write_idempotent := true }
-  | PBMT_IO => { pma with cacheable := false, read_idempotent := false, write_idempotent := false }
+  | PBMT_NC =>
+    { pma with mem_type := MainMemory, cacheable := false, read_idempotent := true, write_idempotent := true }
+  | PBMT_IO =>
+    { pma with mem_type := IOMemory, cacheable := false, read_idempotent := false, write_idempotent := false }
 
 def undefined_PMA_Region (_ : Unit) : SailM PMA_Region := do
   (pure { base := ← (undefined_bitvector 64)
@@ -331,16 +349,16 @@ def undefined_PMA_Region (_ : Unit) : SailM PMA_Region := do
           attributes := ← (undefined_PMA ())
           include_in_device_tree := ← (undefined_bool ()) })
 
-def matching_pma_bits_range (pmas : (List PMA_Region)) (base : (BitVec 64)) (size : (BitVec 64)) : (Option PMA_Region) :=
-  match pmas with
+def matching_pma_region_bits_range (regions : (List PMA_Region)) (base : (BitVec 64)) (size : (BitVec 64)) : (Option PMA_Region) :=
+  match regions with
   | [] => none
-  | (pma :: rest) =>
-    (if ((range_subset base size pma.base pma.size) : Bool)
-    then (some pma)
-    else (matching_pma_bits_range rest base size))
+  | (region :: rest) =>
+    (if ((range_subset base size region.base region.size) : Bool)
+    then (some region)
+    else (matching_pma_region_bits_range rest base size))
 
 /-- Type quantifiers: width : Nat, 1 ≤ width ∧ width ≤ 4096 -/
-def matching_pma (pmas : (List PMA_Region)) (addr : physaddr) (width : Nat) : (Option PMA_Region) :=
-  (matching_pma_bits_range pmas (zero_extend (m := 64) (bits_of_physaddr addr))
+def matching_pma_region (regions : (List PMA_Region)) (addr : physaddr) (width : Nat) : (Option PMA_Region) :=
+  (matching_pma_region_bits_range regions (zero_extend (m := 64) (bits_of_physaddr addr))
     (to_bits (l := 64) width))
 

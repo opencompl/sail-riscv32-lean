@@ -1189,7 +1189,12 @@ inductive Reservability where | RsrvNone | RsrvNonEventual | RsrvEventual
   deriving BEq, Inhabited, Repr
   open Reservability
 
+inductive MemoryRegionType where | MainMemory | IOMemory
+  deriving BEq, Inhabited, Repr
+  open MemoryRegionType
+
 structure PMA where
+  mem_type : MemoryRegionType
   cacheable : Bool
   coherent : Bool
   executable : Bool

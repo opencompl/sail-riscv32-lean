@@ -185,6 +185,7 @@ open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open MemoryRegionType
 open MemoryAccessType
 open InterruptType
 open ISA_Format
@@ -830,7 +831,8 @@ def hartSupports (merge_var : extension) : Bool :=
   | Ext_Smcntrpmf => true
   | Ext_Smstateen => true
   | Ext_Ssqosid => true
-termination_by let ext := merge_var; ((hartSupports_measure ext)).toNat
+termination_by (let ext := merge_var
+(hartSupports_measure ext)).toNat
 
 def currentlyEnabled_measure (ext : extension) : Int :=
   match ext with

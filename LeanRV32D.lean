@@ -202,6 +202,7 @@ open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open MemoryRegionType
 open MemoryAccessType
 open InterruptType
 open ISA_Format
@@ -399,7 +400,8 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
   writeReg htif_payload_writes (zeros (n := 4))
   writeReg pma_regions [{ base := 0b0000000000000000000000000000000000000000000000000001000000000000#64
                           size := 0b0000000000000000000000000000000000000000000000000001000000000000#64
-                          attributes := { cacheable := true
+                          attributes := { mem_type := IOMemory
+                                          cacheable := true
                                           coherent := false
                                           executable := false
                                           readable := true
@@ -414,7 +416,8 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                           supports_pte_write := false }
                           include_in_device_tree := false }, { base := 0b0000000000000000000000000000000000000010000000000000000000000000#64
                                                                size := 0b0000000000000000000000000000000000000010000000000000000000000000#64
-                                                               attributes := { cacheable := false
+                                                               attributes := { mem_type := IOMemory
+                                                                               cacheable := false
                                                                                coherent := true
                                                                                executable := false
                                                                                readable := true
@@ -429,7 +432,8 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                                                                supports_pte_write := false }
                                                                include_in_device_tree := false }, { base := 0b0000000000000000000000000000000010000000000000000000000000000000#64
                                                                                                     size := 0b0000000000000000000000000000000010000000000000000000000000000000#64
-                                                                                                    attributes := { cacheable := true
+                                                                                                    attributes := { mem_type := MainMemory
+                                                                                                                    cacheable := true
                                                                                                                     coherent := true
                                                                                                                     executable := true
                                                                                                                     readable := true

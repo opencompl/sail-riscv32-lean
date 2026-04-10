@@ -191,6 +191,7 @@ open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open MemoryRegionType
 open MemoryAccessType
 open InterruptType
 open ISA_Format
@@ -515,6 +516,23 @@ def check_vext_config (_ : Unit) : Bool :=
     valid)
   else valid
 
+def check_pma_region (region : PMA_Region) : Bool := ExceptM.run do
+  let pma := region.attributes
+  match pma.mem_type with
+  | MainMemory =>
+    (do
+      if ((not (pma.readable && (pma.writable && (pma.read_idempotent && pma.write_idempotent)))) : Bool)
+      then
+        throw (let _ : Unit :=
+            (print_endline
+              (HAppend.hAppend "Memory region starting at "
+                (HAppend.hAppend (BitVec.toFormatted region.base)
+                  " is marked as MainMemory but is not readable, read-idempotent, writable, and write-idempotent.")))
+          false : Bool)
+      else (pure ()))
+  | IOMemory => (pure ())
+  (pure true)
+
 def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
   (pure { ziccamoa := ← (undefined_bool ())
           ziccamoc := ← (undefined_bool ())
@@ -522,9 +540,9 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex769948_ : Bool -/
-def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
-  match pmas with
+/-- Type quantifiers: k_ex770241_ : Bool -/
+def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
+  match regions with
   | [] =>
     (if ((check_opts.svadu && (not found_valid_svadu_pma)) : Bool)
     then
@@ -533,14 +551,14 @@ def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev
           "The Svadu extension is enabled but no memory region supports hardware page-table writes: Svadu requires at least one region provide this support.")
       (pure false))
     else (pure true))
-  | (pma :: rest) =>
+  | (region :: rest) =>
     (do
-      if ((zopz0zI_u pma.base (prev_base + prev_size)) : Bool)
+      if ((zopz0zI_u region.base (prev_base + prev_size)) : Bool)
       then
         (let _ : Unit :=
           (print_endline
             (HAppend.hAppend "Memory region starting at "
-              (HAppend.hAppend (BitVec.toFormatted pma.base)
+              (HAppend.hAppend (BitVec.toFormatted region.base)
                 (HAppend.hAppend " is not above the end of the previous region starting at "
                   (HAppend.hAppend (BitVec.toFormatted prev_base)
                     (HAppend.hAppend " and ending at "
@@ -548,65 +566,70 @@ def check_pma_regions (pmas : (List PMA_Region)) (prev_base : (BitVec 64)) (prev
         (pure false))
       else
         (do
-          let attributes := pma.attributes
-          if ((attributes.cacheable && attributes.coherent) : Bool)
-          then
+          if ((not (check_pma_region region)) : Bool)
+          then (pure false)
+          else
             (do
-              if ((check_opts.ziccamoa && (pma_atomicity_support_lt attributes.atomic_support
-                     AMOArithmetic)) : Bool)
+              let attributes := region.attributes
+              if (((attributes.mem_type == MainMemory) && (attributes.cacheable && attributes.coherent)) : Bool)
               then
-                throw (let _ : Unit :=
-                    (print_endline
-                      (HAppend.hAppend "Memory region starting at "
-                        (HAppend.hAppend (BitVec.toFormatted pma.base)
-                          (HAppend.hAppend " is coherent and cacheable with "
-                            (HAppend.hAppend (atomic_support_str_forwards attributes.atomic_support)
-                              " atomicity support, but Ziccamoa is enabled which requires AMOArithmetic support.")))))
-                  false : Bool)
-              else
                 (do
-                  if ((check_opts.ziccamoc && (bne attributes.atomic_support AMOCASQ)) : Bool)
+                  if ((check_opts.ziccamoa && (pma_atomicity_support_lt attributes.atomic_support
+                         AMOArithmetic)) : Bool)
                   then
                     throw (let _ : Unit :=
                         (print_endline
                           (HAppend.hAppend "Memory region starting at "
-                            (HAppend.hAppend (BitVec.toFormatted pma.base)
+                            (HAppend.hAppend (BitVec.toFormatted region.base)
                               (HAppend.hAppend " is coherent and cacheable with "
                                 (HAppend.hAppend
                                   (atomic_support_str_forwards attributes.atomic_support)
-                                  " atomicity support, but Ziccamoc is enabled which requires AMOCASQ support.")))))
+                                  " atomicity support, but Ziccamoa is enabled which requires AMOArithmetic support.")))))
                       false : Bool)
                   else
                     (do
-                      if ((check_opts.ziccrse && (bne attributes.reservability RsrvEventual)) : Bool)
+                      if ((check_opts.ziccamoc && (bne attributes.atomic_support AMOCASQ)) : Bool)
                       then
                         throw (let _ : Unit :=
                             (print_endline
                               (HAppend.hAppend "Memory region starting at "
-                                (HAppend.hAppend (BitVec.toFormatted pma.base)
+                                (HAppend.hAppend (BitVec.toFormatted region.base)
                                   (HAppend.hAppend " is coherent and cacheable with "
                                     (HAppend.hAppend
-                                      (reservability_str_forwards attributes.reservability)
-                                      " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
+                                      (atomic_support_str_forwards attributes.atomic_support)
+                                      " atomicity support, but Ziccamoc is enabled which requires AMOCASQ support.")))))
                           false : Bool)
                       else
                         (do
-                          if ((check_opts.ssccptr && (not attributes.supports_pte_read)) : Bool)
+                          if ((check_opts.ziccrse && (bne attributes.reservability RsrvEventual)) : Bool)
                           then
                             throw (let _ : Unit :=
                                 (print_endline
                                   (HAppend.hAppend "Memory region starting at "
-                                    (HAppend.hAppend (BitVec.toFormatted pma.base)
-                                      " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                                    (HAppend.hAppend (BitVec.toFormatted region.base)
+                                      (HAppend.hAppend " is coherent and cacheable with "
+                                        (HAppend.hAppend
+                                          (reservability_str_forwards attributes.reservability)
+                                          " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
                               false : Bool)
-                          else (pure ())))))
-          else (pure ())
-          let found_valid_svadu_pma :=
-            (found_valid_svadu_pma || (attributes.supports_pte_write && (attributes.reservability == RsrvEventual)))
-          (pure (check_pma_regions rest pma.base pma.size check_opts found_valid_svadu_pma))))
+                          else
+                            (do
+                              if ((check_opts.ssccptr && (not attributes.supports_pte_read)) : Bool)
+                              then
+                                throw (let _ : Unit :=
+                                    (print_endline
+                                      (HAppend.hAppend "Memory region starting at "
+                                        (HAppend.hAppend (BitVec.toFormatted region.base)
+                                          " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                                  false : Bool)
+                              else (pure ())))))
+              else (pure ())
+              let found_valid_svadu_pma :=
+                (found_valid_svadu_pma || (attributes.supports_pte_write && (attributes.reservability == RsrvEventual)))
+              (pure (check_pma_regions rest region.base region.size check_opts found_valid_svadu_pma)))))
 
 def dtb_within_configured_pma_memory (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
-  (pure (is_some (matching_pma_bits_range (← readReg pma_regions) addr size)))
+  (pure (is_some (matching_pma_region_bits_range (← readReg pma_regions) addr size)))
 
 def check_mem_layout (_ : Unit) : SailM Bool := do
   if (((← readReg pma_regions) == []) : Bool)
@@ -642,7 +665,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex770027_ : Bool -/
+/-- Type quantifiers: k_ex770329_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
