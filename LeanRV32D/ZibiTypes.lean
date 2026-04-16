@@ -213,6 +213,6 @@ def biop_of_num (arg_ : Nat) : biop :=
 
 def num_of_biop (arg_ : biop) : Int :=
   match arg_ with
-  | BEQI => 0
-  | BNEI => 1
+  | .BEQI => 0
+  | .BNEI => 1
 

@@ -213,8 +213,8 @@ def encdec_vaesdf_backwards (arg_ : (BitVec 6)) : SailM zvk_vaesdf_funct6 := do
 
 def encdec_vaesdf_forwards_matches (arg_ : zvk_vaesdf_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESDF_VV => true
-  | ZVK_VAESDF_VS => true
+  | .ZVK_VAESDF_VV => true
+  | .ZVK_VAESDF_VS => true
 
 def encdec_vaesdf_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def vaesdf_mnemonic_backwards (arg_ : String) : SailM zvk_vaesdf_funct6 := do
 
 def vaesdf_mnemonic_forwards_matches (arg_ : zvk_vaesdf_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESDF_VV => true
-  | ZVK_VAESDF_VS => true
+  | .ZVK_VAESDF_VV => true
+  | .ZVK_VAESDF_VS => true
 
 def vaesdf_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -253,8 +253,8 @@ def encdec_vaesdm_backwards (arg_ : (BitVec 6)) : SailM zvk_vaesdm_funct6 := do
 
 def encdec_vaesdm_forwards_matches (arg_ : zvk_vaesdm_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESDM_VV => true
-  | ZVK_VAESDM_VS => true
+  | .ZVK_VAESDM_VV => true
+  | .ZVK_VAESDM_VS => true
 
 def encdec_vaesdm_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -273,8 +273,8 @@ def vaesdm_mnemonic_backwards (arg_ : String) : SailM zvk_vaesdm_funct6 := do
 
 def vaesdm_mnemonic_forwards_matches (arg_ : zvk_vaesdm_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESDM_VV => true
-  | ZVK_VAESDM_VS => true
+  | .ZVK_VAESDM_VV => true
+  | .ZVK_VAESDM_VS => true
 
 def vaesdm_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -293,8 +293,8 @@ def encdec_vaesef_backwards (arg_ : (BitVec 6)) : SailM zvk_vaesef_funct6 := do
 
 def encdec_vaesef_forwards_matches (arg_ : zvk_vaesef_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESEF_VV => true
-  | ZVK_VAESEF_VS => true
+  | .ZVK_VAESEF_VV => true
+  | .ZVK_VAESEF_VS => true
 
 def encdec_vaesef_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -313,8 +313,8 @@ def vaesef_mnemonic_backwards (arg_ : String) : SailM zvk_vaesef_funct6 := do
 
 def vaesef_mnemonic_forwards_matches (arg_ : zvk_vaesef_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESEF_VV => true
-  | ZVK_VAESEF_VS => true
+  | .ZVK_VAESEF_VV => true
+  | .ZVK_VAESEF_VS => true
 
 def vaesef_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -333,8 +333,8 @@ def encdec_vaesem_backwards (arg_ : (BitVec 6)) : SailM zvk_vaesem_funct6 := do
 
 def encdec_vaesem_forwards_matches (arg_ : zvk_vaesem_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESEM_VV => true
-  | ZVK_VAESEM_VS => true
+  | .ZVK_VAESEM_VV => true
+  | .ZVK_VAESEM_VS => true
 
 def encdec_vaesem_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -353,8 +353,8 @@ def vaesem_mnemonic_backwards (arg_ : String) : SailM zvk_vaesem_funct6 := do
 
 def vaesem_mnemonic_forwards_matches (arg_ : zvk_vaesem_funct6) : Bool :=
   match arg_ with
-  | ZVK_VAESEM_VV => true
-  | ZVK_VAESEM_VS => true
+  | .ZVK_VAESEM_VV => true
+  | .ZVK_VAESEM_VS => true
 
 def vaesem_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

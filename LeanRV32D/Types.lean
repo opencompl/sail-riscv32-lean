@@ -245,15 +245,15 @@ def Architecture_of_num (arg_ : Nat) : Architecture :=
 
 def num_of_Architecture (arg_ : Architecture) : Int :=
   match arg_ with
-  | RV32 => 0
-  | RV64 => 1
-  | RV128 => 2
+  | .RV32 => 0
+  | .RV64 => 1
+  | .RV128 => 2
 
 def architecture_bits_forwards (arg_ : Architecture) : (BitVec 2) :=
   match arg_ with
-  | RV32 => 0b01#2
-  | RV64 => 0b10#2
-  | RV128 => 0b11#2
+  | .RV32 => 0b01#2
+  | .RV64 => 0b10#2
+  | .RV128 => 0b11#2
 
 def architecture_bits_backwards (arg_ : (BitVec 2)) : SailM Architecture := do
   match arg_ with
@@ -264,9 +264,9 @@ def architecture_bits_backwards (arg_ : (BitVec 2)) : SailM Architecture := do
 
 def architecture_bits_forwards_matches (arg_ : Architecture) : Bool :=
   match arg_ with
-  | RV32 => true
-  | RV64 => true
-  | RV128 => true
+  | .RV32 => true
+  | .RV64 => true
+  | .RV128 => true
 
 def architecture_bits_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
@@ -290,11 +290,11 @@ def Privilege_of_num (arg_ : Nat) : Privilege :=
 
 def num_of_Privilege (arg_ : Privilege) : Int :=
   match arg_ with
-  | User => 0
-  | VirtualUser => 1
-  | Supervisor => 2
-  | VirtualSupervisor => 3
-  | Machine => 4
+  | .User => 0
+  | .VirtualUser => 1
+  | .Supervisor => 2
+  | .VirtualSupervisor => 3
+  | .Machine => 4
 
 def privLevel_bits_forwards (arg_ : ((BitVec 2) × (BitVec 1))) : SailM Privilege := do
   match arg_ with
@@ -307,11 +307,11 @@ def privLevel_bits_forwards (arg_ : ((BitVec 2) × (BitVec 1))) : SailM Privileg
 
 def privLevel_bits_backwards (arg_ : Privilege) : ((BitVec 2) × (BitVec 1)) :=
   match arg_ with
-  | User => (0b00#2, 0#1)
-  | VirtualUser => (0b00#2, 1#1)
-  | Supervisor => (0b01#2, 0#1)
-  | VirtualSupervisor => (0b01#2, 1#1)
-  | Machine => (0b11#2, 0#1)
+  | .User => (0b00#2, 0#1)
+  | .VirtualUser => (0b00#2, 1#1)
+  | .Supervisor => (0b01#2, 0#1)
+  | .VirtualSupervisor => (0b01#2, 1#1)
+  | .Machine => (0b11#2, 0#1)
 
 def privLevel_bits_forwards_matches (arg_ : ((BitVec 2) × (BitVec 1))) : Bool :=
   match arg_ with
@@ -324,11 +324,11 @@ def privLevel_bits_forwards_matches (arg_ : ((BitVec 2) × (BitVec 1))) : Bool :
 
 def privLevel_bits_backwards_matches (arg_ : Privilege) : Bool :=
   match arg_ with
-  | User => true
-  | VirtualUser => true
-  | Supervisor => true
-  | VirtualSupervisor => true
-  | Machine => true
+  | .User => true
+  | .VirtualUser => true
+  | .Supervisor => true
+  | .VirtualSupervisor => true
+  | .Machine => true
 
 def privLevel_to_bits (p : Privilege) : (BitVec 2) :=
   let (p, _) := (privLevel_bits_backwards p)
@@ -455,8 +455,8 @@ def legalize_xenvcfg_cbie (cbie : (BitVec 2)) : SailM (BitVec 2) := do
   else
     (do
       match xenvcfg_cbie_reserved_behavior with
-      | Xenvcfg_Fatal => (reserved_behavior "xenvcfg.CBIE = 0b10")
-      | Xenvcfg_ClearPermissions => (pure 0b00#2))
+      | .Xenvcfg_Fatal => (reserved_behavior "xenvcfg.CBIE = 0b10")
+      | .Xenvcfg_ClearPermissions => (pure 0b00#2))
 
 def sys_enable_writable_fiom : Bool := true
 
@@ -573,10 +573,10 @@ def Mk_Sstateen3 (v : (BitVec 32)) : (BitVec 32) :=
 
 def stateen_bit_index_forwards (arg_ : stateen_bit) : Nat :=
   match arg_ with
-  | STATEEN_SE => 63
-  | STATEEN_ENVCFG => 62
-  | STATEEN_SRMCFG => 55
-  | STATEEN_FCSR => 1
+  | .STATEEN_SE => 63
+  | .STATEEN_ENVCFG => 62
+  | .STATEEN_SRMCFG => 55
+  | .STATEEN_FCSR => 1
 
 def read_senvcfg (_ : Unit) : SailM (BitVec 32) := do
   (pure (_update_SEnvcfg_SSE (← readReg senvcfg)
@@ -588,12 +588,12 @@ mutual
 def check_stateen_bit (priv : Privilege) (bit_idx : stateen_bit) (stateen_reg : Nat) : SailM Bool := do
   let mask ← (( do
     match priv with
-    | Machine => (pure (ones (n := 64)))
-    | Supervisor => (get_mstateen stateen_reg)
-    | User => (pure ((← (get_mstateen stateen_reg)) &&& (← (get_sstateen stateen_reg))))
-    | VirtualSupervisor =>
+    | .Machine => (pure (ones (n := 64)))
+    | .Supervisor => (get_mstateen stateen_reg)
+    | .User => (pure ((← (get_mstateen stateen_reg)) &&& (← (get_sstateen stateen_reg))))
+    | .VirtualSupervisor =>
       (pure ((← (get_mstateen stateen_reg)) &&& (← (get_hstateen stateen_reg))))
-    | VirtualUser =>
+    | .VirtualUser =>
       (pure ((← (get_mstateen stateen_reg)) &&& ((← (get_hstateen stateen_reg)) &&& (← (get_sstateen
                 stateen_reg))))) ) : SailM (BitVec 64) )
   (pure ((BitVec.access mask (stateen_bit_index_forwards bit_idx)) == 1#1))
@@ -601,174 +601,174 @@ termination_by (let (_, _, _) := (priv, bit_idx, stateen_reg)
 7).toNat
 def currentlyEnabled (merge_var : extension) : SailM Bool := do
   match merge_var with
-  | Ext_Zic64b => (pure (hartSupports Ext_Zic64b))
-  | Ext_Zkt => (pure (hartSupports Ext_Zkt))
-  | Ext_Zvkt => (pure (hartSupports Ext_Zvkt))
-  | Ext_Zvkn => (pure (hartSupports Ext_Zvkn))
-  | Ext_Zvknc => (pure (hartSupports Ext_Zvknc))
-  | Ext_Zvkng => (pure (hartSupports Ext_Zvkng))
-  | Ext_Zvks => (pure (hartSupports Ext_Zvks))
-  | Ext_Zvksc => (pure (hartSupports Ext_Zvksc))
-  | Ext_Zvksg => (pure (hartSupports Ext_Zvksg))
-  | Ext_Sstvala => (pure ((hartSupports Ext_Sstvala) && (← (currentlyEnabled Ext_S))))
-  | Ext_Sstc => (pure (hartSupports Ext_Sstc))
-  | Ext_U =>
+  | .Ext_Zic64b => (pure (hartSupports Ext_Zic64b))
+  | .Ext_Zkt => (pure (hartSupports Ext_Zkt))
+  | .Ext_Zvkt => (pure (hartSupports Ext_Zvkt))
+  | .Ext_Zvkn => (pure (hartSupports Ext_Zvkn))
+  | .Ext_Zvknc => (pure (hartSupports Ext_Zvknc))
+  | .Ext_Zvkng => (pure (hartSupports Ext_Zvkng))
+  | .Ext_Zvks => (pure (hartSupports Ext_Zvks))
+  | .Ext_Zvksc => (pure (hartSupports Ext_Zvksc))
+  | .Ext_Zvksg => (pure (hartSupports Ext_Zvksg))
+  | .Ext_Sstvala => (pure ((hartSupports Ext_Sstvala) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Sstc => (pure (hartSupports Ext_Sstc))
+  | .Ext_U =>
     (pure ((hartSupports Ext_U) && (((_get_Misa_U (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zicsr)))))
-  | Ext_S =>
+  | .Ext_S =>
     (pure ((hartSupports Ext_S) && (((_get_Misa_S (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zicsr)))))
-  | Ext_Ssu64xl => (pure ((hartSupports Ext_Ssu64xl) && (← (currentlyEnabled Ext_S))))
-  | Ext_Svbare => (currentlyEnabled Ext_S)
-  | Ext_Sv32 => (pure ((hartSupports Ext_Sv32) && (← (currentlyEnabled Ext_S))))
-  | Ext_Sv39 => (pure ((hartSupports Ext_Sv39) && (← (currentlyEnabled Ext_S))))
-  | Ext_Sv48 => (pure ((hartSupports Ext_Sv48) && (← (currentlyEnabled Ext_S))))
-  | Ext_Sv57 => (pure ((hartSupports Ext_Sv57) && (← (currentlyEnabled Ext_S))))
-  | Ext_Sstvecd => (pure ((hartSupports Ext_Sstvecd) && (← (currentlyEnabled Ext_S))))
-  | Ext_Sscounterenw => (pure ((hartSupports Ext_Sscounterenw) && (← (currentlyEnabled Ext_S))))
-  | Ext_Smstateen => (pure ((hartSupports Ext_Smstateen) && (← (currentlyEnabled Ext_Zicsr))))
-  | Ext_Ssstateen => (pure ((hartSupports Ext_Ssstateen) && (← (currentlyEnabled Ext_Zicsr))))
-  | Ext_F =>
+  | .Ext_Ssu64xl => (pure ((hartSupports Ext_Ssu64xl) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Svbare => (currentlyEnabled Ext_S)
+  | .Ext_Sv32 => (pure ((hartSupports Ext_Sv32) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Sv39 => (pure ((hartSupports Ext_Sv39) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Sv48 => (pure ((hartSupports Ext_Sv48) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Sv57 => (pure ((hartSupports Ext_Sv57) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Sstvecd => (pure ((hartSupports Ext_Sstvecd) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Sscounterenw => (pure ((hartSupports Ext_Sscounterenw) && (← (currentlyEnabled Ext_S))))
+  | .Ext_Smstateen => (pure ((hartSupports Ext_Smstateen) && (← (currentlyEnabled Ext_Zicsr))))
+  | .Ext_Ssstateen => (pure ((hartSupports Ext_Ssstateen) && (← (currentlyEnabled Ext_Zicsr))))
+  | .Ext_F =>
     (pure ((hartSupports Ext_F) && (((_get_Misa_F (← readReg misa)) == 1#1) && (((_get_Mstatus_FS
                 (← readReg mstatus)) != 0b00#2) && (← (currentlyEnabled Ext_Zicsr))))))
-  | Ext_D =>
+  | .Ext_D =>
     (pure ((hartSupports Ext_D) && (((_get_Misa_D (← readReg misa)) == 1#1) && (((_get_Mstatus_FS
                 (← readReg mstatus)) != 0b00#2) && ((flen ≥b 64) && (← (currentlyEnabled
                   Ext_Zicsr)))))))
-  | Ext_Zfinx =>
+  | .Ext_Zfinx =>
     (pure ((hartSupports Ext_Zfinx) && ((← (currentlyEnabled Ext_Zicsr)) && (← (is_zfinx_enabled_by_stateen
               ())))))
-  | Ext_Zvl32b => (pure (hartSupports Ext_Zvl32b))
-  | Ext_Zvl64b => (pure (hartSupports Ext_Zvl64b))
-  | Ext_Zvl128b => (pure (hartSupports Ext_Zvl128b))
-  | Ext_Zvl256b => (pure (hartSupports Ext_Zvl256b))
-  | Ext_Zvl512b => (pure (hartSupports Ext_Zvl512b))
-  | Ext_Zvl1024b => (pure (hartSupports Ext_Zvl1024b))
-  | Ext_Zve32x =>
+  | .Ext_Zvl32b => (pure (hartSupports Ext_Zvl32b))
+  | .Ext_Zvl64b => (pure (hartSupports Ext_Zvl64b))
+  | .Ext_Zvl128b => (pure (hartSupports Ext_Zvl128b))
+  | .Ext_Zvl256b => (pure (hartSupports Ext_Zvl256b))
+  | .Ext_Zvl512b => (pure (hartSupports Ext_Zvl512b))
+  | .Ext_Zvl1024b => (pure (hartSupports Ext_Zvl1024b))
+  | .Ext_Zve32x =>
     (pure ((hartSupports Ext_Zve32x) && ((← (currentlyEnabled Ext_Zvl32b)) && (((_get_Mstatus_VS
                 (← readReg mstatus)) != 0b00#2) && (← (currentlyEnabled Ext_Zicsr))))))
-  | Ext_Zve32f =>
+  | .Ext_Zve32f =>
     (pure ((hartSupports Ext_Zve32f) && ((← (currentlyEnabled Ext_Zve32x)) && (← (currentlyEnabled
               Ext_F)))))
-  | Ext_Zve64x =>
+  | .Ext_Zve64x =>
     (pure ((hartSupports Ext_Zve64x) && ((← (currentlyEnabled Ext_Zvl64b)) && (← (currentlyEnabled
               Ext_Zve32x)))))
-  | Ext_Zve64f =>
+  | .Ext_Zve64f =>
     (pure ((hartSupports Ext_Zve64f) && ((← (currentlyEnabled Ext_Zve64x)) && (← (currentlyEnabled
               Ext_Zve32f)))))
-  | Ext_Zve64d =>
+  | .Ext_Zve64d =>
     (pure ((hartSupports Ext_Zve64d) && ((← (currentlyEnabled Ext_Zve64f)) && (← (currentlyEnabled
               Ext_D)))))
-  | Ext_V =>
+  | .Ext_V =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && ((← (currentlyEnabled
                 Ext_Zvl128b)) && (← (currentlyEnabled Ext_Zve64d))))))
-  | Ext_Zvfh =>
+  | .Ext_Zvfh =>
     (pure ((hartSupports Ext_Zvfh) && ((← (currentlyEnabled Ext_Zve32f)) && (← (currentlyEnabled
               Ext_Zfhmin)))))
-  | Ext_Zvfhmin =>
+  | .Ext_Zvfhmin =>
     (pure (((hartSupports Ext_Zvfhmin) && (← (currentlyEnabled Ext_Zve32f))) || (← (currentlyEnabled
             Ext_Zvfh))))
-  | Ext_Smcntrpmf => (pure ((hartSupports Ext_Smcntrpmf) && (← (currentlyEnabled Ext_Zicntr))))
-  | Ext_Zicfilp =>
+  | .Ext_Smcntrpmf => (pure ((hartSupports Ext_Smcntrpmf) && (← (currentlyEnabled Ext_Zicntr))))
+  | .Ext_Zicfilp =>
     (pure ((← (currentlyEnabled Ext_Zicsr)) && ((hartSupports Ext_Zicfilp) && (← (get_xLPE
               (← readReg cur_privilege))))))
-  | Ext_Svnapot => (pure ((hartSupports Ext_Svnapot) && (← (currentlyEnabled Ext_Sv39))))
-  | Ext_Svpbmt => (pure ((hartSupports Ext_Svpbmt) && (← (currentlyEnabled Ext_Sv39))))
-  | Ext_Svrsw60t59b => (pure ((hartSupports Ext_Svrsw60t59b) && (← (currentlyEnabled Ext_Sv39))))
-  | Ext_Svvptc =>
+  | .Ext_Svnapot => (pure ((hartSupports Ext_Svnapot) && (← (currentlyEnabled Ext_Sv39))))
+  | .Ext_Svpbmt => (pure ((hartSupports Ext_Svpbmt) && (← (currentlyEnabled Ext_Sv39))))
+  | .Ext_Svrsw60t59b => (pure ((hartSupports Ext_Svrsw60t59b) && (← (currentlyEnabled Ext_Sv39))))
+  | .Ext_Svvptc =>
     (pure ((hartSupports Ext_Svvptc) && ((← (currentlyEnabled Ext_Sv32)) || (← (currentlyEnabled
               Ext_Sv39)))))
-  | Ext_Svade => (pure (hartSupports Ext_Svade))
-  | Ext_Svadu => (pure (hartSupports Ext_Svadu))
-  | Ext_Ssccptr =>
+  | .Ext_Svade => (pure (hartSupports Ext_Svade))
+  | .Ext_Svadu => (pure (hartSupports Ext_Svadu))
+  | .Ext_Ssccptr =>
     (pure ((hartSupports Ext_Ssccptr) && ((← (currentlyEnabled Ext_Sv32)) || (← (currentlyEnabled
               Ext_Sv39)))))
-  | Ext_Zicbop => (pure (hartSupports Ext_Zicbop))
-  | Ext_Zihintntl => (pure (hartSupports Ext_Zihintntl))
-  | Ext_Zihintpause => (pure (hartSupports Ext_Zihintpause))
-  | Ext_C => (pure ((hartSupports Ext_C) && ((_get_Misa_C (← readReg misa)) == 1#1)))
-  | Ext_Zca =>
+  | .Ext_Zicbop => (pure (hartSupports Ext_Zicbop))
+  | .Ext_Zihintntl => (pure (hartSupports Ext_Zihintntl))
+  | .Ext_Zihintpause => (pure (hartSupports Ext_Zihintpause))
+  | .Ext_C => (pure ((hartSupports Ext_C) && ((_get_Misa_C (← readReg misa)) == 1#1)))
+  | .Ext_Zca =>
     (pure ((hartSupports Ext_Zca) && ((← (currentlyEnabled Ext_C)) || (not (hartSupports Ext_C)))))
-  | Ext_A => (pure ((hartSupports Ext_A) && ((_get_Misa_A (← readReg misa)) == 1#1)))
-  | Ext_Zaamo => (pure ((hartSupports Ext_Zaamo) || (← (currentlyEnabled Ext_A))))
-  | Ext_Zabha => (pure ((hartSupports Ext_Zabha) && (← (currentlyEnabled Ext_Zaamo))))
-  | Ext_Zacas => (pure ((hartSupports Ext_Zacas) && (← (currentlyEnabled Ext_Zaamo))))
-  | Ext_Ziccamoa => (pure (hartSupports Ext_Ziccamoa))
-  | Ext_Ziccamoc => (pure (hartSupports Ext_Ziccamoc))
-  | Ext_Zalrsc => (pure ((hartSupports Ext_Zalrsc) || (← (currentlyEnabled Ext_A))))
-  | Ext_Za64rs => (pure ((hartSupports Ext_Za64rs) && (← (currentlyEnabled Ext_Zalrsc))))
-  | Ext_Za128rs => (pure ((hartSupports Ext_Za128rs) && (← (currentlyEnabled Ext_Zalrsc))))
-  | Ext_Ziccrse => (pure (hartSupports Ext_Ziccrse))
-  | Ext_M => (pure ((hartSupports Ext_M) && ((_get_Misa_M (← readReg misa)) == 1#1)))
-  | Ext_Zmmul => (pure ((hartSupports Ext_Zmmul) || (← (currentlyEnabled Ext_M))))
-  | Ext_B => (pure ((hartSupports Ext_B) && ((_get_Misa_B (← readReg misa)) == 1#1)))
-  | Ext_Zba => (pure ((hartSupports Ext_Zba) || (← (currentlyEnabled Ext_B))))
-  | Ext_Zbb => (pure ((hartSupports Ext_Zbb) || (← (currentlyEnabled Ext_B))))
-  | Ext_Zbkb => (pure (hartSupports Ext_Zbkb))
-  | Ext_Zbc => (pure (hartSupports Ext_Zbc))
-  | Ext_Zbkc => (pure (hartSupports Ext_Zbkc))
-  | Ext_Zbs => (pure ((hartSupports Ext_Zbs) || (← (currentlyEnabled Ext_B))))
-  | Ext_Zcb => (pure ((hartSupports Ext_Zcb) && (← (currentlyEnabled Ext_Zca))))
-  | Ext_H =>
+  | .Ext_A => (pure ((hartSupports Ext_A) && ((_get_Misa_A (← readReg misa)) == 1#1)))
+  | .Ext_Zaamo => (pure ((hartSupports Ext_Zaamo) || (← (currentlyEnabled Ext_A))))
+  | .Ext_Zabha => (pure ((hartSupports Ext_Zabha) && (← (currentlyEnabled Ext_Zaamo))))
+  | .Ext_Zacas => (pure ((hartSupports Ext_Zacas) && (← (currentlyEnabled Ext_Zaamo))))
+  | .Ext_Ziccamoa => (pure (hartSupports Ext_Ziccamoa))
+  | .Ext_Ziccamoc => (pure (hartSupports Ext_Ziccamoc))
+  | .Ext_Zalrsc => (pure ((hartSupports Ext_Zalrsc) || (← (currentlyEnabled Ext_A))))
+  | .Ext_Za64rs => (pure ((hartSupports Ext_Za64rs) && (← (currentlyEnabled Ext_Zalrsc))))
+  | .Ext_Za128rs => (pure ((hartSupports Ext_Za128rs) && (← (currentlyEnabled Ext_Zalrsc))))
+  | .Ext_Ziccrse => (pure (hartSupports Ext_Ziccrse))
+  | .Ext_M => (pure ((hartSupports Ext_M) && ((_get_Misa_M (← readReg misa)) == 1#1)))
+  | .Ext_Zmmul => (pure ((hartSupports Ext_Zmmul) || (← (currentlyEnabled Ext_M))))
+  | .Ext_B => (pure ((hartSupports Ext_B) && ((_get_Misa_B (← readReg misa)) == 1#1)))
+  | .Ext_Zba => (pure ((hartSupports Ext_Zba) || (← (currentlyEnabled Ext_B))))
+  | .Ext_Zbb => (pure ((hartSupports Ext_Zbb) || (← (currentlyEnabled Ext_B))))
+  | .Ext_Zbkb => (pure (hartSupports Ext_Zbkb))
+  | .Ext_Zbc => (pure (hartSupports Ext_Zbc))
+  | .Ext_Zbkc => (pure (hartSupports Ext_Zbkc))
+  | .Ext_Zbs => (pure ((hartSupports Ext_Zbs) || (← (currentlyEnabled Ext_B))))
+  | .Ext_Zcb => (pure ((hartSupports Ext_Zcb) && (← (currentlyEnabled Ext_Zca))))
+  | .Ext_H =>
     (pure ((hartSupports Ext_H) && (((_get_Misa_H (← readReg misa)) == 1#1) && (← (virtual_memory_supported
               ())))))
-  | Ext_Zfh => (pure ((hartSupports Ext_Zfh) && (← (currentlyEnabled Ext_F))))
-  | Ext_Zfhmin =>
+  | .Ext_Zfh => (pure ((hartSupports Ext_Zfh) && (← (currentlyEnabled Ext_F))))
+  | .Ext_Zfhmin =>
     (pure (((hartSupports Ext_Zfhmin) && (← (currentlyEnabled Ext_F))) || (← (currentlyEnabled
             Ext_Zfh))))
-  | Ext_Zcf =>
+  | .Ext_Zcf =>
     (pure ((hartSupports Ext_Zcf) && ((← (currentlyEnabled Ext_F)) && ((← (currentlyEnabled
                 Ext_Zca)) && ((← (currentlyEnabled Ext_C)) || (not (hartSupports Ext_C)))))))
-  | Ext_Zdinx => (pure ((hartSupports Ext_Zdinx) && (← (currentlyEnabled Ext_Zfinx))))
-  | Ext_Zcd =>
+  | .Ext_Zdinx => (pure ((hartSupports Ext_Zdinx) && (← (currentlyEnabled Ext_Zfinx))))
+  | .Ext_Zcd =>
     (pure ((hartSupports Ext_Zcd) && ((← (currentlyEnabled Ext_D)) && ((← (currentlyEnabled
                 Ext_Zca)) && ((← (currentlyEnabled Ext_C)) || (not (hartSupports Ext_C)))))))
-  | Ext_Zhinx => (pure ((hartSupports Ext_Zhinx) && (← (currentlyEnabled Ext_Zfinx))))
-  | Ext_Zhinxmin =>
+  | .Ext_Zhinx => (pure ((hartSupports Ext_Zhinx) && (← (currentlyEnabled Ext_Zfinx))))
+  | .Ext_Zhinxmin =>
     (pure (((hartSupports Ext_Zhinxmin) && (← (currentlyEnabled Ext_Zfinx))) || (← (currentlyEnabled
             Ext_Zhinx))))
-  | Ext_Zfa => (pure ((hartSupports Ext_Zfa) && (← (currentlyEnabled Ext_F))))
-  | Ext_Zknh => (pure (hartSupports Ext_Zknh))
-  | Ext_Zkne => (pure (hartSupports Ext_Zkne))
-  | Ext_Zknd => (pure (hartSupports Ext_Zknd))
-  | Ext_Zksh => (pure (hartSupports Ext_Zksh))
-  | Ext_Zksed => (pure (hartSupports Ext_Zksed))
-  | Ext_Zkr => (pure (hartSupports Ext_Zkr))
-  | Ext_Zbkx => (pure (hartSupports Ext_Zbkx))
-  | Ext_Zvbb => (pure ((hartSupports Ext_Zvbb) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zvkb =>
+  | .Ext_Zfa => (pure ((hartSupports Ext_Zfa) && (← (currentlyEnabled Ext_F))))
+  | .Ext_Zknh => (pure (hartSupports Ext_Zknh))
+  | .Ext_Zkne => (pure (hartSupports Ext_Zkne))
+  | .Ext_Zknd => (pure (hartSupports Ext_Zknd))
+  | .Ext_Zksh => (pure (hartSupports Ext_Zksh))
+  | .Ext_Zksed => (pure (hartSupports Ext_Zksed))
+  | .Ext_Zkr => (pure (hartSupports Ext_Zkr))
+  | .Ext_Zbkx => (pure (hartSupports Ext_Zbkx))
+  | .Ext_Zvbb => (pure ((hartSupports Ext_Zvbb) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zvkb =>
     (pure (((hartSupports Ext_Zvkb) && (← (currentlyEnabled Ext_Zve32x))) || (← (currentlyEnabled
             Ext_Zvbb))))
-  | Ext_Zvbc => (pure ((hartSupports Ext_Zvbc) && (← (currentlyEnabled Ext_Zve64x))))
-  | Ext_Zvkg => (pure ((hartSupports Ext_Zvkg) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zvkned => (pure ((hartSupports Ext_Zvkned) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zvksed => (pure ((hartSupports Ext_Zvksed) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zvknha => (pure ((hartSupports Ext_Zvknha) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zvknhb => (pure ((hartSupports Ext_Zvknhb) && (← (currentlyEnabled Ext_Zve64x))))
-  | Ext_Zvksh => (pure ((hartSupports Ext_Zvksh) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zvabd => (pure ((hartSupports Ext_Zvabd) && (← (currentlyEnabled Ext_Zve32x))))
-  | Ext_Zicsr => (pure (hartSupports Ext_Zicsr))
-  | Ext_Svinval => (pure (hartSupports Ext_Svinval))
-  | Ext_Zihpm => (pure ((hartSupports Ext_Zihpm) && (← (currentlyEnabled Ext_Zicsr))))
-  | Ext_Sscofpmf => (pure ((hartSupports Ext_Sscofpmf) && (← (currentlyEnabled Ext_Zihpm))))
-  | Ext_Zawrs => (pure (hartSupports Ext_Zawrs))
-  | Ext_Zicfiss =>
+  | .Ext_Zvbc => (pure ((hartSupports Ext_Zvbc) && (← (currentlyEnabled Ext_Zve64x))))
+  | .Ext_Zvkg => (pure ((hartSupports Ext_Zvkg) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zvkned => (pure ((hartSupports Ext_Zvkned) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zvksed => (pure ((hartSupports Ext_Zvksed) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zvknha => (pure ((hartSupports Ext_Zvknha) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zvknhb => (pure ((hartSupports Ext_Zvknhb) && (← (currentlyEnabled Ext_Zve64x))))
+  | .Ext_Zvksh => (pure ((hartSupports Ext_Zvksh) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zvabd => (pure ((hartSupports Ext_Zvabd) && (← (currentlyEnabled Ext_Zve32x))))
+  | .Ext_Zicsr => (pure (hartSupports Ext_Zicsr))
+  | .Ext_Svinval => (pure (hartSupports Ext_Svinval))
+  | .Ext_Zihpm => (pure ((hartSupports Ext_Zihpm) && (← (currentlyEnabled Ext_Zicsr))))
+  | .Ext_Sscofpmf => (pure ((hartSupports Ext_Sscofpmf) && (← (currentlyEnabled Ext_Zihpm))))
+  | .Ext_Zawrs => (pure (hartSupports Ext_Zawrs))
+  | .Ext_Zicfiss =>
     (pure ((hartSupports Ext_Zicfiss) && ((← (currentlyEnabled Ext_Zicsr)) && ((← (currentlyEnabled
                 Ext_Zimop)) && (← (currentlyEnabled Ext_Zaamo))))))
-  | Ext_Zicond => (pure (hartSupports Ext_Zicond))
-  | Ext_Zicntr => (pure ((hartSupports Ext_Zicntr) && (← (currentlyEnabled Ext_Zicsr))))
-  | Ext_Zicbom => (pure (hartSupports Ext_Zicbom))
-  | Ext_Zibi => (pure (hartSupports Ext_Zibi))
-  | Ext_Zicboz => (pure (hartSupports Ext_Zicboz))
-  | Ext_Zifencei => (pure (hartSupports Ext_Zifencei))
-  | Ext_Ssqosid => (pure ((hartSupports Ext_Ssqosid) && (← (currentlyEnabled Ext_Zicsr))))
-  | Ext_Zfbfmin => (pure ((hartSupports Ext_Zfbfmin) && (← (currentlyEnabled Ext_F))))
-  | Ext_Zvfbfmin => (pure ((hartSupports Ext_Zvfbfmin) && (← (currentlyEnabled Ext_Zve32f))))
-  | Ext_Zvfbfwma =>
+  | .Ext_Zicond => (pure (hartSupports Ext_Zicond))
+  | .Ext_Zicntr => (pure ((hartSupports Ext_Zicntr) && (← (currentlyEnabled Ext_Zicsr))))
+  | .Ext_Zicbom => (pure (hartSupports Ext_Zicbom))
+  | .Ext_Zibi => (pure (hartSupports Ext_Zibi))
+  | .Ext_Zicboz => (pure (hartSupports Ext_Zicboz))
+  | .Ext_Zifencei => (pure (hartSupports Ext_Zifencei))
+  | .Ext_Ssqosid => (pure ((hartSupports Ext_Ssqosid) && (← (currentlyEnabled Ext_Zicsr))))
+  | .Ext_Zfbfmin => (pure ((hartSupports Ext_Zfbfmin) && (← (currentlyEnabled Ext_F))))
+  | .Ext_Zvfbfmin => (pure ((hartSupports Ext_Zvfbfmin) && (← (currentlyEnabled Ext_Zve32f))))
+  | .Ext_Zvfbfwma =>
     (pure ((hartSupports Ext_Zvfbfwma) && ((← (currentlyEnabled Ext_Zvfbfmin)) && (← (currentlyEnabled
               Ext_Zfbfmin)))))
-  | Ext_Zimop => (pure (hartSupports Ext_Zimop))
-  | Ext_Zcmop => (pure ((hartSupports Ext_Zcmop) && (← (currentlyEnabled Ext_Zca))))
+  | .Ext_Zimop => (pure (hartSupports Ext_Zimop))
+  | .Ext_Zcmop => (pure ((hartSupports Ext_Zcmop) && (← (currentlyEnabled Ext_Zca))))
 termination_by (let ext := merge_var
 (currentlyEnabled_measure ext)).toNat
 /-- Type quantifiers: idx : Nat, 0 ≤ idx ∧ idx ≤ 3 -/
@@ -800,16 +800,16 @@ termination_by (let _ := idx
 3).toNat
 def get_xLPE (p : Privilege) : SailM Bool := do
   match p with
-  | Machine => (pure (bool_bit_backwards (_get_Seccfg_MLPE (← readReg mseccfg))))
-  | Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_LPE (← readReg menvcfg))))
-  | User =>
+  | .Machine => (pure (bool_bit_backwards (_get_Seccfg_MLPE (← readReg mseccfg))))
+  | .Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_LPE (← readReg menvcfg))))
+  | .User =>
     (do
       if ((← (currentlyEnabled Ext_S)) : Bool)
       then (pure (bool_bit_backwards (_get_SEnvcfg_LPE (← (read_senvcfg ())))))
       else (pure (bool_bit_backwards (_get_MEnvcfg_LPE (← readReg menvcfg)))))
-  | VirtualSupervisor =>
+  | .VirtualSupervisor =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 31 "Hypervisor extension not supported")
-  | VirtualUser =>
+  | .VirtualUser =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 32 "Hypervisor extension not supported")
 termination_by (let _ := p
 2).toNat
@@ -932,21 +932,22 @@ def legalize_senvcfg (o : (BitVec 32)) (v : (BitVec 32)) : SailM (BitVec 32) := 
 
 def privLevel_to_str (p : Privilege) : SailM String := do
   match p with
-  | User => (pure "U")
-  | VirtualUser => (pure "VU")
-  | Supervisor =>
+  | .User => (pure "U")
+  | .VirtualUser => (pure "VU")
+  | .Supervisor =>
     (do
       if ((← (currentlyEnabled Ext_H)) : Bool)
       then (pure "HS")
       else (pure "S"))
-  | VirtualSupervisor => (pure "VS")
-  | Machine => (pure "M")
+  | .VirtualSupervisor => (pure "VS")
+  | .Machine => (pure "M")
 
 def mem_payload_str_forwards (arg_ : mem_payload) : String :=
   match arg_ with
-  | Data => ""
-  | PageTableEntry => ""
-  | ShadowStack => ".ss"
+  | .Data => ""
+  | .Vector => ""
+  | .PageTableEntry => ""
+  | .ShadowStack => ".ss"
 
 def accessType_to_str (access : (MemoryAccessType mem_payload)) : String :=
   match access with
@@ -977,13 +978,13 @@ def atomic_support_str_backwards (arg_ : String) : SailM AtomicSupport := do
 
 def atomic_support_str_forwards (arg_ : AtomicSupport) : String :=
   match arg_ with
-  | AMONone => "AMONone"
-  | AMOSwap => "AMOSwap"
-  | AMOLogical => "AMOLogical"
-  | AMOArithmetic => "AMOArithmetic"
-  | AMOCASW => "AMOCASW"
-  | AMOCASD => "AMOCASD"
-  | AMOCASQ => "AMOCASQ"
+  | .AMONone => "AMONone"
+  | .AMOSwap => "AMOSwap"
+  | .AMOLogical => "AMOLogical"
+  | .AMOArithmetic => "AMOArithmetic"
+  | .AMOCASW => "AMOCASW"
+  | .AMOCASD => "AMOCASD"
+  | .AMOCASQ => "AMOCASQ"
 
 def csr_name_map_forwards (arg_ : (BitVec 12)) : SailM String := do
   match arg_ with
@@ -1360,29 +1361,29 @@ def exceptionType_to_str (e : ExceptionType) : String :=
   | .E_Load_GPage_Fault () => "load-guest-page-fault"
   | .E_Virtual_Instr () => "virtual-instruction"
   | .E_SAMO_GPage_Fault () => "store/amo-guest-page-fault"
-  | .E_Breakpoint Brk_Software => "software-breakpoint"
-  | .E_Breakpoint Brk_Hardware => "hardware-breakpoint"
+  | .E_Breakpoint .Brk_Software => "software-breakpoint"
+  | .E_Breakpoint .Brk_Hardware => "hardware-breakpoint"
   | .E_Extension e => (ext_exc_type_to_str e)
 
 def bitype_mnemonic_forwards (arg_ : biop) : String :=
   match arg_ with
-  | BEQI => "beqi"
-  | BNEI => "bnei"
+  | .BEQI => "beqi"
+  | .BNEI => "bnei"
 
 def btype_mnemonic_forwards (arg_ : bop) : String :=
   match arg_ with
-  | BEQ => "beq"
-  | BNE => "bne"
-  | BLT => "blt"
-  | BGE => "bge"
-  | BLTU => "bltu"
-  | BGEU => "bgeu"
+  | .BEQ => "beq"
+  | .BNE => "bne"
+  | .BLT => "blt"
+  | .BGE => "bge"
+  | .BLTU => "bltu"
+  | .BGEU => "bgeu"
 
 def cbop_mnemonic_forwards (arg_ : cbop_zicbom) : String :=
   match arg_ with
-  | CBO_CLEAN => "cbo.clean"
-  | CBO_FLUSH => "cbo.flush"
-  | CBO_INVAL => "cbo.inval"
+  | .CBO_CLEAN => "cbo.clean"
+  | .CBO_FLUSH => "cbo.flush"
+  | .CBO_INVAL => "cbo.inval"
 
 def freg_abi_name_raw_forwards (arg_ : (BitVec 5)) : String :=
   match arg_ with
@@ -1594,176 +1595,176 @@ def creg_name_forwards (arg_ : cregidx) : SailM String := do
 
 def csr_mnemonic_forwards (arg_ : csrop) : String :=
   match arg_ with
-  | CSRRW => "csrrw"
-  | CSRRS => "csrrs"
-  | CSRRC => "csrrc"
+  | .CSRRW => "csrrw"
+  | .CSRRS => "csrrs"
+  | .CSRRC => "csrrc"
 
 def f_bin_f_type_mnemonic_D_forwards (arg_ : f_bin_f_op_D) : String :=
   match arg_ with
-  | FSGNJ_D => "fsgnj.d"
-  | FSGNJN_D => "fsgnjn.d"
-  | FSGNJX_D => "fsgnjx.d"
-  | FMIN_D => "fmin.d"
-  | FMAX_D => "fmax.d"
+  | .FSGNJ_D => "fsgnj.d"
+  | .FSGNJN_D => "fsgnjn.d"
+  | .FSGNJX_D => "fsgnjx.d"
+  | .FMIN_D => "fmin.d"
+  | .FMAX_D => "fmax.d"
 
 def f_bin_f_type_mnemonic_H_forwards (arg_ : f_bin_f_op_H) : String :=
   match arg_ with
-  | FSGNJ_H => "fsgnj.h"
-  | FSGNJN_H => "fsgnjn.h"
-  | FSGNJX_H => "fsgnjx.h"
-  | FMIN_H => "fmin.h"
-  | FMAX_H => "fmax.h"
+  | .FSGNJ_H => "fsgnj.h"
+  | .FSGNJN_H => "fsgnjn.h"
+  | .FSGNJX_H => "fsgnjx.h"
+  | .FMIN_H => "fmin.h"
+  | .FMAX_H => "fmax.h"
 
 def f_bin_rm_type_mnemonic_D_forwards (arg_ : f_bin_rm_op_D) : String :=
   match arg_ with
-  | FADD_D => "fadd.d"
-  | FSUB_D => "fsub.d"
-  | FMUL_D => "fmul.d"
-  | FDIV_D => "fdiv.d"
+  | .FADD_D => "fadd.d"
+  | .FSUB_D => "fsub.d"
+  | .FMUL_D => "fmul.d"
+  | .FDIV_D => "fdiv.d"
 
 def f_bin_rm_type_mnemonic_H_forwards (arg_ : f_bin_rm_op_H) : String :=
   match arg_ with
-  | FADD_H => "fadd.h"
-  | FSUB_H => "fsub.h"
-  | FMUL_H => "fmul.h"
-  | FDIV_H => "fdiv.h"
+  | .FADD_H => "fadd.h"
+  | .FSUB_H => "fsub.h"
+  | .FMUL_H => "fmul.h"
+  | .FDIV_H => "fdiv.h"
 
 def f_bin_rm_type_mnemonic_S_forwards (arg_ : f_bin_rm_op_S) : String :=
   match arg_ with
-  | FADD_S => "fadd.s"
-  | FSUB_S => "fsub.s"
-  | FMUL_S => "fmul.s"
-  | FDIV_S => "fdiv.s"
+  | .FADD_S => "fadd.s"
+  | .FSUB_S => "fsub.s"
+  | .FMUL_S => "fmul.s"
+  | .FDIV_S => "fdiv.s"
 
 def f_bin_type_mnemonic_f_S_forwards (arg_ : f_bin_op_f_S) : String :=
   match arg_ with
-  | FSGNJ_S => "fsgnj.s"
-  | FSGNJN_S => "fsgnjn.s"
-  | FSGNJX_S => "fsgnjx.s"
-  | FMIN_S => "fmin.s"
-  | FMAX_S => "fmax.s"
+  | .FSGNJ_S => "fsgnj.s"
+  | .FSGNJN_S => "fsgnjn.s"
+  | .FSGNJX_S => "fsgnjx.s"
+  | .FMIN_S => "fmin.s"
+  | .FMAX_S => "fmax.s"
 
 def f_bin_type_mnemonic_x_S_forwards (arg_ : f_bin_op_x_S) : String :=
   match arg_ with
-  | FEQ_S => "feq.s"
-  | FLT_S => "flt.s"
-  | FLE_S => "fle.s"
+  | .FEQ_S => "feq.s"
+  | .FLT_S => "flt.s"
+  | .FLE_S => "fle.s"
 
 def f_bin_x_type_mnemonic_D_forwards (arg_ : f_bin_x_op_D) : String :=
   match arg_ with
-  | FEQ_D => "feq.d"
-  | FLT_D => "flt.d"
-  | FLE_D => "fle.d"
+  | .FEQ_D => "feq.d"
+  | .FLT_D => "flt.d"
+  | .FLE_D => "fle.d"
 
 def f_bin_x_type_mnemonic_H_forwards (arg_ : f_bin_x_op_H) : String :=
   match arg_ with
-  | FEQ_H => "feq.h"
-  | FLT_H => "flt.h"
-  | FLE_H => "fle.h"
+  | .FEQ_H => "feq.h"
+  | .FLT_H => "flt.h"
+  | .FLE_H => "fle.h"
 
 def f_madd_type_mnemonic_D_forwards (arg_ : f_madd_op_D) : String :=
   match arg_ with
-  | FMADD_D => "fmadd.d"
-  | FMSUB_D => "fmsub.d"
-  | FNMSUB_D => "fnmsub.d"
-  | FNMADD_D => "fnmadd.d"
+  | .FMADD_D => "fmadd.d"
+  | .FMSUB_D => "fmsub.d"
+  | .FNMSUB_D => "fnmsub.d"
+  | .FNMADD_D => "fnmadd.d"
 
 def f_madd_type_mnemonic_H_forwards (arg_ : f_madd_op_H) : String :=
   match arg_ with
-  | FMADD_H => "fmadd.h"
-  | FMSUB_H => "fmsub.h"
-  | FNMSUB_H => "fnmsub.h"
-  | FNMADD_H => "fnmadd.h"
+  | .FMADD_H => "fmadd.h"
+  | .FMSUB_H => "fmsub.h"
+  | .FNMSUB_H => "fnmsub.h"
+  | .FNMADD_H => "fnmadd.h"
 
 def f_madd_type_mnemonic_S_forwards (arg_ : f_madd_op_S) : String :=
   match arg_ with
-  | FMADD_S => "fmadd.s"
-  | FMSUB_S => "fmsub.s"
-  | FNMSUB_S => "fnmsub.s"
-  | FNMADD_S => "fnmadd.s"
+  | .FMADD_S => "fmadd.s"
+  | .FMSUB_S => "fmsub.s"
+  | .FNMSUB_S => "fnmsub.s"
+  | .FNMADD_S => "fnmadd.s"
 
 def f_un_f_type_mnemonic_D_forwards (arg_ : f_un_f_op_D) : String :=
   match arg_ with
-  | FMV_D_X => "fmv.d.x"
+  | .FMV_D_X => "fmv.d.x"
 
 def f_un_f_type_mnemonic_H_forwards (arg_ : f_un_f_op_H) : String :=
   match arg_ with
-  | FMV_H_X => "fmv.h.x"
+  | .FMV_H_X => "fmv.h.x"
 
 def f_un_rm_ff_type_mnemonic_D_forwards (arg_ : f_un_rm_ff_op_D) : String :=
   match arg_ with
-  | FSQRT_D => "fsqrt.d"
-  | FCVT_S_D => "fcvt.s.d"
-  | FCVT_D_S => "fcvt.d.s"
+  | .FSQRT_D => "fsqrt.d"
+  | .FCVT_S_D => "fcvt.s.d"
+  | .FCVT_D_S => "fcvt.d.s"
 
 def f_un_rm_ff_type_mnemonic_H_forwards (arg_ : f_un_rm_ff_op_H) : String :=
   match arg_ with
-  | FSQRT_H => "fsqrt.h"
-  | FCVT_H_S => "fcvt.h.s"
-  | FCVT_H_D => "fcvt.h.d"
-  | FCVT_S_H => "fcvt.s.h"
-  | FCVT_D_H => "fcvt.d.h"
+  | .FSQRT_H => "fsqrt.h"
+  | .FCVT_H_S => "fcvt.h.s"
+  | .FCVT_H_D => "fcvt.h.d"
+  | .FCVT_S_H => "fcvt.s.h"
+  | .FCVT_D_H => "fcvt.d.h"
 
 def f_un_rm_fx_type_mnemonic_D_forwards (arg_ : f_un_rm_fx_op_D) : String :=
   match arg_ with
-  | FCVT_W_D => "fcvt.w.d"
-  | FCVT_WU_D => "fcvt.wu.d"
-  | FCVT_L_D => "fcvt.l.d"
-  | FCVT_LU_D => "fcvt.lu.d"
+  | .FCVT_W_D => "fcvt.w.d"
+  | .FCVT_WU_D => "fcvt.wu.d"
+  | .FCVT_L_D => "fcvt.l.d"
+  | .FCVT_LU_D => "fcvt.lu.d"
 
 def f_un_rm_fx_type_mnemonic_H_forwards (arg_ : f_un_rm_fx_op_H) : String :=
   match arg_ with
-  | FCVT_W_H => "fcvt.w.h"
-  | FCVT_WU_H => "fcvt.wu.h"
-  | FCVT_L_H => "fcvt.l.h"
-  | FCVT_LU_H => "fcvt.lu.h"
+  | .FCVT_W_H => "fcvt.w.h"
+  | .FCVT_WU_H => "fcvt.wu.h"
+  | .FCVT_L_H => "fcvt.l.h"
+  | .FCVT_LU_H => "fcvt.lu.h"
 
 def f_un_rm_fx_type_mnemonic_S_forwards (arg_ : f_un_rm_fx_op_S) : String :=
   match arg_ with
-  | FCVT_W_S => "fcvt.w.s"
-  | FCVT_WU_S => "fcvt.wu.s"
-  | FCVT_L_S => "fcvt.l.s"
-  | FCVT_LU_S => "fcvt.lu.s"
+  | .FCVT_W_S => "fcvt.w.s"
+  | .FCVT_WU_S => "fcvt.wu.s"
+  | .FCVT_L_S => "fcvt.l.s"
+  | .FCVT_LU_S => "fcvt.lu.s"
 
 def f_un_rm_xf_type_mnemonic_D_forwards (arg_ : f_un_rm_xf_op_D) : String :=
   match arg_ with
-  | FCVT_D_W => "fcvt.d.w"
-  | FCVT_D_WU => "fcvt.d.wu"
-  | FCVT_D_L => "fcvt.d.l"
-  | FCVT_D_LU => "fcvt.d.lu"
+  | .FCVT_D_W => "fcvt.d.w"
+  | .FCVT_D_WU => "fcvt.d.wu"
+  | .FCVT_D_L => "fcvt.d.l"
+  | .FCVT_D_LU => "fcvt.d.lu"
 
 def f_un_rm_xf_type_mnemonic_H_forwards (arg_ : f_un_rm_xf_op_H) : String :=
   match arg_ with
-  | FCVT_H_W => "fcvt.h.w"
-  | FCVT_H_WU => "fcvt.h.wu"
-  | FCVT_H_L => "fcvt.h.l"
-  | FCVT_H_LU => "fcvt.h.lu"
+  | .FCVT_H_W => "fcvt.h.w"
+  | .FCVT_H_WU => "fcvt.h.wu"
+  | .FCVT_H_L => "fcvt.h.l"
+  | .FCVT_H_LU => "fcvt.h.lu"
 
 def f_un_rm_xf_type_mnemonic_S_forwards (arg_ : f_un_rm_xf_op_S) : String :=
   match arg_ with
-  | FCVT_S_W => "fcvt.s.w"
-  | FCVT_S_WU => "fcvt.s.wu"
-  | FCVT_S_L => "fcvt.s.l"
-  | FCVT_S_LU => "fcvt.s.lu"
+  | .FCVT_S_W => "fcvt.s.w"
+  | .FCVT_S_WU => "fcvt.s.wu"
+  | .FCVT_S_L => "fcvt.s.l"
+  | .FCVT_S_LU => "fcvt.s.lu"
 
 def f_un_type_mnemonic_f_S_forwards (arg_ : f_un_op_f_S) : String :=
   match arg_ with
-  | FMV_W_X => "fmv.w.x"
+  | .FMV_W_X => "fmv.w.x"
 
 def f_un_type_mnemonic_x_S_forwards (arg_ : f_un_op_x_S) : String :=
   match arg_ with
-  | FCLASS_S => "fclass.s"
-  | FMV_X_W => "fmv.x.w"
+  | .FCLASS_S => "fclass.s"
+  | .FMV_X_W => "fmv.x.w"
 
 def f_un_x_type_mnemonic_D_forwards (arg_ : f_un_x_op_D) : String :=
   match arg_ with
-  | FMV_X_D => "fmv.x.d"
-  | FCLASS_D => "fclass.d"
+  | .FMV_X_D => "fmv.x.d"
+  | .FCLASS_D => "fclass.d"
 
 def f_un_x_type_mnemonic_H_forwards (arg_ : f_un_x_op_H) : String :=
   match arg_ with
-  | FMV_X_H => "fmv.x.h"
-  | FCLASS_H => "fclass.h"
+  | .FMV_X_H => "fmv.x.h"
+  | .FCLASS_H => "fclass.h"
 
 def bit_maybe_i_forwards (arg_ : (BitVec 1)) : String :=
   match arg_ with
@@ -1810,130 +1811,130 @@ def freg_or_reg_name_forwards (arg_ : fregidx) : SailM String := do
 
 def frm_mnemonic_forwards (arg_ : rounding_mode) : String :=
   match arg_ with
-  | RM_RNE => "rne"
-  | RM_RTZ => "rtz"
-  | RM_RDN => "rdn"
-  | RM_RUP => "rup"
-  | RM_RMM => "rmm"
-  | RM_DYN => "dyn"
+  | .RM_RNE => "rne"
+  | .RM_RTZ => "rtz"
+  | .RM_RDN => "rdn"
+  | .RM_RUP => "rup"
+  | .RM_RMM => "rmm"
+  | .RM_DYN => "dyn"
 
 def fvfmatype_mnemonic_forwards (arg_ : fvfmafunct6) : String :=
   match arg_ with
-  | VF_VMADD => "vfmadd.vf"
-  | VF_VNMADD => "vfnmadd.vf"
-  | VF_VMSUB => "vfmsub.vf"
-  | VF_VNMSUB => "vfnmsub.vf"
-  | VF_VMACC => "vfmacc.vf"
-  | VF_VNMACC => "vfnmacc.vf"
-  | VF_VMSAC => "vfmsac.vf"
-  | VF_VNMSAC => "vfnmsac.vf"
+  | .VF_VMADD => "vfmadd.vf"
+  | .VF_VNMADD => "vfnmadd.vf"
+  | .VF_VMSUB => "vfmsub.vf"
+  | .VF_VNMSUB => "vfnmsub.vf"
+  | .VF_VMACC => "vfmacc.vf"
+  | .VF_VNMACC => "vfnmacc.vf"
+  | .VF_VMSAC => "vfmsac.vf"
+  | .VF_VNMSAC => "vfnmsac.vf"
 
 def fvfmtype_mnemonic_forwards (arg_ : fvfmfunct6) : String :=
   match arg_ with
-  | VFM_VMFEQ => "vmfeq.vf"
-  | VFM_VMFLE => "vmfle.vf"
-  | VFM_VMFLT => "vmflt.vf"
-  | VFM_VMFNE => "vmfne.vf"
-  | VFM_VMFGT => "vmfgt.vf"
-  | VFM_VMFGE => "vmfge.vf"
+  | .VFM_VMFEQ => "vmfeq.vf"
+  | .VFM_VMFLE => "vmfle.vf"
+  | .VFM_VMFLT => "vmflt.vf"
+  | .VFM_VMFNE => "vmfne.vf"
+  | .VFM_VMFGT => "vmfgt.vf"
+  | .VFM_VMFGE => "vmfge.vf"
 
 def fvftype_mnemonic_forwards (arg_ : fvffunct6) : String :=
   match arg_ with
-  | VF_VADD => "vfadd.vf"
-  | VF_VSUB => "vfsub.vf"
-  | VF_VMIN => "vfmin.vf"
-  | VF_VMAX => "vfmax.vf"
-  | VF_VSGNJ => "vfsgnj.vf"
-  | VF_VSGNJN => "vfsgnjn.vf"
-  | VF_VSGNJX => "vfsgnjx.vf"
-  | VF_VSLIDE1UP => "vfslide1up.vf"
-  | VF_VSLIDE1DOWN => "vfslide1down.vf"
-  | VF_VDIV => "vfdiv.vf"
-  | VF_VRDIV => "vfrdiv.vf"
-  | VF_VMUL => "vfmul.vf"
-  | VF_VRSUB => "vfrsub.vf"
+  | .VF_VADD => "vfadd.vf"
+  | .VF_VSUB => "vfsub.vf"
+  | .VF_VMIN => "vfmin.vf"
+  | .VF_VMAX => "vfmax.vf"
+  | .VF_VSGNJ => "vfsgnj.vf"
+  | .VF_VSGNJN => "vfsgnjn.vf"
+  | .VF_VSGNJX => "vfsgnjx.vf"
+  | .VF_VSLIDE1UP => "vfslide1up.vf"
+  | .VF_VSLIDE1DOWN => "vfslide1down.vf"
+  | .VF_VDIV => "vfdiv.vf"
+  | .VF_VRDIV => "vfrdiv.vf"
+  | .VF_VMUL => "vfmul.vf"
+  | .VF_VRSUB => "vfrsub.vf"
 
 def fvvmatype_mnemonic_forwards (arg_ : fvvmafunct6) : String :=
   match arg_ with
-  | FVV_VMADD => "vfmadd.vv"
-  | FVV_VNMADD => "vfnmadd.vv"
-  | FVV_VMSUB => "vfmsub.vv"
-  | FVV_VNMSUB => "vfnmsub.vv"
-  | FVV_VMACC => "vfmacc.vv"
-  | FVV_VNMACC => "vfnmacc.vv"
-  | FVV_VMSAC => "vfmsac.vv"
-  | FVV_VNMSAC => "vfnmsac.vv"
+  | .FVV_VMADD => "vfmadd.vv"
+  | .FVV_VNMADD => "vfnmadd.vv"
+  | .FVV_VMSUB => "vfmsub.vv"
+  | .FVV_VNMSUB => "vfnmsub.vv"
+  | .FVV_VMACC => "vfmacc.vv"
+  | .FVV_VNMACC => "vfnmacc.vv"
+  | .FVV_VMSAC => "vfmsac.vv"
+  | .FVV_VNMSAC => "vfnmsac.vv"
 
 def fvvmtype_mnemonic_forwards (arg_ : fvvmfunct6) : String :=
   match arg_ with
-  | FVVM_VMFEQ => "vmfeq.vv"
-  | FVVM_VMFLE => "vmfle.vv"
-  | FVVM_VMFLT => "vmflt.vv"
-  | FVVM_VMFNE => "vmfne.vv"
+  | .FVVM_VMFEQ => "vmfeq.vv"
+  | .FVVM_VMFLE => "vmfle.vv"
+  | .FVVM_VMFLT => "vmflt.vv"
+  | .FVVM_VMFNE => "vmfne.vv"
 
 def fvvtype_mnemonic_forwards (arg_ : fvvfunct6) : String :=
   match arg_ with
-  | FVV_VADD => "vfadd.vv"
-  | FVV_VSUB => "vfsub.vv"
-  | FVV_VMIN => "vfmin.vv"
-  | FVV_VMAX => "vfmax.vv"
-  | FVV_VSGNJ => "vfsgnj.vv"
-  | FVV_VSGNJN => "vfsgnjn.vv"
-  | FVV_VSGNJX => "vfsgnjx.vv"
-  | FVV_VDIV => "vfdiv.vv"
-  | FVV_VMUL => "vfmul.vv"
+  | .FVV_VADD => "vfadd.vv"
+  | .FVV_VSUB => "vfsub.vv"
+  | .FVV_VMIN => "vfmin.vv"
+  | .FVV_VMAX => "vfmax.vv"
+  | .FVV_VSGNJ => "vfsgnj.vv"
+  | .FVV_VSGNJN => "vfsgnjn.vv"
+  | .FVV_VSGNJX => "vfsgnjx.vv"
+  | .FVV_VDIV => "vfdiv.vv"
+  | .FVV_VMUL => "vfmul.vv"
 
 def fwftype_mnemonic_forwards (arg_ : fwffunct6) : String :=
   match arg_ with
-  | FWF_VADD => "vfwadd.wf"
-  | FWF_VSUB => "vfwsub.wf"
+  | .FWF_VADD => "vfwadd.wf"
+  | .FWF_VSUB => "vfwsub.wf"
 
 def fwvfmatype_mnemonic_forwards (arg_ : fwvfmafunct6) : String :=
   match arg_ with
-  | FWVF_VMACC => "vfwmacc.vf"
-  | FWVF_VNMACC => "vfwnmacc.vf"
-  | FWVF_VMSAC => "vfwmsac.vf"
-  | FWVF_VNMSAC => "vfwnmsac.vf"
+  | .FWVF_VMACC => "vfwmacc.vf"
+  | .FWVF_VNMACC => "vfwnmacc.vf"
+  | .FWVF_VMSAC => "vfwmsac.vf"
+  | .FWVF_VNMSAC => "vfwnmsac.vf"
 
 def fwvftype_mnemonic_forwards (arg_ : fwvffunct6) : String :=
   match arg_ with
-  | FWVF_VADD => "vfwadd.vf"
-  | FWVF_VSUB => "vfwsub.vf"
-  | FWVF_VMUL => "vfwmul.vf"
+  | .FWVF_VADD => "vfwadd.vf"
+  | .FWVF_VSUB => "vfwsub.vf"
+  | .FWVF_VMUL => "vfwmul.vf"
 
 def fwvtype_mnemonic_forwards (arg_ : fwvfunct6) : String :=
   match arg_ with
-  | FWV_VADD => "vfwadd.wv"
-  | FWV_VSUB => "vfwsub.wv"
+  | .FWV_VADD => "vfwadd.wv"
+  | .FWV_VSUB => "vfwsub.wv"
 
 def fwvvmatype_mnemonic_forwards (arg_ : fwvvmafunct6) : String :=
   match arg_ with
-  | FWVV_VMACC => "vfwmacc.vv"
-  | FWVV_VNMACC => "vfwnmacc.vv"
-  | FWVV_VMSAC => "vfwmsac.vv"
-  | FWVV_VNMSAC => "vfwnmsac.vv"
+  | .FWVV_VMACC => "vfwmacc.vv"
+  | .FWVV_VNMACC => "vfwnmacc.vv"
+  | .FWVV_VMSAC => "vfwmsac.vv"
+  | .FWVV_VNMSAC => "vfwnmsac.vv"
 
 def fwvvtype_mnemonic_forwards (arg_ : fwvvfunct6) : String :=
   match arg_ with
-  | FWVV_VADD => "vfwadd.vv"
-  | FWVV_VSUB => "vfwsub.vv"
-  | FWVV_VMUL => "vfwmul.vv"
+  | .FWVV_VADD => "vfwadd.vv"
+  | .FWVV_VSUB => "vfwsub.vv"
+  | .FWVV_VMUL => "vfwmul.vv"
 
 def indexed_mop_mnemonic_forwards (arg_ : indexed_mop) : String :=
   match arg_ with
-  | INDEXED_UNORDERED => "u"
-  | INDEXED_ORDERED => "o"
+  | .INDEXED_UNORDERED => "u"
+  | .INDEXED_ORDERED => "o"
 
 def itype_mnemonic_forwards (arg_ : iop) : String :=
   match arg_ with
-  | ADDI => "addi"
-  | SLTI => "slti"
-  | SLTIU => "sltiu"
-  | XORI => "xori"
-  | ORI => "ori"
-  | ANDI => "andi"
+  | .ADDI => "addi"
+  | .SLTI => "slti"
+  | .SLTIU => "sltiu"
+  | .XORI => "xori"
+  | .ORI => "ori"
+  | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex681808_ : Bool -/
+/-- Type quantifiers: k_ex681854_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -1946,21 +1947,21 @@ def maybe_vmask_backwards (arg_ : (BitVec 1)) : String :=
 
 def mmtype_mnemonic_forwards (arg_ : mmfunct6) : String :=
   match arg_ with
-  | MM_VMAND => "vmand.mm"
-  | MM_VMNAND => "vmnand.mm"
-  | MM_VMANDN => "vmandn.mm"
-  | MM_VMXOR => "vmxor.mm"
-  | MM_VMOR => "vmor.mm"
-  | MM_VMNOR => "vmnor.mm"
-  | MM_VMORN => "vmorn.mm"
-  | MM_VMXNOR => "vmxnor.mm"
+  | .MM_VMAND => "vmand.mm"
+  | .MM_VMNAND => "vmnand.mm"
+  | .MM_VMANDN => "vmandn.mm"
+  | .MM_VMXOR => "vmxor.mm"
+  | .MM_VMOR => "vmor.mm"
+  | .MM_VMNOR => "vmnor.mm"
+  | .MM_VMORN => "vmorn.mm"
+  | .MM_VMXNOR => "vmxnor.mm"
 
 def mul_mnemonic_forwards (arg_ : mul_op) : SailM String := do
   match arg_ with
-  | { result_part := Low, signed_rs1 := Signed, signed_rs2 := Signed } => (pure "mul")
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Signed } => (pure "mulh")
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Unsigned } => (pure "mulhsu")
-  | { result_part := High, signed_rs1 := Unsigned, signed_rs2 := Unsigned } => (pure "mulhu")
+  | { result_part := .Low, signed_rs1 := .Signed, signed_rs2 := .Signed } => (pure "mul")
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Signed } => (pure "mulh")
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Unsigned } => (pure "mulhsu")
+  | { result_part := .High, signed_rs1 := .Unsigned, signed_rs2 := .Unsigned } => (pure "mulhu")
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -1968,49 +1969,49 @@ def mul_mnemonic_forwards (arg_ : mul_op) : SailM String := do
 
 def mvvmatype_mnemonic_forwards (arg_ : mvvmafunct6) : String :=
   match arg_ with
-  | MVV_VMACC => "vmacc.vv"
-  | MVV_VNMSAC => "vnmsac.vv"
-  | MVV_VMADD => "vmadd.vv"
-  | MVV_VNMSUB => "vnmsub.vv"
+  | .MVV_VMACC => "vmacc.vv"
+  | .MVV_VNMSAC => "vnmsac.vv"
+  | .MVV_VMADD => "vmadd.vv"
+  | .MVV_VNMSUB => "vnmsub.vv"
 
 def mvvtype_mnemonic_forwards (arg_ : mvvfunct6) : String :=
   match arg_ with
-  | MVV_VAADDU => "vaaddu.vv"
-  | MVV_VAADD => "vaadd.vv"
-  | MVV_VASUBU => "vasubu.vv"
-  | MVV_VASUB => "vasub.vv"
-  | MVV_VMUL => "vmul.vv"
-  | MVV_VMULH => "vmulh.vv"
-  | MVV_VMULHU => "vmulhu.vv"
-  | MVV_VMULHSU => "vmulhsu.vv"
-  | MVV_VDIVU => "vdivu.vv"
-  | MVV_VDIV => "vdiv.vv"
-  | MVV_VREMU => "vremu.vv"
-  | MVV_VREM => "vrem.vv"
+  | .MVV_VAADDU => "vaaddu.vv"
+  | .MVV_VAADD => "vaadd.vv"
+  | .MVV_VASUBU => "vasubu.vv"
+  | .MVV_VASUB => "vasub.vv"
+  | .MVV_VMUL => "vmul.vv"
+  | .MVV_VMULH => "vmulh.vv"
+  | .MVV_VMULHU => "vmulhu.vv"
+  | .MVV_VMULHSU => "vmulhsu.vv"
+  | .MVV_VDIVU => "vdivu.vv"
+  | .MVV_VDIV => "vdiv.vv"
+  | .MVV_VREMU => "vremu.vv"
+  | .MVV_VREM => "vrem.vv"
 
 def mvxmatype_mnemonic_forwards (arg_ : mvxmafunct6) : String :=
   match arg_ with
-  | MVX_VMACC => "vmacc.vx"
-  | MVX_VNMSAC => "vnmsac.vx"
-  | MVX_VMADD => "vmadd.vx"
-  | MVX_VNMSUB => "vnmsub.vx"
+  | .MVX_VMACC => "vmacc.vx"
+  | .MVX_VNMSAC => "vnmsac.vx"
+  | .MVX_VMADD => "vmadd.vx"
+  | .MVX_VNMSUB => "vnmsub.vx"
 
 def mvxtype_mnemonic_forwards (arg_ : mvxfunct6) : String :=
   match arg_ with
-  | MVX_VAADDU => "vaaddu.vx"
-  | MVX_VAADD => "vaadd.vx"
-  | MVX_VASUBU => "vasubu.vx"
-  | MVX_VASUB => "vasub.vx"
-  | MVX_VSLIDE1UP => "vslide1up.vx"
-  | MVX_VSLIDE1DOWN => "vslide1down.vx"
-  | MVX_VMUL => "vmul.vx"
-  | MVX_VMULH => "vmulh.vx"
-  | MVX_VMULHU => "vmulhu.vx"
-  | MVX_VMULHSU => "vmulhsu.vx"
-  | MVX_VDIVU => "vdivu.vx"
-  | MVX_VDIV => "vdiv.vx"
-  | MVX_VREMU => "vremu.vx"
-  | MVX_VREM => "vrem.vx"
+  | .MVX_VAADDU => "vaaddu.vx"
+  | .MVX_VAADD => "vaadd.vx"
+  | .MVX_VASUBU => "vasubu.vx"
+  | .MVX_VASUB => "vasub.vx"
+  | .MVX_VSLIDE1UP => "vslide1up.vx"
+  | .MVX_VSLIDE1DOWN => "vslide1down.vx"
+  | .MVX_VMUL => "vmul.vx"
+  | .MVX_VMULH => "vmulh.vx"
+  | .MVX_VMULHU => "vmulhu.vx"
+  | .MVX_VMULHSU => "vmulhsu.vx"
+  | .MVX_VDIVU => "vdivu.vx"
+  | .MVX_VDIV => "vdiv.vx"
+  | .MVX_VREMU => "vremu.vx"
+  | .MVX_VREM => "vrem.vx"
 
 /-- Type quantifiers: arg_ : Nat, arg_ ∈ {1, 2, 4, 8} -/
 def nfields_pow2_string_forwards (arg_ : Nat) : String :=
@@ -2034,13 +2035,13 @@ def nfields_string_forwards (arg_ : Nat) : String :=
 
 def nistype_mnemonic_forwards (arg_ : nisfunct6) : String :=
   match arg_ with
-  | NIS_VNSRL => "vnsrl.wi"
-  | NIS_VNSRA => "vnsra.wi"
+  | .NIS_VNSRL => "vnsrl.wi"
+  | .NIS_VNSRA => "vnsra.wi"
 
 def nitype_mnemonic_forwards (arg_ : nifunct6) : String :=
   match arg_ with
-  | NI_VNCLIPU => "vnclipu.wi"
-  | NI_VNCLIP => "vnclip.wi"
+  | .NI_VNCLIPU => "vnclipu.wi"
+  | .NI_VNCLIP => "vnclip.wi"
 
 /-- Type quantifiers: arg_ : Nat, arg_ ∈ {1, 2, 4, 8} -/
 def nreg_string_forwards (arg_ : Nat) : String :=
@@ -2052,97 +2053,97 @@ def nreg_string_forwards (arg_ : Nat) : String :=
 
 def ntl_name_forwards (arg_ : ntl_type) : String :=
   match arg_ with
-  | NTL_P1 => "p1"
-  | NTL_PALL => "pall"
-  | NTL_S1 => "s1"
-  | NTL_ALL => "all"
+  | .NTL_P1 => "p1"
+  | .NTL_PALL => "pall"
+  | .NTL_S1 => "s1"
+  | .NTL_ALL => "all"
 
 def nvstype_mnemonic_forwards (arg_ : nvsfunct6) : String :=
   match arg_ with
-  | NVS_VNSRL => "vnsrl.wv"
-  | NVS_VNSRA => "vnsra.wv"
+  | .NVS_VNSRL => "vnsrl.wv"
+  | .NVS_VNSRA => "vnsra.wv"
 
 def nvtype_mnemonic_forwards (arg_ : nvfunct6) : String :=
   match arg_ with
-  | NV_VNCLIPU => "vnclipu.wv"
-  | NV_VNCLIP => "vnclip.wv"
+  | .NV_VNCLIPU => "vnclipu.wv"
+  | .NV_VNCLIP => "vnclip.wv"
 
 def nxstype_mnemonic_forwards (arg_ : nxsfunct6) : String :=
   match arg_ with
-  | NXS_VNSRL => "vnsrl.wx"
-  | NXS_VNSRA => "vnsra.wx"
+  | .NXS_VNSRL => "vnsrl.wx"
+  | .NXS_VNSRA => "vnsra.wx"
 
 def nxtype_mnemonic_forwards (arg_ : nxfunct6) : String :=
   match arg_ with
-  | NX_VNCLIPU => "vnclipu.wx"
-  | NX_VNCLIP => "vnclip.wx"
+  | .NX_VNCLIPU => "vnclipu.wx"
+  | .NX_VNCLIP => "vnclip.wx"
 
 def prefetch_mnemonic_forwards (arg_ : cbop_zicbop) : String :=
   match arg_ with
-  | PREFETCH_I => "prefetch.i"
-  | PREFETCH_R => "prefetch.r"
-  | PREFETCH_W => "prefetch.w"
+  | .PREFETCH_I => "prefetch.i"
+  | .PREFETCH_R => "prefetch.r"
+  | .PREFETCH_W => "prefetch.w"
 
 def rfvvtype_mnemonic_forwards (arg_ : rfvvfunct6) : String :=
   match arg_ with
-  | FVV_VFREDOSUM => "vfredosum.vs"
-  | FVV_VFREDUSUM => "vfredusum.vs"
-  | FVV_VFREDMAX => "vfredmax.vs"
-  | FVV_VFREDMIN => "vfredmin.vs"
+  | .FVV_VFREDOSUM => "vfredosum.vs"
+  | .FVV_VFREDUSUM => "vfredusum.vs"
+  | .FVV_VFREDMAX => "vfredmax.vs"
+  | .FVV_VFREDMIN => "vfredmin.vs"
 
 def rfwvvtype_mnemonic_forwards (arg_ : rfwvvfunct6) : String :=
   match arg_ with
-  | FVV_VFWREDOSUM => "vfwredosum.vs"
-  | FVV_VFWREDUSUM => "vfwredusum.vs"
+  | .FVV_VFWREDOSUM => "vfwredosum.vs"
+  | .FVV_VFWREDUSUM => "vfwredusum.vs"
 
 def rivvtype_mnemonic_forwards (arg_ : rivvfunct6) : String :=
   match arg_ with
-  | IVV_VWREDSUMU => "vwredsumu.vs"
-  | IVV_VWREDSUM => "vwredsum.vs"
+  | .IVV_VWREDSUMU => "vwredsumu.vs"
+  | .IVV_VWREDSUM => "vwredsum.vs"
 
 def rmvvtype_mnemonic_forwards (arg_ : rmvvfunct6) : String :=
   match arg_ with
-  | MVV_VREDSUM => "vredsum.vs"
-  | MVV_VREDAND => "vredand.vs"
-  | MVV_VREDOR => "vredor.vs"
-  | MVV_VREDXOR => "vredxor.vs"
-  | MVV_VREDMINU => "vredminu.vs"
-  | MVV_VREDMIN => "vredmin.vs"
-  | MVV_VREDMAXU => "vredmaxu.vs"
-  | MVV_VREDMAX => "vredmax.vs"
+  | .MVV_VREDSUM => "vredsum.vs"
+  | .MVV_VREDAND => "vredand.vs"
+  | .MVV_VREDOR => "vredor.vs"
+  | .MVV_VREDXOR => "vredxor.vs"
+  | .MVV_VREDMINU => "vredminu.vs"
+  | .MVV_VREDMIN => "vredmin.vs"
+  | .MVV_VREDMAXU => "vredmaxu.vs"
+  | .MVV_VREDMAX => "vredmax.vs"
 
 def rtype_mnemonic_forwards (arg_ : rop) : String :=
   match arg_ with
-  | ADD => "add"
-  | SLT => "slt"
-  | SLTU => "sltu"
-  | AND => "and"
-  | OR => "or"
-  | XOR => "xor"
-  | SLL => "sll"
-  | SRL => "srl"
-  | SUB => "sub"
-  | SRA => "sra"
+  | .ADD => "add"
+  | .SLT => "slt"
+  | .SLTU => "sltu"
+  | .AND => "and"
+  | .OR => "or"
+  | .XOR => "xor"
+  | .SLL => "sll"
+  | .SRL => "srl"
+  | .SUB => "sub"
+  | .SRA => "sra"
 
 def rtypew_mnemonic_forwards (arg_ : ropw) : String :=
   match arg_ with
-  | ADDW => "addw"
-  | SUBW => "subw"
-  | SLLW => "sllw"
-  | SRLW => "srlw"
-  | SRAW => "sraw"
+  | .ADDW => "addw"
+  | .SUBW => "subw"
+  | .SLLW => "sllw"
+  | .SRLW => "srlw"
+  | .SRAW => "sraw"
 
 def shiftiop_mnemonic_forwards (arg_ : sop) : String :=
   match arg_ with
-  | SLLI => "slli"
-  | SRLI => "srli"
-  | SRAI => "srai"
+  | .SLLI => "slli"
+  | .SRLI => "srli"
+  | .SRAI => "srai"
 
 def shiftiwop_mnemonic_forwards (arg_ : sopw) : String :=
   match arg_ with
-  | SLLIW => "slliw"
-  | SRLIW => "srliw"
-  | SRAIW => "sraiw"
+  | .SLLIW => "slliw"
+  | .SRLIW => "srliw"
+  | .SRAIW => "sraiw"
 
 def sp_reg_name_forwards (arg_ : Unit) : SailM String := do
   match arg_ with
@@ -2161,133 +2162,133 @@ def sp_reg_name_forwards (arg_ : Unit) : SailM String := do
 
 def utype_mnemonic_forwards (arg_ : uop) : String :=
   match arg_ with
-  | LUI => "lui"
-  | AUIPC => "auipc"
+  | .LUI => "lui"
+  | .AUIPC => "auipc"
 
 def vabd_mnemonic_forwards (arg_ : zvabd_vabd_func6) : String :=
   match arg_ with
-  | VV_VABD => "vabd.vv"
-  | VV_VABDU => "vabdu.vv"
+  | .VV_VABD => "vabd.vv"
+  | .VV_VABDU => "vabdu.vv"
 
 def vaesdf_mnemonic_forwards (arg_ : zvk_vaesdf_funct6) : String :=
   match arg_ with
-  | ZVK_VAESDF_VV => "vaesdf.vv"
-  | ZVK_VAESDF_VS => "vaesdf.vs"
+  | .ZVK_VAESDF_VV => "vaesdf.vv"
+  | .ZVK_VAESDF_VS => "vaesdf.vs"
 
 def vaesdm_mnemonic_forwards (arg_ : zvk_vaesdm_funct6) : String :=
   match arg_ with
-  | ZVK_VAESDM_VV => "vaesdm.vv"
-  | ZVK_VAESDM_VS => "vaesdm.vs"
+  | .ZVK_VAESDM_VV => "vaesdm.vv"
+  | .ZVK_VAESDM_VS => "vaesdm.vs"
 
 def vaesef_mnemonic_forwards (arg_ : zvk_vaesef_funct6) : String :=
   match arg_ with
-  | ZVK_VAESEF_VV => "vaesef.vv"
-  | ZVK_VAESEF_VS => "vaesef.vs"
+  | .ZVK_VAESEF_VV => "vaesef.vv"
+  | .ZVK_VAESEF_VS => "vaesef.vs"
 
 def vaesem_mnemonic_forwards (arg_ : zvk_vaesem_funct6) : String :=
   match arg_ with
-  | ZVK_VAESEM_VV => "vaesem.vv"
-  | ZVK_VAESEM_VS => "vaesem.vs"
+  | .ZVK_VAESEM_VV => "vaesem.vv"
+  | .ZVK_VAESEM_VS => "vaesem.vs"
 
 def vexttype_mnemonic_forwards (arg_ : vextfunct6) : String :=
   match arg_ with
-  | VEXT2_ZVF2 => "vzext.vf2"
-  | VEXT2_SVF2 => "vsext.vf2"
-  | VEXT4_ZVF4 => "vzext.vf4"
-  | VEXT4_SVF4 => "vsext.vf4"
-  | VEXT8_ZVF8 => "vzext.vf8"
-  | VEXT8_SVF8 => "vsext.vf8"
+  | .VEXT2_ZVF2 => "vzext.vf2"
+  | .VEXT2_SVF2 => "vsext.vf2"
+  | .VEXT4_ZVF4 => "vzext.vf4"
+  | .VEXT4_SVF4 => "vsext.vf4"
+  | .VEXT8_ZVF8 => "vzext.vf8"
+  | .VEXT8_SVF8 => "vsext.vf8"
 
 def vfnunary0_mnemonic_forwards (arg_ : vfnunary0) : String :=
   match arg_ with
-  | FNV_CVT_XU_F => "vfncvt.xu.f.w"
-  | FNV_CVT_X_F => "vfncvt.x.f.w"
-  | FNV_CVT_F_XU => "vfncvt.f.xu.w"
-  | FNV_CVT_F_X => "vfncvt.f.x.w"
-  | FNV_CVT_F_F => "vfncvt.f.f.w"
-  | FNV_CVT_ROD_F_F => "vfncvt.rod.f.f.w"
-  | FNV_CVT_RTZ_XU_F => "vfncvt.rtz.xu.f.w"
-  | FNV_CVT_RTZ_X_F => "vfncvt.rtz.x.f.w"
+  | .FNV_CVT_XU_F => "vfncvt.xu.f.w"
+  | .FNV_CVT_X_F => "vfncvt.x.f.w"
+  | .FNV_CVT_F_XU => "vfncvt.f.xu.w"
+  | .FNV_CVT_F_X => "vfncvt.f.x.w"
+  | .FNV_CVT_F_F => "vfncvt.f.f.w"
+  | .FNV_CVT_ROD_F_F => "vfncvt.rod.f.f.w"
+  | .FNV_CVT_RTZ_XU_F => "vfncvt.rtz.xu.f.w"
+  | .FNV_CVT_RTZ_X_F => "vfncvt.rtz.x.f.w"
 
 def vfunary0_mnemonic_forwards (arg_ : vfunary0) : String :=
   match arg_ with
-  | FV_CVT_XU_F => "vfcvt.xu.f.v"
-  | FV_CVT_X_F => "vfcvt.x.f.v"
-  | FV_CVT_F_XU => "vfcvt.f.xu.v"
-  | FV_CVT_F_X => "vfcvt.f.x.v"
-  | FV_CVT_RTZ_XU_F => "vfcvt.rtz.xu.f.v"
-  | FV_CVT_RTZ_X_F => "vfcvt.rtz.x.f.v"
+  | .FV_CVT_XU_F => "vfcvt.xu.f.v"
+  | .FV_CVT_X_F => "vfcvt.x.f.v"
+  | .FV_CVT_F_XU => "vfcvt.f.xu.v"
+  | .FV_CVT_F_X => "vfcvt.f.x.v"
+  | .FV_CVT_RTZ_XU_F => "vfcvt.rtz.xu.f.v"
+  | .FV_CVT_RTZ_X_F => "vfcvt.rtz.x.f.v"
 
 def vfunary1_mnemonic_forwards (arg_ : vfunary1) : String :=
   match arg_ with
-  | FVV_VSQRT => "vfsqrt.v"
-  | FVV_VRSQRT7 => "vfrsqrt7.v"
-  | FVV_VREC7 => "vfrec7.v"
-  | FVV_VCLASS => "vfclass.v"
+  | .FVV_VSQRT => "vfsqrt.v"
+  | .FVV_VRSQRT7 => "vfrsqrt7.v"
+  | .FVV_VREC7 => "vfrec7.v"
+  | .FVV_VCLASS => "vfclass.v"
 
 def vfwunary0_mnemonic_forwards (arg_ : vfwunary0) : String :=
   match arg_ with
-  | FWV_CVT_XU_F => "vfwcvt.xu.f.v"
-  | FWV_CVT_X_F => "vfwcvt.x.f.v"
-  | FWV_CVT_F_XU => "vfwcvt.f.xu.v"
-  | FWV_CVT_F_X => "vfwcvt.f.x.v"
-  | FWV_CVT_F_F => "vfwcvt.f.f.v"
-  | FWV_CVT_RTZ_XU_F => "vfwcvt.rtz.xu.f.v"
-  | FWV_CVT_RTZ_X_F => "vfwcvt.rtz.x.f.v"
+  | .FWV_CVT_XU_F => "vfwcvt.xu.f.v"
+  | .FWV_CVT_X_F => "vfwcvt.x.f.v"
+  | .FWV_CVT_F_XU => "vfwcvt.f.xu.v"
+  | .FWV_CVT_F_X => "vfwcvt.f.x.v"
+  | .FWV_CVT_F_F => "vfwcvt.f.f.v"
+  | .FWV_CVT_RTZ_XU_F => "vfwcvt.rtz.xu.f.v"
+  | .FWV_CVT_RTZ_X_F => "vfwcvt.rtz.x.f.v"
 
 def vicmptype_mnemonic_forwards (arg_ : vicmpfunct6) : String :=
   match arg_ with
-  | VICMP_VMSEQ => "vmseq.vi"
-  | VICMP_VMSNE => "vmsne.vi"
-  | VICMP_VMSLEU => "vmsleu.vi"
-  | VICMP_VMSLE => "vmsle.vi"
-  | VICMP_VMSGTU => "vmsgtu.vi"
-  | VICMP_VMSGT => "vmsgt.vi"
+  | .VICMP_VMSEQ => "vmseq.vi"
+  | .VICMP_VMSNE => "vmsne.vi"
+  | .VICMP_VMSLEU => "vmsleu.vi"
+  | .VICMP_VMSLE => "vmsle.vi"
+  | .VICMP_VMSGTU => "vmsgtu.vi"
+  | .VICMP_VMSGT => "vmsgt.vi"
 
 def vimctype_mnemonic_forwards (arg_ : vimcfunct6) : String :=
   match arg_ with
-  | VIMC_VMADC => "vmadc.vi"
+  | .VIMC_VMADC => "vmadc.vi"
 
 def vimstype_mnemonic_forwards (arg_ : vimsfunct6) : String :=
   match arg_ with
-  | VIMS_VADC => "vadc.vim"
+  | .VIMS_VADC => "vadc.vim"
 
 def vimtype_mnemonic_forwards (arg_ : vimfunct6) : String :=
   match arg_ with
-  | VIM_VMADC => "vmadc.vim"
+  | .VIM_VMADC => "vmadc.vim"
 
 def visg_mnemonic_forwards (arg_ : visgfunct6) : String :=
   match arg_ with
-  | VI_VSLIDEUP => "vslideup.vi"
-  | VI_VSLIDEDOWN => "vslidedown.vi"
-  | VI_VRGATHER => "vrgather.vi"
+  | .VI_VSLIDEUP => "vslideup.vi"
+  | .VI_VSLIDEDOWN => "vslidedown.vi"
+  | .VI_VRGATHER => "vrgather.vi"
 
 def vitype_mnemonic_forwards (arg_ : vifunct6) : String :=
   match arg_ with
-  | VI_VADD => "vadd.vi"
-  | VI_VRSUB => "vrsub.vi"
-  | VI_VAND => "vand.vi"
-  | VI_VOR => "vor.vi"
-  | VI_VXOR => "vxor.vi"
-  | VI_VSADDU => "vsaddu.vi"
-  | VI_VSADD => "vsadd.vi"
-  | VI_VSLL => "vsll.vi"
-  | VI_VSRL => "vsrl.vi"
-  | VI_VSRA => "vsra.vi"
-  | VI_VSSRL => "vssrl.vi"
-  | VI_VSSRA => "vssra.vi"
+  | .VI_VADD => "vadd.vi"
+  | .VI_VRSUB => "vrsub.vi"
+  | .VI_VAND => "vand.vi"
+  | .VI_VOR => "vor.vi"
+  | .VI_VXOR => "vxor.vi"
+  | .VI_VSADDU => "vsaddu.vi"
+  | .VI_VSADD => "vsadd.vi"
+  | .VI_VSLL => "vsll.vi"
+  | .VI_VSRL => "vsrl.vi"
+  | .VI_VSRA => "vsra.vi"
+  | .VI_VSSRL => "vssrl.vi"
+  | .VI_VSSRA => "vssra.vi"
 
 def vlewidth_bitsnumberstr_forwards (arg_ : vlewidth) : String :=
   match arg_ with
-  | VLE8 => "8"
-  | VLE16 => "16"
-  | VLE32 => "32"
-  | VLE64 => "64"
+  | .VLE8 => "8"
+  | .VLE16 => "16"
+  | .VLE32 => "32"
+  | .VLE64 => "64"
 
 def vmtype_mnemonic_forwards (arg_ : vmlsop) : String :=
   match arg_ with
-  | VLM => "vlm.v"
-  | VSM => "vsm.v"
+  | .VLM => "vlm.v"
+  | .VSM => "vsm.v"
 
 def vreg_name_raw_forwards (arg_ : (BitVec 5)) : String :=
   match arg_ with
@@ -2330,13 +2331,13 @@ def vreg_name_forwards (arg_ : vregidx) : String :=
 
 def vsha2_mnemonic_forwards (arg_ : zvk_vsha2_funct6) : String :=
   match arg_ with
-  | ZVK_VSHA2CH_VV => "vsha2ch.vv"
-  | ZVK_VSHA2CL_VV => "vsha2cl.vv"
+  | .ZVK_VSHA2CH_VV => "vsha2ch.vv"
+  | .ZVK_VSHA2CL_VV => "vsha2cl.vv"
 
 def vsm4r_mnemonic_forwards (arg_ : zvk_vsm4r_funct6) : String :=
   match arg_ with
-  | ZVK_VSM4R_VV => "vsm4r.vv"
-  | ZVK_VSM4R_VS => "vsm4r.vs"
+  | .ZVK_VSM4R_VV => "vsm4r.vv"
+  | .ZVK_VSM4R_VS => "vsm4r.vs"
 
 def ma_flag_backwards (arg_ : (BitVec 1)) : String :=
   match arg_ with
@@ -2388,111 +2389,111 @@ def vtype_assembly_backwards (arg_ : ((BitVec 1) × (BitVec 1) × (BitVec 3) × 
 
 def vvcmptype_mnemonic_forwards (arg_ : vvcmpfunct6) : String :=
   match arg_ with
-  | VVCMP_VMSEQ => "vmseq.vv"
-  | VVCMP_VMSNE => "vmsne.vv"
-  | VVCMP_VMSLTU => "vmsltu.vv"
-  | VVCMP_VMSLT => "vmslt.vv"
-  | VVCMP_VMSLEU => "vmsleu.vv"
-  | VVCMP_VMSLE => "vmsle.vv"
+  | .VVCMP_VMSEQ => "vmseq.vv"
+  | .VVCMP_VMSNE => "vmsne.vv"
+  | .VVCMP_VMSLTU => "vmsltu.vv"
+  | .VVCMP_VMSLT => "vmslt.vv"
+  | .VVCMP_VMSLEU => "vmsleu.vv"
+  | .VVCMP_VMSLE => "vmsle.vv"
 
 def vvmctype_mnemonic_forwards (arg_ : vvmcfunct6) : String :=
   match arg_ with
-  | VVMC_VMADC => "vmadc.vv"
-  | VVMC_VMSBC => "vmsbc.vv"
+  | .VVMC_VMADC => "vmadc.vv"
+  | .VVMC_VMSBC => "vmsbc.vv"
 
 def vvmstype_mnemonic_forwards (arg_ : vvmsfunct6) : String :=
   match arg_ with
-  | VVMS_VADC => "vadc.vvm"
-  | VVMS_VSBC => "vsbc.vvm"
+  | .VVMS_VADC => "vadc.vvm"
+  | .VVMS_VSBC => "vsbc.vvm"
 
 def vvmtype_mnemonic_forwards (arg_ : vvmfunct6) : String :=
   match arg_ with
-  | VVM_VMADC => "vmadc.vvm"
-  | VVM_VMSBC => "vmsbc.vvm"
+  | .VVM_VMADC => "vmadc.vvm"
+  | .VVM_VMSBC => "vmsbc.vvm"
 
 def vvtype_mnemonic_forwards (arg_ : vvfunct6) : String :=
   match arg_ with
-  | VV_VADD => "vadd.vv"
-  | VV_VSUB => "vsub.vv"
-  | VV_VAND => "vand.vv"
-  | VV_VOR => "vor.vv"
-  | VV_VXOR => "vxor.vv"
-  | VV_VRGATHER => "vrgather.vv"
-  | VV_VRGATHEREI16 => "vrgatherei16.vv"
-  | VV_VSADDU => "vsaddu.vv"
-  | VV_VSADD => "vsadd.vv"
-  | VV_VSSUBU => "vssubu.vv"
-  | VV_VSSUB => "vssub.vv"
-  | VV_VSLL => "vsll.vv"
-  | VV_VSMUL => "vsmul.vv"
-  | VV_VSRL => "vsrl.vv"
-  | VV_VSRA => "vsra.vv"
-  | VV_VSSRL => "vssrl.vv"
-  | VV_VSSRA => "vssra.vv"
-  | VV_VMINU => "vminu.vv"
-  | VV_VMIN => "vmin.vv"
-  | VV_VMAXU => "vmaxu.vv"
-  | VV_VMAX => "vmax.vv"
+  | .VV_VADD => "vadd.vv"
+  | .VV_VSUB => "vsub.vv"
+  | .VV_VAND => "vand.vv"
+  | .VV_VOR => "vor.vv"
+  | .VV_VXOR => "vxor.vv"
+  | .VV_VRGATHER => "vrgather.vv"
+  | .VV_VRGATHEREI16 => "vrgatherei16.vv"
+  | .VV_VSADDU => "vsaddu.vv"
+  | .VV_VSADD => "vsadd.vv"
+  | .VV_VSSUBU => "vssubu.vv"
+  | .VV_VSSUB => "vssub.vv"
+  | .VV_VSLL => "vsll.vv"
+  | .VV_VSMUL => "vsmul.vv"
+  | .VV_VSRL => "vsrl.vv"
+  | .VV_VSRA => "vsra.vv"
+  | .VV_VSSRL => "vssrl.vv"
+  | .VV_VSSRA => "vssra.vv"
+  | .VV_VMINU => "vminu.vv"
+  | .VV_VMIN => "vmin.vv"
+  | .VV_VMAXU => "vmaxu.vv"
+  | .VV_VMAX => "vmax.vv"
 
 def vwabda_mnemonic_forwards (arg_ : zvabd_vwabda_func6) : String :=
   match arg_ with
-  | VV_VWABDA => "vwabda.vv"
-  | VV_VWABDAU => "vwabdau.vv"
+  | .VV_VWABDA => "vwabda.vv"
+  | .VV_VWABDAU => "vwabdau.vv"
 
 def vxcmptype_mnemonic_forwards (arg_ : vxcmpfunct6) : String :=
   match arg_ with
-  | VXCMP_VMSEQ => "vmseq.vx"
-  | VXCMP_VMSNE => "vmsne.vx"
-  | VXCMP_VMSLTU => "vmsltu.vx"
-  | VXCMP_VMSLT => "vmslt.vx"
-  | VXCMP_VMSLEU => "vmsleu.vx"
-  | VXCMP_VMSLE => "vmsle.vx"
-  | VXCMP_VMSGTU => "vmsgtu.vx"
-  | VXCMP_VMSGT => "vmsgt.vx"
+  | .VXCMP_VMSEQ => "vmseq.vx"
+  | .VXCMP_VMSNE => "vmsne.vx"
+  | .VXCMP_VMSLTU => "vmsltu.vx"
+  | .VXCMP_VMSLT => "vmslt.vx"
+  | .VXCMP_VMSLEU => "vmsleu.vx"
+  | .VXCMP_VMSLE => "vmsle.vx"
+  | .VXCMP_VMSGTU => "vmsgtu.vx"
+  | .VXCMP_VMSGT => "vmsgt.vx"
 
 def vxmctype_mnemonic_forwards (arg_ : vxmcfunct6) : String :=
   match arg_ with
-  | VXMC_VMADC => "vmadc.vx"
-  | VXMC_VMSBC => "vmsbc.vx"
+  | .VXMC_VMADC => "vmadc.vx"
+  | .VXMC_VMSBC => "vmsbc.vx"
 
 def vxmstype_mnemonic_forwards (arg_ : vxmsfunct6) : String :=
   match arg_ with
-  | VXMS_VADC => "vadc.vxm"
-  | VXMS_VSBC => "vsbc.vxm"
+  | .VXMS_VADC => "vadc.vxm"
+  | .VXMS_VSBC => "vsbc.vxm"
 
 def vxmtype_mnemonic_forwards (arg_ : vxmfunct6) : String :=
   match arg_ with
-  | VXM_VMADC => "vmadc.vxm"
-  | VXM_VMSBC => "vmsbc.vxm"
+  | .VXM_VMADC => "vmadc.vxm"
+  | .VXM_VMSBC => "vmsbc.vxm"
 
 def vxsg_mnemonic_forwards (arg_ : vxsgfunct6) : String :=
   match arg_ with
-  | VX_VSLIDEUP => "vslideup.vx"
-  | VX_VSLIDEDOWN => "vslidedown.vx"
-  | VX_VRGATHER => "vrgather.vx"
+  | .VX_VSLIDEUP => "vslideup.vx"
+  | .VX_VSLIDEDOWN => "vslidedown.vx"
+  | .VX_VRGATHER => "vrgather.vx"
 
 def vxtype_mnemonic_forwards (arg_ : vxfunct6) : String :=
   match arg_ with
-  | VX_VADD => "vadd.vx"
-  | VX_VSUB => "vsub.vx"
-  | VX_VRSUB => "vrsub.vx"
-  | VX_VAND => "vand.vx"
-  | VX_VOR => "vor.vx"
-  | VX_VXOR => "vxor.vx"
-  | VX_VSADDU => "vsaddu.vx"
-  | VX_VSADD => "vsadd.vx"
-  | VX_VSSUBU => "vssubu.vx"
-  | VX_VSSUB => "vssub.vx"
-  | VX_VSLL => "vsll.vx"
-  | VX_VSMUL => "vsmul.vx"
-  | VX_VSRL => "vsrl.vx"
-  | VX_VSRA => "vsra.vx"
-  | VX_VSSRL => "vssrl.vx"
-  | VX_VSSRA => "vssra.vx"
-  | VX_VMINU => "vminu.vx"
-  | VX_VMIN => "vmin.vx"
-  | VX_VMAXU => "vmaxu.vx"
-  | VX_VMAX => "vmax.vx"
+  | .VX_VADD => "vadd.vx"
+  | .VX_VSUB => "vsub.vx"
+  | .VX_VRSUB => "vrsub.vx"
+  | .VX_VAND => "vand.vx"
+  | .VX_VOR => "vor.vx"
+  | .VX_VXOR => "vxor.vx"
+  | .VX_VSADDU => "vsaddu.vx"
+  | .VX_VSADD => "vsadd.vx"
+  | .VX_VSSUBU => "vssubu.vx"
+  | .VX_VSSUB => "vssub.vx"
+  | .VX_VSLL => "vsll.vx"
+  | .VX_VSMUL => "vsmul.vx"
+  | .VX_VSRL => "vsrl.vx"
+  | .VX_VSRA => "vsra.vx"
+  | .VX_VSSRL => "vssrl.vx"
+  | .VX_VSSRA => "vssra.vx"
+  | .VX_VMINU => "vminu.vx"
+  | .VX_VMIN => "vmin.vx"
+  | .VX_VMAXU => "vmaxu.vx"
+  | .VX_VMAX => "vmax.vx"
 
 /-- Type quantifiers: arg_ : Nat, arg_ ∈ {1, 2, 4, 8} -/
 def width_mnemonic_forwards (arg_ : Nat) : String :=
@@ -2513,50 +2514,50 @@ def width_mnemonic_wide_forwards (arg_ : Nat) : String :=
 
 def wmvvtype_mnemonic_forwards (arg_ : wmvvfunct6) : String :=
   match arg_ with
-  | WMVV_VWMACCU => "vwmaccu.vv"
-  | WMVV_VWMACC => "vwmacc.vv"
-  | WMVV_VWMACCSU => "vwmaccsu.vv"
+  | .WMVV_VWMACCU => "vwmaccu.vv"
+  | .WMVV_VWMACC => "vwmacc.vv"
+  | .WMVV_VWMACCSU => "vwmaccsu.vv"
 
 def wmvxtype_mnemonic_forwards (arg_ : wmvxfunct6) : String :=
   match arg_ with
-  | WMVX_VWMACCU => "vwmaccu.vx"
-  | WMVX_VWMACC => "vwmacc.vx"
-  | WMVX_VWMACCUS => "vwmaccus.vx"
-  | WMVX_VWMACCSU => "vwmaccsu.vx"
+  | .WMVX_VWMACCU => "vwmaccu.vx"
+  | .WMVX_VWMACC => "vwmacc.vx"
+  | .WMVX_VWMACCUS => "vwmaccus.vx"
+  | .WMVX_VWMACCSU => "vwmaccsu.vx"
 
 def wvtype_mnemonic_forwards (arg_ : wvfunct6) : String :=
   match arg_ with
-  | WV_VADD => "vwadd.wv"
-  | WV_VSUB => "vwsub.wv"
-  | WV_VADDU => "vwaddu.wv"
-  | WV_VSUBU => "vwsubu.wv"
+  | .WV_VADD => "vwadd.wv"
+  | .WV_VSUB => "vwsub.wv"
+  | .WV_VADDU => "vwaddu.wv"
+  | .WV_VSUBU => "vwsubu.wv"
 
 def wvvtype_mnemonic_forwards (arg_ : wvvfunct6) : String :=
   match arg_ with
-  | WVV_VADD => "vwadd.vv"
-  | WVV_VSUB => "vwsub.vv"
-  | WVV_VADDU => "vwaddu.vv"
-  | WVV_VSUBU => "vwsubu.vv"
-  | WVV_VWMUL => "vwmul.vv"
-  | WVV_VWMULU => "vwmulu.vv"
-  | WVV_VWMULSU => "vwmulsu.vv"
+  | .WVV_VADD => "vwadd.vv"
+  | .WVV_VSUB => "vwsub.vv"
+  | .WVV_VADDU => "vwaddu.vv"
+  | .WVV_VSUBU => "vwsubu.vv"
+  | .WVV_VWMUL => "vwmul.vv"
+  | .WVV_VWMULU => "vwmulu.vv"
+  | .WVV_VWMULSU => "vwmulsu.vv"
 
 def wvxtype_mnemonic_forwards (arg_ : wvxfunct6) : String :=
   match arg_ with
-  | WVX_VADD => "vwadd.vx"
-  | WVX_VSUB => "vwsub.vx"
-  | WVX_VADDU => "vwaddu.vx"
-  | WVX_VSUBU => "vwsubu.vx"
-  | WVX_VWMUL => "vwmul.vx"
-  | WVX_VWMULU => "vwmulu.vx"
-  | WVX_VWMULSU => "vwmulsu.vx"
+  | .WVX_VADD => "vwadd.vx"
+  | .WVX_VSUB => "vwsub.vx"
+  | .WVX_VADDU => "vwaddu.vx"
+  | .WVX_VSUBU => "vwsubu.vx"
+  | .WVX_VWMUL => "vwmul.vx"
+  | .WVX_VWMULU => "vwmulu.vx"
+  | .WVX_VWMULSU => "vwmulsu.vx"
 
 def wxtype_mnemonic_forwards (arg_ : wxfunct6) : String :=
   match arg_ with
-  | WX_VADD => "vwadd.wx"
-  | WX_VSUB => "vwsub.wx"
-  | WX_VADDU => "vwaddu.wx"
-  | WX_VSUBU => "vwsubu.wx"
+  | .WX_VADD => "vwadd.wx"
+  | .WX_VSUB => "vwsub.wx"
+  | .WX_VADDU => "vwaddu.wx"
+  | .WX_VSUBU => "vwsubu.wx"
 
 def zba_rtype_mnemonic_forwards (arg_ : (BitVec 2)) : SailM String := do
   match arg_ with
@@ -2577,50 +2578,50 @@ def zba_rtypeuw_mnemonic_forwards (arg_ : (BitVec 2)) : String :=
 
 def zbb_extop_mnemonic_forwards (arg_ : extop_zbb) : String :=
   match arg_ with
-  | SEXTB => "sext.b"
-  | SEXTH => "sext.h"
-  | ZEXTH => "zext.h"
+  | .SEXTB => "sext.b"
+  | .SEXTH => "sext.h"
+  | .ZEXTH => "zext.h"
 
 def zbb_rtype_mnemonic_forwards (arg_ : brop_zbb) : String :=
   match arg_ with
-  | ANDN => "andn"
-  | ORN => "orn"
-  | XNOR => "xnor"
-  | MAX => "max"
-  | MAXU => "maxu"
-  | MIN => "min"
-  | MINU => "minu"
-  | ROL => "rol"
-  | ROR => "ror"
+  | .ANDN => "andn"
+  | .ORN => "orn"
+  | .XNOR => "xnor"
+  | .MAX => "max"
+  | .MAXU => "maxu"
+  | .MIN => "min"
+  | .MINU => "minu"
+  | .ROL => "rol"
+  | .ROR => "ror"
 
 def zbb_rtypew_mnemonic_forwards (arg_ : bropw_zbb) : String :=
   match arg_ with
-  | ROLW => "rolw"
-  | RORW => "rorw"
+  | .ROLW => "rolw"
+  | .RORW => "rorw"
 
 def zbkb_rtype_mnemonic_forwards (arg_ : brop_zbkb) : String :=
   match arg_ with
-  | PACK => "pack"
-  | PACKH => "packh"
+  | .PACK => "pack"
+  | .PACKH => "packh"
 
 def zbs_iop_mnemonic_forwards (arg_ : biop_zbs) : String :=
   match arg_ with
-  | BCLRI => "bclri"
-  | BEXTI => "bexti"
-  | BINVI => "binvi"
-  | BSETI => "bseti"
+  | .BCLRI => "bclri"
+  | .BEXTI => "bexti"
+  | .BINVI => "binvi"
+  | .BSETI => "bseti"
 
 def zbs_rtype_mnemonic_forwards (arg_ : brop_zbs) : String :=
   match arg_ with
-  | BCLR => "bclr"
-  | BEXT => "bext"
-  | BINV => "binv"
-  | BSET => "bset"
+  | .BCLR => "bclr"
+  | .BEXT => "bext"
+  | .BINV => "binv"
+  | .BSET => "bset"
 
 def zicond_mnemonic_forwards (arg_ : zicondop) : String :=
   match arg_ with
-  | CZERO_EQZ => "czero.eqz"
-  | CZERO_NEZ => "czero.nez"
+  | .CZERO_EQZ => "czero.eqz"
+  | .CZERO_NEZ => "czero.nez"
 
 def assembly_forwards (arg_ : instruction) : SailM String := do
   match arg_ with
@@ -3455,7 +3456,7 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
                 (String.append (sep_forwards ())
                   (String.append (← (freg_or_reg_name_forwards rs2))
                     (String.append (sep_forwards ()) (String.append (frm_mnemonic_forwards rm) ""))))))))))
-  | .F_UN_RM_FF_TYPE_S (rs1, rm, rd, FSQRT_S) =>
+  | .F_UN_RM_FF_TYPE_S (rs1, rm, rd, .FSQRT_S) =>
     (pure (String.append "fsqrt.s"
         (String.append (spc_forwards ())
           (String.append (← (freg_or_reg_name_forwards rd))
@@ -5161,8 +5162,8 @@ def assembly_forwards (arg_ : instruction) : SailM String := do
             (String.append (sep_forwards ()) (String.append (← (reg_name_forwards rs2)) ""))))))
   | .SFENCE_W_INVAL () => (pure "sfence.w.inval")
   | .SFENCE_INVAL_IR () => (pure "sfence.inval.ir")
-  | .WRS WRS_STO => (pure "wrs.sto")
-  | .WRS WRS_NTO => (pure "wrs.nto")
+  | .WRS .WRS_STO => (pure "wrs.sto")
+  | .WRS .WRS_NTO => (pure "wrs.nto")
   | .SSPUSH rs2 =>
     (pure (String.append "sspush"
         (String.append (spc_forwards ()) (String.append (← (reg_name_forwards rs2)) ""))))
@@ -5506,7 +5507,7 @@ def assembly_forwards_matches (arg_ : instruction) : Bool :=
   | .STORE_FP (imm, rs2, rs1, width) => true
   | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, op) => true
   | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, op) => true
-  | .F_UN_RM_FF_TYPE_S (rs1, rm, rd, FSQRT_S) => true
+  | .F_UN_RM_FF_TYPE_S (rs1, rm, rd, .FSQRT_S) => true
   | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, op) => true
   | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, op) => true
   | .F_BIN_TYPE_F_S (rs2, rs1, rd, op) => true
@@ -5731,8 +5732,8 @@ def assembly_forwards_matches (arg_ : instruction) : Bool :=
   | .SINVAL_VMA (rs1, rs2) => true
   | .SFENCE_W_INVAL () => true
   | .SFENCE_INVAL_IR () => true
-  | .WRS WRS_STO => true
-  | .WRS WRS_NTO => true
+  | .WRS .WRS_STO => true
+  | .WRS .WRS_NTO => true
   | .SSPUSH rs2 => true
   | .C_SSPUSH () => true
   | .SSPOPCHK rs1 => true
@@ -5783,59 +5784,59 @@ def amo_encoding_valid (width : Nat) (op : amoop) (typ_2 : regidx) (typ_3 : regi
                   then
                     (do
                       match amocas_odd_register_reserved_behavior with
-                      | AMOCAS_Fatal =>
+                      | .AMOCAS_Fatal =>
                         (reserved_behavior
                           (HAppend.hAppend "AMOCAS.D/Q used an odd-numbered register (rs2 = "
                             (HAppend.hAppend (Int.repr (BitVec.toNatInt rs2))
                               (HAppend.hAppend ", rd = "
                                 (HAppend.hAppend (Int.repr (BitVec.toNatInt rd)) ").")))))
-                      | AMOCAS_Illegal => (pure false))
+                      | .AMOCAS_Illegal => (pure false))
                   else (pure true))))))))
 
 def encdec_amoop_forwards (arg_ : amoop) : (BitVec 5) :=
   match arg_ with
-  | AMOSWAP => 0b00001#5
-  | AMOADD => 0b00000#5
-  | AMOXOR => 0b00100#5
-  | AMOAND => 0b01100#5
-  | AMOOR => 0b01000#5
-  | AMOMIN => 0b10000#5
-  | AMOMAX => 0b10100#5
-  | AMOMINU => 0b11000#5
-  | AMOMAXU => 0b11100#5
-  | AMOCAS => 0b00101#5
+  | .AMOSWAP => 0b00001#5
+  | .AMOADD => 0b00000#5
+  | .AMOXOR => 0b00100#5
+  | .AMOAND => 0b01100#5
+  | .AMOOR => 0b01000#5
+  | .AMOMIN => 0b10000#5
+  | .AMOMAX => 0b10100#5
+  | .AMOMINU => 0b11000#5
+  | .AMOMAXU => 0b11100#5
+  | .AMOCAS => 0b00101#5
 
 def encdec_biop_forwards (arg_ : biop) : (BitVec 3) :=
   match arg_ with
-  | BEQI => 0b010#3
-  | BNEI => 0b011#3
+  | .BEQI => 0b010#3
+  | .BNEI => 0b011#3
 
 def encdec_bop_forwards (arg_ : bop) : (BitVec 3) :=
   match arg_ with
-  | BEQ => 0b000#3
-  | BNE => 0b001#3
-  | BLT => 0b100#3
-  | BGE => 0b101#3
-  | BLTU => 0b110#3
-  | BGEU => 0b111#3
+  | .BEQ => 0b000#3
+  | .BNE => 0b001#3
+  | .BLT => 0b100#3
+  | .BGE => 0b101#3
+  | .BLTU => 0b110#3
+  | .BGEU => 0b111#3
 
 def encdec_cbop_forwards (arg_ : cbop_zicbom) : (BitVec 12) :=
   match arg_ with
-  | CBO_CLEAN => 0b000000000001#12
-  | CBO_FLUSH => 0b000000000010#12
-  | CBO_INVAL => 0b000000000000#12
+  | .CBO_CLEAN => 0b000000000001#12
+  | .CBO_FLUSH => 0b000000000010#12
+  | .CBO_INVAL => 0b000000000000#12
 
 def encdec_cbop_zicbop_forwards (arg_ : cbop_zicbop) : (BitVec 5) :=
   match arg_ with
-  | PREFETCH_I => 0b00000#5
-  | PREFETCH_R => 0b00001#5
-  | PREFETCH_W => 0b00011#5
+  | .PREFETCH_I => 0b00000#5
+  | .PREFETCH_R => 0b00001#5
+  | .PREFETCH_W => 0b00011#5
 
 def encdec_csrop_forwards (arg_ : csrop) : (BitVec 2) :=
   match arg_ with
-  | CSRRW => 0b01#2
-  | CSRRS => 0b10#2
-  | CSRRC => 0b11#2
+  | .CSRRW => 0b01#2
+  | .CSRRS => 0b10#2
+  | .CSRRC => 0b11#2
 
 def encdec_freg_forwards (arg_ : fregidx) : (BitVec 5) :=
   match arg_ with
@@ -5843,142 +5844,142 @@ def encdec_freg_forwards (arg_ : fregidx) : (BitVec 5) :=
 
 def encdec_fvffunct6_forwards (arg_ : fvffunct6) : (BitVec 6) :=
   match arg_ with
-  | VF_VADD => 0b000000#6
-  | VF_VSUB => 0b000010#6
-  | VF_VMIN => 0b000100#6
-  | VF_VMAX => 0b000110#6
-  | VF_VSGNJ => 0b001000#6
-  | VF_VSGNJN => 0b001001#6
-  | VF_VSGNJX => 0b001010#6
-  | VF_VSLIDE1UP => 0b001110#6
-  | VF_VSLIDE1DOWN => 0b001111#6
-  | VF_VDIV => 0b100000#6
-  | VF_VRDIV => 0b100001#6
-  | VF_VMUL => 0b100100#6
-  | VF_VRSUB => 0b100111#6
+  | .VF_VADD => 0b000000#6
+  | .VF_VSUB => 0b000010#6
+  | .VF_VMIN => 0b000100#6
+  | .VF_VMAX => 0b000110#6
+  | .VF_VSGNJ => 0b001000#6
+  | .VF_VSGNJN => 0b001001#6
+  | .VF_VSGNJX => 0b001010#6
+  | .VF_VSLIDE1UP => 0b001110#6
+  | .VF_VSLIDE1DOWN => 0b001111#6
+  | .VF_VDIV => 0b100000#6
+  | .VF_VRDIV => 0b100001#6
+  | .VF_VMUL => 0b100100#6
+  | .VF_VRSUB => 0b100111#6
 
 def encdec_fvfmafunct6_forwards (arg_ : fvfmafunct6) : (BitVec 6) :=
   match arg_ with
-  | VF_VMADD => 0b101000#6
-  | VF_VNMADD => 0b101001#6
-  | VF_VMSUB => 0b101010#6
-  | VF_VNMSUB => 0b101011#6
-  | VF_VMACC => 0b101100#6
-  | VF_VNMACC => 0b101101#6
-  | VF_VMSAC => 0b101110#6
-  | VF_VNMSAC => 0b101111#6
+  | .VF_VMADD => 0b101000#6
+  | .VF_VNMADD => 0b101001#6
+  | .VF_VMSUB => 0b101010#6
+  | .VF_VNMSUB => 0b101011#6
+  | .VF_VMACC => 0b101100#6
+  | .VF_VNMACC => 0b101101#6
+  | .VF_VMSAC => 0b101110#6
+  | .VF_VNMSAC => 0b101111#6
 
 def encdec_fvfmfunct6_forwards (arg_ : fvfmfunct6) : (BitVec 6) :=
   match arg_ with
-  | VFM_VMFEQ => 0b011000#6
-  | VFM_VMFLE => 0b011001#6
-  | VFM_VMFLT => 0b011011#6
-  | VFM_VMFNE => 0b011100#6
-  | VFM_VMFGT => 0b011101#6
-  | VFM_VMFGE => 0b011111#6
+  | .VFM_VMFEQ => 0b011000#6
+  | .VFM_VMFLE => 0b011001#6
+  | .VFM_VMFLT => 0b011011#6
+  | .VFM_VMFNE => 0b011100#6
+  | .VFM_VMFGT => 0b011101#6
+  | .VFM_VMFGE => 0b011111#6
 
 def encdec_fvvfunct6_forwards (arg_ : fvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | FVV_VADD => 0b000000#6
-  | FVV_VSUB => 0b000010#6
-  | FVV_VMIN => 0b000100#6
-  | FVV_VMAX => 0b000110#6
-  | FVV_VSGNJ => 0b001000#6
-  | FVV_VSGNJN => 0b001001#6
-  | FVV_VSGNJX => 0b001010#6
-  | FVV_VDIV => 0b100000#6
-  | FVV_VMUL => 0b100100#6
+  | .FVV_VADD => 0b000000#6
+  | .FVV_VSUB => 0b000010#6
+  | .FVV_VMIN => 0b000100#6
+  | .FVV_VMAX => 0b000110#6
+  | .FVV_VSGNJ => 0b001000#6
+  | .FVV_VSGNJN => 0b001001#6
+  | .FVV_VSGNJX => 0b001010#6
+  | .FVV_VDIV => 0b100000#6
+  | .FVV_VMUL => 0b100100#6
 
 def encdec_fvvmafunct6_forwards (arg_ : fvvmafunct6) : (BitVec 6) :=
   match arg_ with
-  | FVV_VMADD => 0b101000#6
-  | FVV_VNMADD => 0b101001#6
-  | FVV_VMSUB => 0b101010#6
-  | FVV_VNMSUB => 0b101011#6
-  | FVV_VMACC => 0b101100#6
-  | FVV_VNMACC => 0b101101#6
-  | FVV_VMSAC => 0b101110#6
-  | FVV_VNMSAC => 0b101111#6
+  | .FVV_VMADD => 0b101000#6
+  | .FVV_VNMADD => 0b101001#6
+  | .FVV_VMSUB => 0b101010#6
+  | .FVV_VNMSUB => 0b101011#6
+  | .FVV_VMACC => 0b101100#6
+  | .FVV_VNMACC => 0b101101#6
+  | .FVV_VMSAC => 0b101110#6
+  | .FVV_VNMSAC => 0b101111#6
 
 def encdec_fvvmfunct6_forwards (arg_ : fvvmfunct6) : (BitVec 6) :=
   match arg_ with
-  | FVVM_VMFEQ => 0b011000#6
-  | FVVM_VMFLE => 0b011001#6
-  | FVVM_VMFLT => 0b011011#6
-  | FVVM_VMFNE => 0b011100#6
+  | .FVVM_VMFEQ => 0b011000#6
+  | .FVVM_VMFLE => 0b011001#6
+  | .FVVM_VMFLT => 0b011011#6
+  | .FVVM_VMFNE => 0b011100#6
 
 def encdec_fwffunct6_forwards (arg_ : fwffunct6) : (BitVec 6) :=
   match arg_ with
-  | FWF_VADD => 0b110100#6
-  | FWF_VSUB => 0b110110#6
+  | .FWF_VADD => 0b110100#6
+  | .FWF_VSUB => 0b110110#6
 
 def encdec_fwvffunct6_forwards (arg_ : fwvffunct6) : (BitVec 6) :=
   match arg_ with
-  | FWVF_VADD => 0b110000#6
-  | FWVF_VSUB => 0b110010#6
-  | FWVF_VMUL => 0b111000#6
+  | .FWVF_VADD => 0b110000#6
+  | .FWVF_VSUB => 0b110010#6
+  | .FWVF_VMUL => 0b111000#6
 
 def encdec_fwvfmafunct6_forwards (arg_ : fwvfmafunct6) : (BitVec 6) :=
   match arg_ with
-  | FWVF_VMACC => 0b111100#6
-  | FWVF_VNMACC => 0b111101#6
-  | FWVF_VMSAC => 0b111110#6
-  | FWVF_VNMSAC => 0b111111#6
+  | .FWVF_VMACC => 0b111100#6
+  | .FWVF_VNMACC => 0b111101#6
+  | .FWVF_VMSAC => 0b111110#6
+  | .FWVF_VNMSAC => 0b111111#6
 
 def encdec_fwvfunct6_forwards (arg_ : fwvfunct6) : (BitVec 6) :=
   match arg_ with
-  | FWV_VADD => 0b110100#6
-  | FWV_VSUB => 0b110110#6
+  | .FWV_VADD => 0b110100#6
+  | .FWV_VSUB => 0b110110#6
 
 def encdec_fwvvfunct6_forwards (arg_ : fwvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | FWVV_VADD => 0b110000#6
-  | FWVV_VSUB => 0b110010#6
-  | FWVV_VMUL => 0b111000#6
+  | .FWVV_VADD => 0b110000#6
+  | .FWVV_VSUB => 0b110010#6
+  | .FWVV_VMUL => 0b111000#6
 
 def encdec_fwvvmafunct6_forwards (arg_ : fwvvmafunct6) : (BitVec 6) :=
   match arg_ with
-  | FWVV_VMACC => 0b111100#6
-  | FWVV_VNMACC => 0b111101#6
-  | FWVV_VMSAC => 0b111110#6
-  | FWVV_VNMSAC => 0b111111#6
+  | .FWVV_VMACC => 0b111100#6
+  | .FWVV_VNMACC => 0b111101#6
+  | .FWVV_VMSAC => 0b111110#6
+  | .FWVV_VNMSAC => 0b111111#6
 
 def encdec_indexed_mop_forwards (arg_ : indexed_mop) : (BitVec 2) :=
   match arg_ with
-  | INDEXED_UNORDERED => 0b01#2
-  | INDEXED_ORDERED => 0b11#2
+  | .INDEXED_UNORDERED => 0b01#2
+  | .INDEXED_ORDERED => 0b11#2
 
 def encdec_iop_forwards (arg_ : iop) : (BitVec 3) :=
   match arg_ with
-  | ADDI => 0b000#3
-  | SLTI => 0b010#3
-  | SLTIU => 0b011#3
-  | ANDI => 0b111#3
-  | ORI => 0b110#3
-  | XORI => 0b100#3
+  | .ADDI => 0b000#3
+  | .SLTI => 0b010#3
+  | .SLTIU => 0b011#3
+  | .ANDI => 0b111#3
+  | .ORI => 0b110#3
+  | .XORI => 0b100#3
 
 def encdec_lsop_forwards (arg_ : vmlsop) : (BitVec 7) :=
   match arg_ with
-  | VLM => 0b0000111#7
-  | VSM => 0b0100111#7
+  | .VLM => 0b0000111#7
+  | .VSM => 0b0100111#7
 
 def encdec_mmfunct6_forwards (arg_ : mmfunct6) : (BitVec 6) :=
   match arg_ with
-  | MM_VMAND => 0b011001#6
-  | MM_VMNAND => 0b011101#6
-  | MM_VMANDN => 0b011000#6
-  | MM_VMXOR => 0b011011#6
-  | MM_VMOR => 0b011010#6
-  | MM_VMNOR => 0b011110#6
-  | MM_VMORN => 0b011100#6
-  | MM_VMXNOR => 0b011111#6
+  | .MM_VMAND => 0b011001#6
+  | .MM_VMNAND => 0b011101#6
+  | .MM_VMANDN => 0b011000#6
+  | .MM_VMXOR => 0b011011#6
+  | .MM_VMOR => 0b011010#6
+  | .MM_VMNOR => 0b011110#6
+  | .MM_VMORN => 0b011100#6
+  | .MM_VMXNOR => 0b011111#6
 
 def encdec_mul_op_forwards (arg_ : mul_op) : SailM (BitVec 3) := do
   match arg_ with
-  | { result_part := Low, signed_rs1 := Signed, signed_rs2 := Signed } => (pure 0b000#3)
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Signed } => (pure 0b001#3)
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Unsigned } => (pure 0b010#3)
-  | { result_part := High, signed_rs1 := Unsigned, signed_rs2 := Unsigned } => (pure 0b011#3)
+  | { result_part := .Low, signed_rs1 := .Signed, signed_rs2 := .Signed } => (pure 0b000#3)
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Signed } => (pure 0b001#3)
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Unsigned } => (pure 0b010#3)
+  | { result_part := .High, signed_rs1 := .Unsigned, signed_rs2 := .Unsigned } => (pure 0b011#3)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -5986,49 +5987,49 @@ def encdec_mul_op_forwards (arg_ : mul_op) : SailM (BitVec 3) := do
 
 def encdec_mvvfunct6_forwards (arg_ : mvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | MVV_VAADDU => 0b001000#6
-  | MVV_VAADD => 0b001001#6
-  | MVV_VASUBU => 0b001010#6
-  | MVV_VASUB => 0b001011#6
-  | MVV_VMUL => 0b100101#6
-  | MVV_VMULH => 0b100111#6
-  | MVV_VMULHU => 0b100100#6
-  | MVV_VMULHSU => 0b100110#6
-  | MVV_VDIVU => 0b100000#6
-  | MVV_VDIV => 0b100001#6
-  | MVV_VREMU => 0b100010#6
-  | MVV_VREM => 0b100011#6
+  | .MVV_VAADDU => 0b001000#6
+  | .MVV_VAADD => 0b001001#6
+  | .MVV_VASUBU => 0b001010#6
+  | .MVV_VASUB => 0b001011#6
+  | .MVV_VMUL => 0b100101#6
+  | .MVV_VMULH => 0b100111#6
+  | .MVV_VMULHU => 0b100100#6
+  | .MVV_VMULHSU => 0b100110#6
+  | .MVV_VDIVU => 0b100000#6
+  | .MVV_VDIV => 0b100001#6
+  | .MVV_VREMU => 0b100010#6
+  | .MVV_VREM => 0b100011#6
 
 def encdec_mvvmafunct6_forwards (arg_ : mvvmafunct6) : (BitVec 6) :=
   match arg_ with
-  | MVV_VMACC => 0b101101#6
-  | MVV_VNMSAC => 0b101111#6
-  | MVV_VMADD => 0b101001#6
-  | MVV_VNMSUB => 0b101011#6
+  | .MVV_VMACC => 0b101101#6
+  | .MVV_VNMSAC => 0b101111#6
+  | .MVV_VMADD => 0b101001#6
+  | .MVV_VNMSUB => 0b101011#6
 
 def encdec_mvxfunct6_forwards (arg_ : mvxfunct6) : (BitVec 6) :=
   match arg_ with
-  | MVX_VAADDU => 0b001000#6
-  | MVX_VAADD => 0b001001#6
-  | MVX_VASUBU => 0b001010#6
-  | MVX_VASUB => 0b001011#6
-  | MVX_VSLIDE1UP => 0b001110#6
-  | MVX_VSLIDE1DOWN => 0b001111#6
-  | MVX_VMUL => 0b100101#6
-  | MVX_VMULH => 0b100111#6
-  | MVX_VMULHU => 0b100100#6
-  | MVX_VMULHSU => 0b100110#6
-  | MVX_VDIVU => 0b100000#6
-  | MVX_VDIV => 0b100001#6
-  | MVX_VREMU => 0b100010#6
-  | MVX_VREM => 0b100011#6
+  | .MVX_VAADDU => 0b001000#6
+  | .MVX_VAADD => 0b001001#6
+  | .MVX_VASUBU => 0b001010#6
+  | .MVX_VASUB => 0b001011#6
+  | .MVX_VSLIDE1UP => 0b001110#6
+  | .MVX_VSLIDE1DOWN => 0b001111#6
+  | .MVX_VMUL => 0b100101#6
+  | .MVX_VMULH => 0b100111#6
+  | .MVX_VMULHU => 0b100100#6
+  | .MVX_VMULHSU => 0b100110#6
+  | .MVX_VDIVU => 0b100000#6
+  | .MVX_VDIV => 0b100001#6
+  | .MVX_VREMU => 0b100010#6
+  | .MVX_VREM => 0b100011#6
 
 def encdec_mvxmafunct6_forwards (arg_ : mvxmafunct6) : (BitVec 6) :=
   match arg_ with
-  | MVX_VMACC => 0b101101#6
-  | MVX_VNMSAC => 0b101111#6
-  | MVX_VMADD => 0b101001#6
-  | MVX_VNMSUB => 0b101011#6
+  | .MVX_VMACC => 0b101101#6
+  | .MVX_VNMSAC => 0b101111#6
+  | .MVX_VMADD => 0b101001#6
+  | .MVX_VNMSUB => 0b101011#6
 
 /-- Type quantifiers: arg_ : Nat, arg_ > 0 ∧ arg_ ≤ 8 -/
 def encdec_nfields_backwards (arg_ : Nat) : (BitVec 3) :=
@@ -6052,13 +6053,13 @@ def encdec_nfields_pow2_backwards (arg_ : Nat) : (BitVec 3) :=
 
 def encdec_nifunct6_forwards (arg_ : nifunct6) : (BitVec 6) :=
   match arg_ with
-  | NI_VNCLIPU => 0b101110#6
-  | NI_VNCLIP => 0b101111#6
+  | .NI_VNCLIPU => 0b101110#6
+  | .NI_VNCLIP => 0b101111#6
 
 def encdec_nisfunct6_forwards (arg_ : nisfunct6) : (BitVec 6) :=
   match arg_ with
-  | NIS_VNSRL => 0b101100#6
-  | NIS_VNSRA => 0b101101#6
+  | .NIS_VNSRL => 0b101100#6
+  | .NIS_VNSRA => 0b101101#6
 
 /-- Type quantifiers: arg_ : Nat, arg_ ∈ {1, 2, 4, 8} -/
 def encdec_nreg_backwards (arg_ : Nat) : (BitVec 5) :=
@@ -6070,178 +6071,178 @@ def encdec_nreg_backwards (arg_ : Nat) : (BitVec 5) :=
 
 def encdec_ntl_forwards (arg_ : ntl_type) : (BitVec 5) :=
   match arg_ with
-  | NTL_P1 => 0b00010#5
-  | NTL_PALL => 0b00011#5
-  | NTL_S1 => 0b00100#5
-  | NTL_ALL => 0b00101#5
+  | .NTL_P1 => 0b00010#5
+  | .NTL_PALL => 0b00011#5
+  | .NTL_S1 => 0b00100#5
+  | .NTL_ALL => 0b00101#5
 
 def encdec_nvfunct6_forwards (arg_ : nvfunct6) : (BitVec 6) :=
   match arg_ with
-  | NV_VNCLIPU => 0b101110#6
-  | NV_VNCLIP => 0b101111#6
+  | .NV_VNCLIPU => 0b101110#6
+  | .NV_VNCLIP => 0b101111#6
 
 def encdec_nvsfunct6_forwards (arg_ : nvsfunct6) : (BitVec 6) :=
   match arg_ with
-  | NVS_VNSRL => 0b101100#6
-  | NVS_VNSRA => 0b101101#6
+  | .NVS_VNSRL => 0b101100#6
+  | .NVS_VNSRA => 0b101101#6
 
 def encdec_nxfunct6_forwards (arg_ : nxfunct6) : (BitVec 6) :=
   match arg_ with
-  | NX_VNCLIPU => 0b101110#6
-  | NX_VNCLIP => 0b101111#6
+  | .NX_VNCLIPU => 0b101110#6
+  | .NX_VNCLIP => 0b101111#6
 
 def encdec_nxsfunct6_forwards (arg_ : nxsfunct6) : (BitVec 6) :=
   match arg_ with
-  | NXS_VNSRL => 0b101100#6
-  | NXS_VNSRA => 0b101101#6
+  | .NXS_VNSRL => 0b101100#6
+  | .NXS_VNSRA => 0b101101#6
 
 def encdec_rfvvfunct6_forwards (arg_ : rfvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | FVV_VFREDOSUM => 0b000011#6
-  | FVV_VFREDUSUM => 0b000001#6
-  | FVV_VFREDMAX => 0b000111#6
-  | FVV_VFREDMIN => 0b000101#6
+  | .FVV_VFREDOSUM => 0b000011#6
+  | .FVV_VFREDUSUM => 0b000001#6
+  | .FVV_VFREDMAX => 0b000111#6
+  | .FVV_VFREDMIN => 0b000101#6
 
 def encdec_rfwvvfunct6_forwards (arg_ : rfwvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | FVV_VFWREDOSUM => 0b110011#6
-  | FVV_VFWREDUSUM => 0b110001#6
+  | .FVV_VFWREDOSUM => 0b110011#6
+  | .FVV_VFWREDUSUM => 0b110001#6
 
 def encdec_rivvfunct6_forwards (arg_ : rivvfunct6) : (BitVec 6) :=
   match arg_ with
-  | IVV_VWREDSUMU => 0b110000#6
-  | IVV_VWREDSUM => 0b110001#6
+  | .IVV_VWREDSUMU => 0b110000#6
+  | .IVV_VWREDSUM => 0b110001#6
 
 def encdec_rmvvfunct6_forwards (arg_ : rmvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | MVV_VREDSUM => 0b000000#6
-  | MVV_VREDAND => 0b000001#6
-  | MVV_VREDOR => 0b000010#6
-  | MVV_VREDXOR => 0b000011#6
-  | MVV_VREDMINU => 0b000100#6
-  | MVV_VREDMIN => 0b000101#6
-  | MVV_VREDMAXU => 0b000110#6
-  | MVV_VREDMAX => 0b000111#6
+  | .MVV_VREDSUM => 0b000000#6
+  | .MVV_VREDAND => 0b000001#6
+  | .MVV_VREDOR => 0b000010#6
+  | .MVV_VREDXOR => 0b000011#6
+  | .MVV_VREDMINU => 0b000100#6
+  | .MVV_VREDMIN => 0b000101#6
+  | .MVV_VREDMAXU => 0b000110#6
+  | .MVV_VREDMAX => 0b000111#6
 
 def encdec_rounding_mode_forwards (arg_ : rounding_mode) : (BitVec 3) :=
   match arg_ with
-  | RM_RNE => 0b000#3
-  | RM_RTZ => 0b001#3
-  | RM_RDN => 0b010#3
-  | RM_RUP => 0b011#3
-  | RM_RMM => 0b100#3
-  | RM_DYN => 0b111#3
+  | .RM_RNE => 0b000#3
+  | .RM_RTZ => 0b001#3
+  | .RM_RDN => 0b010#3
+  | .RM_RUP => 0b011#3
+  | .RM_RMM => 0b100#3
+  | .RM_DYN => 0b111#3
 
 def encdec_uop_forwards (arg_ : uop) : (BitVec 7) :=
   match arg_ with
-  | LUI => 0b0110111#7
-  | AUIPC => 0b0010111#7
+  | .LUI => 0b0110111#7
+  | .AUIPC => 0b0010111#7
 
 def encdec_vaesdf_forwards (arg_ : zvk_vaesdf_funct6) : (BitVec 6) :=
   match arg_ with
-  | ZVK_VAESDF_VV => 0b101000#6
-  | ZVK_VAESDF_VS => 0b101001#6
+  | .ZVK_VAESDF_VV => 0b101000#6
+  | .ZVK_VAESDF_VS => 0b101001#6
 
 def encdec_vaesdm_forwards (arg_ : zvk_vaesdm_funct6) : (BitVec 6) :=
   match arg_ with
-  | ZVK_VAESDM_VV => 0b101000#6
-  | ZVK_VAESDM_VS => 0b101001#6
+  | .ZVK_VAESDM_VV => 0b101000#6
+  | .ZVK_VAESDM_VS => 0b101001#6
 
 def encdec_vaesef_forwards (arg_ : zvk_vaesef_funct6) : (BitVec 6) :=
   match arg_ with
-  | ZVK_VAESEF_VV => 0b101000#6
-  | ZVK_VAESEF_VS => 0b101001#6
+  | .ZVK_VAESEF_VV => 0b101000#6
+  | .ZVK_VAESEF_VS => 0b101001#6
 
 def encdec_vaesem_forwards (arg_ : zvk_vaesem_funct6) : (BitVec 6) :=
   match arg_ with
-  | ZVK_VAESEM_VV => 0b101000#6
-  | ZVK_VAESEM_VS => 0b101001#6
+  | .ZVK_VAESEM_VV => 0b101000#6
+  | .ZVK_VAESEM_VS => 0b101001#6
 
 def encdec_vfnunary0_vs1_forwards (arg_ : vfnunary0) : (BitVec 5) :=
   match arg_ with
-  | FNV_CVT_XU_F => 0b10000#5
-  | FNV_CVT_X_F => 0b10001#5
-  | FNV_CVT_F_XU => 0b10010#5
-  | FNV_CVT_F_X => 0b10011#5
-  | FNV_CVT_F_F => 0b10100#5
-  | FNV_CVT_ROD_F_F => 0b10101#5
-  | FNV_CVT_RTZ_XU_F => 0b10110#5
-  | FNV_CVT_RTZ_X_F => 0b10111#5
+  | .FNV_CVT_XU_F => 0b10000#5
+  | .FNV_CVT_X_F => 0b10001#5
+  | .FNV_CVT_F_XU => 0b10010#5
+  | .FNV_CVT_F_X => 0b10011#5
+  | .FNV_CVT_F_F => 0b10100#5
+  | .FNV_CVT_ROD_F_F => 0b10101#5
+  | .FNV_CVT_RTZ_XU_F => 0b10110#5
+  | .FNV_CVT_RTZ_X_F => 0b10111#5
 
 def encdec_vfunary0_vs1_forwards (arg_ : vfunary0) : (BitVec 5) :=
   match arg_ with
-  | FV_CVT_XU_F => 0b00000#5
-  | FV_CVT_X_F => 0b00001#5
-  | FV_CVT_F_XU => 0b00010#5
-  | FV_CVT_F_X => 0b00011#5
-  | FV_CVT_RTZ_XU_F => 0b00110#5
-  | FV_CVT_RTZ_X_F => 0b00111#5
+  | .FV_CVT_XU_F => 0b00000#5
+  | .FV_CVT_X_F => 0b00001#5
+  | .FV_CVT_F_XU => 0b00010#5
+  | .FV_CVT_F_X => 0b00011#5
+  | .FV_CVT_RTZ_XU_F => 0b00110#5
+  | .FV_CVT_RTZ_X_F => 0b00111#5
 
 def encdec_vfunary1_vs1_forwards (arg_ : vfunary1) : (BitVec 5) :=
   match arg_ with
-  | FVV_VSQRT => 0b00000#5
-  | FVV_VRSQRT7 => 0b00100#5
-  | FVV_VREC7 => 0b00101#5
-  | FVV_VCLASS => 0b10000#5
+  | .FVV_VSQRT => 0b00000#5
+  | .FVV_VRSQRT7 => 0b00100#5
+  | .FVV_VREC7 => 0b00101#5
+  | .FVV_VCLASS => 0b10000#5
 
 def encdec_vfwunary0_vs1_forwards (arg_ : vfwunary0) : (BitVec 5) :=
   match arg_ with
-  | FWV_CVT_XU_F => 0b01000#5
-  | FWV_CVT_X_F => 0b01001#5
-  | FWV_CVT_F_XU => 0b01010#5
-  | FWV_CVT_F_X => 0b01011#5
-  | FWV_CVT_F_F => 0b01100#5
-  | FWV_CVT_RTZ_XU_F => 0b01110#5
-  | FWV_CVT_RTZ_X_F => 0b01111#5
+  | .FWV_CVT_XU_F => 0b01000#5
+  | .FWV_CVT_X_F => 0b01001#5
+  | .FWV_CVT_F_XU => 0b01010#5
+  | .FWV_CVT_F_X => 0b01011#5
+  | .FWV_CVT_F_F => 0b01100#5
+  | .FWV_CVT_RTZ_XU_F => 0b01110#5
+  | .FWV_CVT_RTZ_X_F => 0b01111#5
 
 def encdec_vicmpfunct6_forwards (arg_ : vicmpfunct6) : (BitVec 6) :=
   match arg_ with
-  | VICMP_VMSEQ => 0b011000#6
-  | VICMP_VMSNE => 0b011001#6
-  | VICMP_VMSLEU => 0b011100#6
-  | VICMP_VMSLE => 0b011101#6
-  | VICMP_VMSGTU => 0b011110#6
-  | VICMP_VMSGT => 0b011111#6
+  | .VICMP_VMSEQ => 0b011000#6
+  | .VICMP_VMSNE => 0b011001#6
+  | .VICMP_VMSLEU => 0b011100#6
+  | .VICMP_VMSLE => 0b011101#6
+  | .VICMP_VMSGTU => 0b011110#6
+  | .VICMP_VMSGT => 0b011111#6
 
 def encdec_vifunct6_forwards (arg_ : vifunct6) : (BitVec 6) :=
   match arg_ with
-  | VI_VADD => 0b000000#6
-  | VI_VRSUB => 0b000011#6
-  | VI_VAND => 0b001001#6
-  | VI_VOR => 0b001010#6
-  | VI_VXOR => 0b001011#6
-  | VI_VSADDU => 0b100000#6
-  | VI_VSADD => 0b100001#6
-  | VI_VSLL => 0b100101#6
-  | VI_VSRL => 0b101000#6
-  | VI_VSRA => 0b101001#6
-  | VI_VSSRL => 0b101010#6
-  | VI_VSSRA => 0b101011#6
+  | .VI_VADD => 0b000000#6
+  | .VI_VRSUB => 0b000011#6
+  | .VI_VAND => 0b001001#6
+  | .VI_VOR => 0b001010#6
+  | .VI_VXOR => 0b001011#6
+  | .VI_VSADDU => 0b100000#6
+  | .VI_VSADD => 0b100001#6
+  | .VI_VSLL => 0b100101#6
+  | .VI_VSRL => 0b101000#6
+  | .VI_VSRA => 0b101001#6
+  | .VI_VSSRL => 0b101010#6
+  | .VI_VSSRA => 0b101011#6
 
 def encdec_vimcfunct6_forwards (arg_ : vimcfunct6) : (BitVec 6) :=
   match arg_ with
-  | VIMC_VMADC => 0b010001#6
+  | .VIMC_VMADC => 0b010001#6
 
 def encdec_vimfunct6_forwards (arg_ : vimfunct6) : (BitVec 6) :=
   match arg_ with
-  | VIM_VMADC => 0b010001#6
+  | .VIM_VMADC => 0b010001#6
 
 def encdec_vimsfunct6_forwards (arg_ : vimsfunct6) : (BitVec 6) :=
   match arg_ with
-  | VIMS_VADC => 0b010000#6
+  | .VIMS_VADC => 0b010000#6
 
 def encdec_visgfunct6_forwards (arg_ : visgfunct6) : (BitVec 6) :=
   match arg_ with
-  | VI_VSLIDEUP => 0b001110#6
-  | VI_VSLIDEDOWN => 0b001111#6
-  | VI_VRGATHER => 0b001100#6
+  | .VI_VSLIDEUP => 0b001110#6
+  | .VI_VSLIDEDOWN => 0b001111#6
+  | .VI_VRGATHER => 0b001100#6
 
 def encdec_vlewidth_forwards (arg_ : vlewidth) : (BitVec 3) :=
   match arg_ with
-  | VLE8 => 0b000#3
-  | VLE16 => 0b101#3
-  | VLE32 => 0b110#3
-  | VLE64 => 0b111#3
+  | .VLE8 => 0b000#3
+  | .VLE16 => 0b101#3
+  | .VLE32 => 0b110#3
+  | .VLE64 => 0b111#3
 
 def encdec_vreg_forwards (arg_ : vregidx) : (BitVec 5) :=
   match arg_ with
@@ -6249,178 +6250,178 @@ def encdec_vreg_forwards (arg_ : vregidx) : (BitVec 5) :=
 
 def encdec_vsha2_forwards (arg_ : zvk_vsha2_funct6) : (BitVec 6) :=
   match arg_ with
-  | ZVK_VSHA2CH_VV => 0b101110#6
-  | ZVK_VSHA2CL_VV => 0b101111#6
+  | .ZVK_VSHA2CH_VV => 0b101110#6
+  | .ZVK_VSHA2CL_VV => 0b101111#6
 
 def encdec_vvcmpfunct6_forwards (arg_ : vvcmpfunct6) : (BitVec 6) :=
   match arg_ with
-  | VVCMP_VMSEQ => 0b011000#6
-  | VVCMP_VMSNE => 0b011001#6
-  | VVCMP_VMSLTU => 0b011010#6
-  | VVCMP_VMSLT => 0b011011#6
-  | VVCMP_VMSLEU => 0b011100#6
-  | VVCMP_VMSLE => 0b011101#6
+  | .VVCMP_VMSEQ => 0b011000#6
+  | .VVCMP_VMSNE => 0b011001#6
+  | .VVCMP_VMSLTU => 0b011010#6
+  | .VVCMP_VMSLT => 0b011011#6
+  | .VVCMP_VMSLEU => 0b011100#6
+  | .VVCMP_VMSLE => 0b011101#6
 
 def encdec_vvfunct6_forwards (arg_ : vvfunct6) : (BitVec 6) :=
   match arg_ with
-  | VV_VADD => 0b000000#6
-  | VV_VSUB => 0b000010#6
-  | VV_VMINU => 0b000100#6
-  | VV_VMIN => 0b000101#6
-  | VV_VMAXU => 0b000110#6
-  | VV_VMAX => 0b000111#6
-  | VV_VAND => 0b001001#6
-  | VV_VOR => 0b001010#6
-  | VV_VXOR => 0b001011#6
-  | VV_VRGATHER => 0b001100#6
-  | VV_VRGATHEREI16 => 0b001110#6
-  | VV_VSADDU => 0b100000#6
-  | VV_VSADD => 0b100001#6
-  | VV_VSSUBU => 0b100010#6
-  | VV_VSSUB => 0b100011#6
-  | VV_VSLL => 0b100101#6
-  | VV_VSMUL => 0b100111#6
-  | VV_VSRL => 0b101000#6
-  | VV_VSRA => 0b101001#6
-  | VV_VSSRL => 0b101010#6
-  | VV_VSSRA => 0b101011#6
+  | .VV_VADD => 0b000000#6
+  | .VV_VSUB => 0b000010#6
+  | .VV_VMINU => 0b000100#6
+  | .VV_VMIN => 0b000101#6
+  | .VV_VMAXU => 0b000110#6
+  | .VV_VMAX => 0b000111#6
+  | .VV_VAND => 0b001001#6
+  | .VV_VOR => 0b001010#6
+  | .VV_VXOR => 0b001011#6
+  | .VV_VRGATHER => 0b001100#6
+  | .VV_VRGATHEREI16 => 0b001110#6
+  | .VV_VSADDU => 0b100000#6
+  | .VV_VSADD => 0b100001#6
+  | .VV_VSSUBU => 0b100010#6
+  | .VV_VSSUB => 0b100011#6
+  | .VV_VSLL => 0b100101#6
+  | .VV_VSMUL => 0b100111#6
+  | .VV_VSRL => 0b101000#6
+  | .VV_VSRA => 0b101001#6
+  | .VV_VSSRL => 0b101010#6
+  | .VV_VSSRA => 0b101011#6
 
 def encdec_vvmcfunct6_forwards (arg_ : vvmcfunct6) : (BitVec 6) :=
   match arg_ with
-  | VVMC_VMADC => 0b010001#6
-  | VVMC_VMSBC => 0b010011#6
+  | .VVMC_VMADC => 0b010001#6
+  | .VVMC_VMSBC => 0b010011#6
 
 def encdec_vvmfunct6_forwards (arg_ : vvmfunct6) : (BitVec 6) :=
   match arg_ with
-  | VVM_VMADC => 0b010001#6
-  | VVM_VMSBC => 0b010011#6
+  | .VVM_VMADC => 0b010001#6
+  | .VVM_VMSBC => 0b010011#6
 
 def encdec_vvmsfunct6_forwards (arg_ : vvmsfunct6) : (BitVec 6) :=
   match arg_ with
-  | VVMS_VADC => 0b010000#6
-  | VVMS_VSBC => 0b010010#6
+  | .VVMS_VADC => 0b010000#6
+  | .VVMS_VSBC => 0b010010#6
 
 def encdec_vxcmpfunct6_forwards (arg_ : vxcmpfunct6) : (BitVec 6) :=
   match arg_ with
-  | VXCMP_VMSEQ => 0b011000#6
-  | VXCMP_VMSNE => 0b011001#6
-  | VXCMP_VMSLTU => 0b011010#6
-  | VXCMP_VMSLT => 0b011011#6
-  | VXCMP_VMSLEU => 0b011100#6
-  | VXCMP_VMSLE => 0b011101#6
-  | VXCMP_VMSGTU => 0b011110#6
-  | VXCMP_VMSGT => 0b011111#6
+  | .VXCMP_VMSEQ => 0b011000#6
+  | .VXCMP_VMSNE => 0b011001#6
+  | .VXCMP_VMSLTU => 0b011010#6
+  | .VXCMP_VMSLT => 0b011011#6
+  | .VXCMP_VMSLEU => 0b011100#6
+  | .VXCMP_VMSLE => 0b011101#6
+  | .VXCMP_VMSGTU => 0b011110#6
+  | .VXCMP_VMSGT => 0b011111#6
 
 def encdec_vxfunct6_forwards (arg_ : vxfunct6) : (BitVec 6) :=
   match arg_ with
-  | VX_VADD => 0b000000#6
-  | VX_VSUB => 0b000010#6
-  | VX_VRSUB => 0b000011#6
-  | VX_VMINU => 0b000100#6
-  | VX_VMIN => 0b000101#6
-  | VX_VMAXU => 0b000110#6
-  | VX_VMAX => 0b000111#6
-  | VX_VAND => 0b001001#6
-  | VX_VOR => 0b001010#6
-  | VX_VXOR => 0b001011#6
-  | VX_VSADDU => 0b100000#6
-  | VX_VSADD => 0b100001#6
-  | VX_VSSUBU => 0b100010#6
-  | VX_VSSUB => 0b100011#6
-  | VX_VSLL => 0b100101#6
-  | VX_VSMUL => 0b100111#6
-  | VX_VSRL => 0b101000#6
-  | VX_VSRA => 0b101001#6
-  | VX_VSSRL => 0b101010#6
-  | VX_VSSRA => 0b101011#6
+  | .VX_VADD => 0b000000#6
+  | .VX_VSUB => 0b000010#6
+  | .VX_VRSUB => 0b000011#6
+  | .VX_VMINU => 0b000100#6
+  | .VX_VMIN => 0b000101#6
+  | .VX_VMAXU => 0b000110#6
+  | .VX_VMAX => 0b000111#6
+  | .VX_VAND => 0b001001#6
+  | .VX_VOR => 0b001010#6
+  | .VX_VXOR => 0b001011#6
+  | .VX_VSADDU => 0b100000#6
+  | .VX_VSADD => 0b100001#6
+  | .VX_VSSUBU => 0b100010#6
+  | .VX_VSSUB => 0b100011#6
+  | .VX_VSLL => 0b100101#6
+  | .VX_VSMUL => 0b100111#6
+  | .VX_VSRL => 0b101000#6
+  | .VX_VSRA => 0b101001#6
+  | .VX_VSSRL => 0b101010#6
+  | .VX_VSSRA => 0b101011#6
 
 def encdec_vxmcfunct6_forwards (arg_ : vxmcfunct6) : (BitVec 6) :=
   match arg_ with
-  | VXMC_VMADC => 0b010001#6
-  | VXMC_VMSBC => 0b010011#6
+  | .VXMC_VMADC => 0b010001#6
+  | .VXMC_VMSBC => 0b010011#6
 
 def encdec_vxmfunct6_forwards (arg_ : vxmfunct6) : (BitVec 6) :=
   match arg_ with
-  | VXM_VMADC => 0b010001#6
-  | VXM_VMSBC => 0b010011#6
+  | .VXM_VMADC => 0b010001#6
+  | .VXM_VMSBC => 0b010011#6
 
 def encdec_vxmsfunct6_forwards (arg_ : vxmsfunct6) : (BitVec 6) :=
   match arg_ with
-  | VXMS_VADC => 0b010000#6
-  | VXMS_VSBC => 0b010010#6
+  | .VXMS_VADC => 0b010000#6
+  | .VXMS_VSBC => 0b010010#6
 
 def encdec_vxsgfunct6_forwards (arg_ : vxsgfunct6) : (BitVec 6) :=
   match arg_ with
-  | VX_VSLIDEUP => 0b001110#6
-  | VX_VSLIDEDOWN => 0b001111#6
-  | VX_VRGATHER => 0b001100#6
+  | .VX_VSLIDEUP => 0b001110#6
+  | .VX_VSLIDEDOWN => 0b001111#6
+  | .VX_VRGATHER => 0b001100#6
 
 def encdec_wmvvfunct6_forwards (arg_ : wmvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | WMVV_VWMACCU => 0b111100#6
-  | WMVV_VWMACC => 0b111101#6
-  | WMVV_VWMACCSU => 0b111111#6
+  | .WMVV_VWMACCU => 0b111100#6
+  | .WMVV_VWMACC => 0b111101#6
+  | .WMVV_VWMACCSU => 0b111111#6
 
 def encdec_wmvxfunct6_forwards (arg_ : wmvxfunct6) : (BitVec 6) :=
   match arg_ with
-  | WMVX_VWMACCU => 0b111100#6
-  | WMVX_VWMACC => 0b111101#6
-  | WMVX_VWMACCUS => 0b111110#6
-  | WMVX_VWMACCSU => 0b111111#6
+  | .WMVX_VWMACCU => 0b111100#6
+  | .WMVX_VWMACC => 0b111101#6
+  | .WMVX_VWMACCUS => 0b111110#6
+  | .WMVX_VWMACCSU => 0b111111#6
 
 def encdec_wrsop_forwards (arg_ : wrsop) : (BitVec 12) :=
   match arg_ with
-  | WRS_STO => 0b000000011101#12
-  | WRS_NTO => 0b000000001101#12
+  | .WRS_STO => 0b000000011101#12
+  | .WRS_NTO => 0b000000001101#12
 
 def encdec_wvfunct6_forwards (arg_ : wvfunct6) : (BitVec 6) :=
   match arg_ with
-  | WV_VADD => 0b110101#6
-  | WV_VSUB => 0b110111#6
-  | WV_VADDU => 0b110100#6
-  | WV_VSUBU => 0b110110#6
+  | .WV_VADD => 0b110101#6
+  | .WV_VSUB => 0b110111#6
+  | .WV_VADDU => 0b110100#6
+  | .WV_VSUBU => 0b110110#6
 
 def encdec_wvvfunct6_forwards (arg_ : wvvfunct6) : (BitVec 6) :=
   match arg_ with
-  | WVV_VADD => 0b110001#6
-  | WVV_VSUB => 0b110011#6
-  | WVV_VADDU => 0b110000#6
-  | WVV_VSUBU => 0b110010#6
-  | WVV_VWMUL => 0b111011#6
-  | WVV_VWMULU => 0b111000#6
-  | WVV_VWMULSU => 0b111010#6
+  | .WVV_VADD => 0b110001#6
+  | .WVV_VSUB => 0b110011#6
+  | .WVV_VADDU => 0b110000#6
+  | .WVV_VSUBU => 0b110010#6
+  | .WVV_VWMUL => 0b111011#6
+  | .WVV_VWMULU => 0b111000#6
+  | .WVV_VWMULSU => 0b111010#6
 
 def encdec_wvxfunct6_forwards (arg_ : wvxfunct6) : (BitVec 6) :=
   match arg_ with
-  | WVX_VADD => 0b110001#6
-  | WVX_VSUB => 0b110011#6
-  | WVX_VADDU => 0b110000#6
-  | WVX_VSUBU => 0b110010#6
-  | WVX_VWMUL => 0b111011#6
-  | WVX_VWMULU => 0b111000#6
-  | WVX_VWMULSU => 0b111010#6
+  | .WVX_VADD => 0b110001#6
+  | .WVX_VSUB => 0b110011#6
+  | .WVX_VADDU => 0b110000#6
+  | .WVX_VSUBU => 0b110010#6
+  | .WVX_VWMUL => 0b111011#6
+  | .WVX_VWMULU => 0b111000#6
+  | .WVX_VWMULSU => 0b111010#6
 
 def encdec_wxfunct6_forwards (arg_ : wxfunct6) : (BitVec 6) :=
   match arg_ with
-  | WX_VADD => 0b110101#6
-  | WX_VSUB => 0b110111#6
-  | WX_VADDU => 0b110100#6
-  | WX_VSUBU => 0b110110#6
+  | .WX_VADD => 0b110101#6
+  | .WX_VSUB => 0b110111#6
+  | .WX_VADDU => 0b110100#6
+  | .WX_VSUBU => 0b110110#6
 
 def encdec_zicondop_forwards (arg_ : zicondop) : (BitVec 3) :=
   match arg_ with
-  | CZERO_EQZ => 0b101#3
-  | CZERO_NEZ => 0b111#3
+  | .CZERO_EQZ => 0b101#3
+  | .CZERO_NEZ => 0b111#3
 
 def encdec_zvabd_vabd_func6_forwards (arg_ : zvabd_vabd_func6) : (BitVec 6) :=
   match arg_ with
-  | VV_VABD => 0b010001#6
-  | VV_VABDU => 0b010011#6
+  | .VV_VABD => 0b010001#6
+  | .VV_VABDU => 0b010011#6
 
 def encdec_zvabd_vwabda_func6_forwards (arg_ : zvabd_vwabda_func6) : (BitVec 6) :=
   match arg_ with
-  | VV_VWABDA => 0b010101#6
-  | VV_VWABDAU => 0b010110#6
+  | .VV_VWABDA => 0b010101#6
+  | .VV_VWABDAU => 0b010110#6
 
 /-- Type quantifiers: width : Nat, width ∈ {1, 2, 4, 8} -/
 def float_load_store_width_supported (width : Nat) : SailM Bool := do
@@ -6498,35 +6499,35 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
           then
             (do
               match rv32zdinx_odd_register_reserved_behavior with
-              | Zdinx_Fatal =>
+              | .Zdinx_Fatal =>
                 (reserved_behavior
                   (HAppend.hAppend "RV32Zdinx used odd-numbered register "
                     (Int.repr (BitVec.toNatInt (fregidx_bits (GetElem?.getElem! regs i))))))
-              | Zdinx_Illegal => SailME.throw (false : Bool))
+              | .Zdinx_Illegal => SailME.throw (false : Bool))
           else (pure ())
       (pure loop_vars))
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex682973_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex683019_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
 def valid_narrowing_fp_conversion (cvt : vfnunary0) : SailM Bool := do
   match cvt with
-  | FNV_CVT_F_F =>
+  | .FNV_CVT_F_F =>
     (pure (((← (currentlyEnabled Ext_Zvfhmin)) && (← do
             (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
             (pure ((← (get_sew ())) == 32))))))
-  | FNV_CVT_ROD_F_F =>
+  | .FNV_CVT_ROD_F_F =>
     (pure (((← (currentlyEnabled Ext_Zvfh)) && (← do
             (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
             (pure ((← (get_sew ())) == 32))))))
-  | FNV_CVT_F_XU =>
+  | .FNV_CVT_F_XU =>
     (pure (((← (currentlyEnabled Ext_Zvfh)) && (← do
             (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64f)) && (← do
             (pure ((← (get_sew ())) == 32))))))
-  | FNV_CVT_F_X =>
+  | .FNV_CVT_F_X =>
     (pure (((← (currentlyEnabled Ext_Zvfh)) && (← do
             (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64f)) && (← do
             (pure ((← (get_sew ())) == 32))))))
@@ -6538,56 +6539,56 @@ def valid_narrowing_fp_conversion (cvt : vfnunary0) : SailM Bool := do
 
 def valid_wide_mvvtype (mvvtype : mvvfunct6) : SailM Bool := do
   match mvvtype with
-  | MVV_VMULH =>
+  | .MVV_VMULH =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
-  | MVV_VMULHU =>
+  | .MVV_VMULHU =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
-  | MVV_VMULHSU =>
+  | .MVV_VMULHSU =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
   | _ => (pure true)
 
 def valid_wide_mvxtype (mvxtype : mvxfunct6) : SailM Bool := do
   match mvxtype with
-  | MVX_VMULH =>
+  | .MVX_VMULH =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
-  | MVX_VMULHU =>
+  | .MVX_VMULHU =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
-  | MVX_VMULHSU =>
+  | .MVX_VMULHSU =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
   | _ => (pure true)
 
 def valid_wide_vvtype (vvtype : vvfunct6) : SailM Bool := do
   match vvtype with
-  | VV_VSMUL =>
+  | .VV_VSMUL =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
   | _ => (pure true)
 
 def valid_wide_vxtype (vxtype : vxfunct6) : SailM Bool := do
   match vxtype with
-  | VX_VSMUL =>
+  | .VX_VSMUL =>
     (pure ((hartSupports Ext_V) && (((_get_Misa_V (← readReg misa)) == 1#1) && (← (currentlyEnabled
               Ext_Zvl128b)))))
   | _ => (pure true)
 
 def valid_widening_fp_conversion (cvt : vfwunary0) : SailM Bool := do
   match cvt with
-  | FWV_CVT_F_F =>
+  | .FWV_CVT_F_F =>
     (pure (((← (currentlyEnabled Ext_Zvfhmin)) && (← do
             (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
             (pure ((← (get_sew ())) == 32))))))
-  | FWV_CVT_F_XU =>
+  | .FWV_CVT_F_XU =>
     (pure (((← (currentlyEnabled Ext_Zvfh)) && (← do
             (pure ((← (get_sew ())) == 8)))) || (((← (currentlyEnabled Ext_Zve32f)) && (← do
               (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
               (pure ((← (get_sew ())) == 32)))))))
-  | FWV_CVT_F_X =>
+  | .FWV_CVT_F_X =>
     (pure (((← (currentlyEnabled Ext_Zvfh)) && (← do
             (pure ((← (get_sew ())) == 8)))) || (((← (currentlyEnabled Ext_Zve32f)) && (← do
               (pure ((← (get_sew ())) == 16)))) || ((← (currentlyEnabled Ext_Zve64d)) && (← do
@@ -6603,19 +6604,19 @@ def valid_zvabd_sew (sew : Nat) : Bool :=
 
 def vext_vs1_forwards (arg_ : vextfunct6) : (BitVec 5) :=
   match arg_ with
-  | VEXT2_ZVF2 => 0b00110#5
-  | VEXT2_SVF2 => 0b00111#5
-  | VEXT4_ZVF4 => 0b00100#5
-  | VEXT4_SVF4 => 0b00101#5
-  | VEXT8_ZVF8 => 0b00010#5
-  | VEXT8_SVF8 => 0b00011#5
+  | .VEXT2_ZVF2 => 0b00110#5
+  | .VEXT2_SVF2 => 0b00111#5
+  | .VEXT4_ZVF4 => 0b00100#5
+  | .VEXT4_SVF4 => 0b00101#5
+  | .VEXT8_ZVF8 => 0b00010#5
+  | .VEXT8_SVF8 => 0b00011#5
 
 def vlewidth_pow_forwards (arg_ : vlewidth) : Int :=
   match arg_ with
-  | VLE8 => 3
-  | VLE16 => 4
-  | VLE32 => 5
-  | VLE64 => 6
+  | .VLE8 => 3
+  | .VLE16 => 4
+  | .VLE32 => 5
+  | .VLE64 => 6
 
 /-- Type quantifiers: arg_ : Nat, arg_ ∈ {1, 2, 4, 8} -/
 def width_enc_forwards (arg_ : Nat) : (BitVec 2) :=
@@ -6637,12 +6638,12 @@ def width_enc_wide_forwards (arg_ : Nat) : (BitVec 3) :=
 def zicfiss_xSSE (priv : Privilege) : SailM Bool := do
   (pure ((← (currentlyEnabled Ext_S)) && (← do
         match priv with
-        | Machine => (pure false)
-        | Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))))
-        | VirtualSupervisor =>
+        | .Machine => (pure false)
+        | .Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))))
+        | .VirtualSupervisor =>
           (internal_error "extensions/cfi/zicfiss_regs.sail" 27 "Hypervisor extension not supported")
-        | User => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ())))))
-        | VirtualUser => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ()))))))))
+        | .User => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ())))))
+        | .VirtualUser => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ()))))))))
 
 /-- Type quantifiers: EGS : Nat, EGW : Nat, 0 ≤ EGW, EGS > 0 -/
 def zvk_check_encdec (EGW : Nat) (EGS : Nat) : SailM Bool := do
@@ -6747,7 +6748,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
   | .ITYPE (imm, rs1, rd, op) =>
     (pure ((imm : (BitVec 12)) +++ ((encdec_reg_forwards rs1) +++ ((encdec_iop_forwards op) +++ ((encdec_reg_forwards
                 rd) +++ 0b0010011#7)))))
-  | .SHIFTIOP (shamt, rs1, rd, SLLI) =>
+  | .SHIFTIOP (shamt, rs1, rd, .SLLI) =>
     (do
       if (((xlen == 64) || ((BitVec.access shamt 5) == 0#1)) : Bool)
       then
@@ -6757,7 +6758,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .SHIFTIOP (shamt, rs1, rd, SRLI) =>
+  | .SHIFTIOP (shamt, rs1, rd, .SRLI) =>
     (do
       if (((xlen == 64) || ((BitVec.access shamt 5) == 0#1)) : Bool)
       then
@@ -6767,7 +6768,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .SHIFTIOP (shamt, rs1, rd, SRAI) =>
+  | .SHIFTIOP (shamt, rs1, rd, .SRAI) =>
     (do
       if (((xlen == 64) || ((BitVec.access shamt 5) == 0#1)) : Bool)
       then
@@ -6777,34 +6778,34 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .RTYPE (rs2, rs1, rd, ADD) =>
+  | .RTYPE (rs2, rs1, rd, .ADD) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, SLT) =>
+  | .RTYPE (rs2, rs1, rd, .SLT) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b010#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, SLTU) =>
+  | .RTYPE (rs2, rs1, rd, .SLTU) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b011#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, AND) =>
+  | .RTYPE (rs2, rs1, rd, .AND) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b111#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, OR) =>
+  | .RTYPE (rs2, rs1, rd, .OR) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b110#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, XOR) =>
+  | .RTYPE (rs2, rs1, rd, .XOR) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b100#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, SLL) =>
+  | .RTYPE (rs2, rs1, rd, .SLL) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b001#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, SRL) =>
+  | .RTYPE (rs2, rs1, rd, .SRL) =>
     (pure (0b0000000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, SUB) =>
+  | .RTYPE (rs2, rs1, rd, .SUB) =>
     (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b000#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
-  | .RTYPE (rs2, rs1, rd, SRA) =>
+  | .RTYPE (rs2, rs1, rd, .SRA) =>
     (pure (0b0100000#7 +++ ((encdec_reg_forwards rs2) +++ ((encdec_reg_forwards rs1) +++ (0b101#3 +++ ((encdec_reg_forwards
                   rd) +++ 0b0110011#7))))))
   | .LOAD (imm, rs1, rd, is_unsigned, width) =>
@@ -6837,7 +6838,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .RTYPEW (rs2, rs1, rd, ADDW) =>
+  | .RTYPEW (rs2, rs1, rd, .ADDW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6847,7 +6848,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .RTYPEW (rs2, rs1, rd, SUBW) =>
+  | .RTYPEW (rs2, rs1, rd, .SUBW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6857,7 +6858,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .RTYPEW (rs2, rs1, rd, SLLW) =>
+  | .RTYPEW (rs2, rs1, rd, .SLLW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6867,7 +6868,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .RTYPEW (rs2, rs1, rd, SRLW) =>
+  | .RTYPEW (rs2, rs1, rd, .SRLW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6877,7 +6878,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .RTYPEW (rs2, rs1, rd, SRAW) =>
+  | .RTYPEW (rs2, rs1, rd, .SRAW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6887,7 +6888,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .SHIFTIWOP (shamt, rs1, rd, SLLIW) =>
+  | .SHIFTIWOP (shamt, rs1, rd, .SLLIW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6897,7 +6898,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .SHIFTIWOP (shamt, rs1, rd, SRLIW) =>
+  | .SHIFTIWOP (shamt, rs1, rd, .SRLIW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -6907,7 +6908,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .SHIFTIWOP (shamt, rs1, rd, SRAIW) =>
+  | .SHIFTIWOP (shamt, rs1, rd, .SRAIW) =>
     (do
       if ((xlen == 64) : Bool)
       then
@@ -7107,7 +7108,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPEW (rs2, rs1, rd, ROLW) =>
+  | .ZBB_RTYPEW (rs2, rs1, rd, .ROLW) =>
     (do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 64)) : Bool)
       then
@@ -7117,7 +7118,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPEW (rs2, rs1, rd, RORW) =>
+  | .ZBB_RTYPEW (rs2, rs1, rd, .RORW) =>
     (do
       if ((((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) && (xlen == 64)) : Bool)
       then
@@ -7127,7 +7128,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, ANDN) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .ANDN) =>
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
@@ -7137,7 +7138,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, ORN) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .ORN) =>
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
@@ -7147,7 +7148,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, XNOR) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .XNOR) =>
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
@@ -7157,7 +7158,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, MAX) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .MAX) =>
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
@@ -7167,7 +7168,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, MAXU) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .MAXU) =>
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
@@ -7177,7 +7178,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, MIN) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .MIN) =>
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
@@ -7187,7 +7188,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, MINU) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .MINU) =>
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
@@ -7197,7 +7198,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, ROL) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .ROL) =>
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
@@ -7207,7 +7208,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_RTYPE (rs2, rs1, rd, ROR) =>
+  | .ZBB_RTYPE (rs2, rs1, rd, .ROR) =>
     (do
       if (((← (currentlyEnabled Ext_Zbb)) || (← (currentlyEnabled Ext_Zbkb))) : Bool)
       then
@@ -7217,7 +7218,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_EXTOP (rs1, rd, SEXTB) =>
+  | .ZBB_EXTOP (rs1, rd, .SEXTB) =>
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
@@ -7227,7 +7228,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_EXTOP (rs1, rd, SEXTH) =>
+  | .ZBB_EXTOP (rs1, rd, .SEXTH) =>
     (do
       if ((← (currentlyEnabled Ext_Zbb)) : Bool)
       then
@@ -7237,7 +7238,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBB_EXTOP (rs1, rd, ZEXTH) =>
+  | .ZBB_EXTOP (rs1, rd, .ZEXTH) =>
     (do
       if (((← (currentlyEnabled Ext_Zbb)) && (xlen == 32)) : Bool)
       then
@@ -7369,7 +7370,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_IOP (shamt, rs1, rd, BCLRI) =>
+  | .ZBS_IOP (shamt, rs1, rd, .BCLRI) =>
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
@@ -7379,7 +7380,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_IOP (shamt, rs1, rd, BEXTI) =>
+  | .ZBS_IOP (shamt, rs1, rd, .BEXTI) =>
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
@@ -7389,7 +7390,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_IOP (shamt, rs1, rd, BINVI) =>
+  | .ZBS_IOP (shamt, rs1, rd, .BINVI) =>
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
@@ -7399,7 +7400,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_IOP (shamt, rs1, rd, BSETI) =>
+  | .ZBS_IOP (shamt, rs1, rd, .BSETI) =>
     (do
       if (((← (currentlyEnabled Ext_Zbs)) && ((xlen == 64) || ((BitVec.access shamt 5) == 0#1))) : Bool)
       then
@@ -7409,7 +7410,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_RTYPE (rs2, rs1, rd, BCLR) =>
+  | .ZBS_RTYPE (rs2, rs1, rd, .BCLR) =>
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
@@ -7419,7 +7420,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_RTYPE (rs2, rs1, rd, BEXT) =>
+  | .ZBS_RTYPE (rs2, rs1, rd, .BEXT) =>
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
@@ -7429,7 +7430,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_RTYPE (rs2, rs1, rd, BINV) =>
+  | .ZBS_RTYPE (rs2, rs1, rd, .BINV) =>
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
@@ -7439,7 +7440,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBS_RTYPE (rs2, rs1, rd, BSET) =>
+  | .ZBS_RTYPE (rs2, rs1, rd, .BSET) =>
     (do
       if ((← (currentlyEnabled Ext_Zbs)) : Bool)
       then
@@ -7469,7 +7470,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, FMADD_S) =>
+  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, .FMADD_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7479,7 +7480,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, FMSUB_S) =>
+  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, .FMSUB_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7489,7 +7490,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, FNMSUB_S) =>
+  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, .FNMSUB_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7499,7 +7500,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, FNMADD_S) =>
+  | .F_MADD_TYPE_S (rs3, rs2, rs1, rm, rd, .FNMADD_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7509,7 +7510,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, FADD_S) =>
+  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, .FADD_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7519,7 +7520,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, FSUB_S) =>
+  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, .FSUB_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7529,7 +7530,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, FMUL_S) =>
+  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, .FMUL_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7539,7 +7540,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, FDIV_S) =>
+  | .F_BIN_RM_TYPE_S (rs2, rs1, rm, rd, .FDIV_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7549,7 +7550,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_S (rs1, rm, rd, FSQRT_S) =>
+  | .F_UN_RM_FF_TYPE_S (rs1, rm, rd, .FSQRT_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7559,7 +7560,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, FCVT_W_S) =>
+  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, .FCVT_W_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7569,7 +7570,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, FCVT_WU_S) =>
+  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, .FCVT_WU_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7579,7 +7580,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, FCVT_S_W) =>
+  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, .FCVT_S_W) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7589,7 +7590,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, FCVT_S_WU) =>
+  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, .FCVT_S_WU) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7599,7 +7600,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, FCVT_L_S) =>
+  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, .FCVT_L_S) =>
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7609,7 +7610,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, FCVT_LU_S) =>
+  | .F_UN_RM_FX_TYPE_S (rs1, rm, rd, .FCVT_LU_S) =>
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7619,7 +7620,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, FCVT_S_L) =>
+  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, .FCVT_S_L) =>
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7629,7 +7630,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, FCVT_S_LU) =>
+  | .F_UN_RM_XF_TYPE_S (rs1, rm, rd, .FCVT_S_LU) =>
     (do
       if (((← (haveSingleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7639,7 +7640,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_F_S (rs2, rs1, rd, FSGNJ_S) =>
+  | .F_BIN_TYPE_F_S (rs2, rs1, rd, .FSGNJ_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7649,7 +7650,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_F_S (rs2, rs1, rd, FSGNJN_S) =>
+  | .F_BIN_TYPE_F_S (rs2, rs1, rd, .FSGNJN_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7659,7 +7660,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_F_S (rs2, rs1, rd, FSGNJX_S) =>
+  | .F_BIN_TYPE_F_S (rs2, rs1, rd, .FSGNJX_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7669,7 +7670,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_F_S (rs2, rs1, rd, FMIN_S) =>
+  | .F_BIN_TYPE_F_S (rs2, rs1, rd, .FMIN_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7679,7 +7680,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_F_S (rs2, rs1, rd, FMAX_S) =>
+  | .F_BIN_TYPE_F_S (rs2, rs1, rd, .FMAX_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7689,7 +7690,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_X_S (rs2, rs1, rd, FEQ_S) =>
+  | .F_BIN_TYPE_X_S (rs2, rs1, rd, .FEQ_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7699,7 +7700,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_X_S (rs2, rs1, rd, FLT_S) =>
+  | .F_BIN_TYPE_X_S (rs2, rs1, rd, .FLT_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7709,7 +7710,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_TYPE_X_S (rs2, rs1, rd, FLE_S) =>
+  | .F_BIN_TYPE_X_S (rs2, rs1, rd, .FLE_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7719,7 +7720,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_TYPE_X_S (rs1, rd, FCLASS_S) =>
+  | .F_UN_TYPE_X_S (rs1, rd, .FCLASS_S) =>
     (do
       if ((← (haveSingleFPU ())) : Bool)
       then
@@ -7729,7 +7730,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_TYPE_X_S (rs1, rd, FMV_X_W) =>
+  | .F_UN_TYPE_X_S (rs1, rd, .FMV_X_W) =>
     (do
       if ((← (currentlyEnabled Ext_F)) : Bool)
       then
@@ -7739,7 +7740,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_TYPE_F_S (rs1, rd, FMV_W_X) =>
+  | .F_UN_TYPE_F_S (rs1, rd, .FMV_W_X) =>
     (do
       if ((← (currentlyEnabled Ext_F)) : Bool)
       then
@@ -7749,7 +7750,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, FMADD_D) =>
+  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, .FMADD_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3]))) : Bool)
       then
@@ -7759,7 +7760,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, FMSUB_D) =>
+  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, .FMSUB_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3]))) : Bool)
       then
@@ -7769,7 +7770,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, FNMSUB_D) =>
+  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, .FNMSUB_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3]))) : Bool)
       then
@@ -7779,7 +7780,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, FNMADD_D) =>
+  | .F_MADD_TYPE_D (rs3, rs2, rs1, rm, rd, .FNMADD_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 4) #v[rd, rs1, rs2, rs3]))) : Bool)
       then
@@ -7789,7 +7790,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, FADD_D) =>
+  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, .FADD_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7799,7 +7800,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, FSUB_D) =>
+  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, .FSUB_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7809,7 +7810,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, FMUL_D) =>
+  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, .FMUL_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7819,7 +7820,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, FDIV_D) =>
+  | .F_BIN_RM_TYPE_D (rs2, rs1, rm, rd, .FDIV_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7829,7 +7830,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_D (rs1, rm, rd, FSQRT_D) =>
+  | .F_UN_RM_FF_TYPE_D (rs1, rm, rd, .FSQRT_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 2) #v[rd, rs1]))) : Bool)
       then
@@ -7839,7 +7840,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, FCVT_W_D) =>
+  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, .FCVT_W_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rs1]))) : Bool)
       then
@@ -7849,7 +7850,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, FCVT_WU_D) =>
+  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, .FCVT_WU_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rs1]))) : Bool)
       then
@@ -7859,7 +7860,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, FCVT_D_W) =>
+  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, .FCVT_D_W) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rd]))) : Bool)
       then
@@ -7869,7 +7870,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, FCVT_D_WU) =>
+  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, .FCVT_D_WU) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rd]))) : Bool)
       then
@@ -7879,7 +7880,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_D (rs1, rm, rd, FCVT_S_D) =>
+  | .F_UN_RM_FF_TYPE_D (rs1, rm, rd, .FCVT_S_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rs1]))) : Bool)
       then
@@ -7889,7 +7890,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_D (rs1, rm, rd, FCVT_D_S) =>
+  | .F_UN_RM_FF_TYPE_D (rs1, rm, rd, .FCVT_D_S) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rd]))) : Bool)
       then
@@ -7899,7 +7900,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, FCVT_L_D) =>
+  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, .FCVT_L_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7909,7 +7910,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, FCVT_LU_D) =>
+  | .F_UN_RM_FX_TYPE_D (rs1, rm, rd, .FCVT_LU_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7919,7 +7920,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, FCVT_D_L) =>
+  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, .FCVT_D_L) =>
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7929,7 +7930,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, FCVT_D_LU) =>
+  | .F_UN_RM_XF_TYPE_D (rs1, rm, rd, .FCVT_D_LU) =>
     (do
       if (((← (haveDoubleFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -7939,7 +7940,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_D (rs2, rs1, rd, FSGNJ_D) =>
+  | .F_BIN_F_TYPE_D (rs2, rs1, rd, .FSGNJ_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7949,7 +7950,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_D (rs2, rs1, rd, FSGNJN_D) =>
+  | .F_BIN_F_TYPE_D (rs2, rs1, rd, .FSGNJN_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7959,7 +7960,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_D (rs2, rs1, rd, FSGNJX_D) =>
+  | .F_BIN_F_TYPE_D (rs2, rs1, rd, .FSGNJX_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7969,7 +7970,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_D (rs2, rs1, rd, FMIN_D) =>
+  | .F_BIN_F_TYPE_D (rs2, rs1, rd, .FMIN_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7979,7 +7980,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_D (rs2, rs1, rd, FMAX_D) =>
+  | .F_BIN_F_TYPE_D (rs2, rs1, rd, .FMAX_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 3) #v[rd, rs1, rs2]))) : Bool)
       then
@@ -7989,7 +7990,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_X_TYPE_D (rs2, rs1, rd, FEQ_D) =>
+  | .F_BIN_X_TYPE_D (rs2, rs1, rd, .FEQ_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 2) #v[rs1, rs2]))) : Bool)
       then
@@ -7999,7 +8000,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_X_TYPE_D (rs2, rs1, rd, FLT_D) =>
+  | .F_BIN_X_TYPE_D (rs2, rs1, rd, .FLT_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 2) #v[rs1, rs2]))) : Bool)
       then
@@ -8009,7 +8010,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_X_TYPE_D (rs2, rs1, rd, FLE_D) =>
+  | .F_BIN_X_TYPE_D (rs2, rs1, rd, .FLE_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 2) #v[rs1, rs2]))) : Bool)
       then
@@ -8019,7 +8020,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_X_TYPE_D (rs1, rd, FCLASS_D) =>
+  | .F_UN_X_TYPE_D (rs1, rd, .FCLASS_D) =>
     (do
       if (((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1) #v[rs1]))) : Bool)
       then
@@ -8029,7 +8030,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_X_TYPE_D (rs1, rd, FMV_X_D) =>
+  | .F_UN_X_TYPE_D (rs1, rd, .FMV_X_D) =>
     (do
       if (((← (currentlyEnabled Ext_D)) && (xlen ≥b 64)) : Bool)
       then
@@ -8039,7 +8040,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_F_TYPE_D (rs1, rd, FMV_D_X) =>
+  | .F_UN_F_TYPE_D (rs1, rd, .FMV_D_X) =>
     (do
       if (((← (currentlyEnabled Ext_D)) && (xlen ≥b 64)) : Bool)
       then
@@ -8049,7 +8050,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, FADD_H) =>
+  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, .FADD_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8059,7 +8060,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, FSUB_H) =>
+  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, .FSUB_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8069,7 +8070,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, FMUL_H) =>
+  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, .FMUL_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8079,7 +8080,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, FDIV_H) =>
+  | .F_BIN_RM_TYPE_H (rs2, rs1, rm, rd, .FDIV_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8089,7 +8090,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, FMADD_H) =>
+  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, .FMADD_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8099,7 +8100,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, FMSUB_H) =>
+  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, .FMSUB_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8109,7 +8110,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, FNMSUB_H) =>
+  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, .FNMSUB_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8119,7 +8120,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, FNMADD_H) =>
+  | .F_MADD_TYPE_H (rs3, rs2, rs1, rm, rd, .FNMADD_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8129,7 +8130,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_H (rs2, rs1, rd, FSGNJ_H) =>
+  | .F_BIN_F_TYPE_H (rs2, rs1, rd, .FSGNJ_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8139,7 +8140,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_H (rs2, rs1, rd, FSGNJN_H) =>
+  | .F_BIN_F_TYPE_H (rs2, rs1, rd, .FSGNJN_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8149,7 +8150,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_H (rs2, rs1, rd, FSGNJX_H) =>
+  | .F_BIN_F_TYPE_H (rs2, rs1, rd, .FSGNJX_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8159,7 +8160,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_H (rs2, rs1, rd, FMIN_H) =>
+  | .F_BIN_F_TYPE_H (rs2, rs1, rd, .FMIN_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8169,7 +8170,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_F_TYPE_H (rs2, rs1, rd, FMAX_H) =>
+  | .F_BIN_F_TYPE_H (rs2, rs1, rd, .FMAX_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8179,7 +8180,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_X_TYPE_H (rs2, rs1, rd, FEQ_H) =>
+  | .F_BIN_X_TYPE_H (rs2, rs1, rd, .FEQ_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8189,7 +8190,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_X_TYPE_H (rs2, rs1, rd, FLT_H) =>
+  | .F_BIN_X_TYPE_H (rs2, rs1, rd, .FLT_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8199,7 +8200,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_BIN_X_TYPE_H (rs2, rs1, rd, FLE_H) =>
+  | .F_BIN_X_TYPE_H (rs2, rs1, rd, .FLE_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8209,7 +8210,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, FSQRT_H) =>
+  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, .FSQRT_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8219,7 +8220,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, FCVT_W_H) =>
+  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, .FCVT_W_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8229,7 +8230,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, FCVT_WU_H) =>
+  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, .FCVT_WU_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8239,7 +8240,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, FCVT_H_W) =>
+  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, .FCVT_H_W) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8249,7 +8250,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, FCVT_H_WU) =>
+  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, .FCVT_H_WU) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8259,7 +8260,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, FCVT_H_S) =>
+  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, .FCVT_H_S) =>
     (do
       if ((← (haveHalfMin ())) : Bool)
       then
@@ -8269,7 +8270,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, FCVT_H_D) =>
+  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, .FCVT_H_D) =>
     (do
       if (((← (haveHalfMin ())) && ((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1)
                  #v[rs1])))) : Bool)
@@ -8280,7 +8281,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, FCVT_S_H) =>
+  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, .FCVT_S_H) =>
     (do
       if ((← (haveHalfMin ())) : Bool)
       then
@@ -8290,7 +8291,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, FCVT_D_H) =>
+  | .F_UN_RM_FF_TYPE_H (rs1, rm, rd, .FCVT_D_H) =>
     (do
       if (((← (haveHalfMin ())) && ((← (haveDoubleFPU ())) && (← (validDoubleRegs (n := 1)
                  #v[rd])))) : Bool)
@@ -8301,7 +8302,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, FCVT_L_H) =>
+  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, .FCVT_L_H) =>
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -8311,7 +8312,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, FCVT_LU_H) =>
+  | .F_UN_RM_FX_TYPE_H (rs1, rm, rd, .FCVT_LU_H) =>
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -8321,7 +8322,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, FCVT_H_L) =>
+  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, .FCVT_H_L) =>
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -8331,7 +8332,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, FCVT_H_LU) =>
+  | .F_UN_RM_XF_TYPE_H (rs1, rm, rd, .FCVT_H_LU) =>
     (do
       if (((← (haveHalfFPU ())) && (xlen ≥b 64)) : Bool)
       then
@@ -8341,7 +8342,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_X_TYPE_H (rs1, rd, FCLASS_H) =>
+  | .F_UN_X_TYPE_H (rs1, rd, .FCLASS_H) =>
     (do
       if ((← (haveHalfFPU ())) : Bool)
       then
@@ -8351,7 +8352,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_X_TYPE_H (rs1, rd, FMV_X_H) =>
+  | .F_UN_X_TYPE_H (rs1, rd, .FMV_X_H) =>
     (do
       if (((← (currentlyEnabled Ext_Zfhmin)) || (← (currentlyEnabled Ext_Zfbfmin))) : Bool)
       then
@@ -8361,7 +8362,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .F_UN_F_TYPE_H (rs1, rd, FMV_H_X) =>
+  | .F_UN_F_TYPE_H (rs1, rd, .FMV_H_X) =>
     (do
       if (((← (currentlyEnabled Ext_Zfhmin)) || (← (currentlyEnabled Ext_Zfbfmin))) : Bool)
       then
@@ -9968,7 +9969,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBKB_RTYPE (rs2, rs1, rd, PACK) =>
+  | .ZBKB_RTYPE (rs2, rs1, rd, .PACK) =>
     (do
       if ((← (currentlyEnabled Ext_Zbkb)) : Bool)
       then
@@ -9978,7 +9979,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZBKB_RTYPE (rs2, rs1, rd, PACKH) =>
+  | .ZBKB_RTYPE (rs2, rs1, rd, .PACKH) =>
     (do
       if ((← (currentlyEnabled Ext_Zbkb)) : Bool)
       then
@@ -10400,7 +10401,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZVKSM4RTYPE (ZVK_VSM4R_VV, vs2, vd) =>
+  | .ZVKSM4RTYPE (.ZVK_VSM4R_VV, vs2, vd) =>
     (do
       if (((← (currentlyEnabled Ext_Zvksed)) && (← do
              (pure (((← (get_sew ())) == 32) && (← (zvk_check_encdec 128 4)))))) : Bool)
@@ -10411,7 +10412,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
         (do
           assert false "Pattern match failure at unknown location"
           throw Error.Exit))
-  | .ZVKSM4RTYPE (ZVK_VSM4R_VS, vs2, vd) =>
+  | .ZVKSM4RTYPE (.ZVK_VSM4R_VS, vs2, vd) =>
     (do
       if (((← (currentlyEnabled Ext_Zvksed)) && (← do
              (pure (((← (get_sew ())) == 32) && ((← (zvk_check_encdec 128 4)) && (zvk_valid_reg_overlap
@@ -10752,20 +10753,20 @@ def instruction_to_str (insn : instruction) : SailM String := do
 
 def interruptType_to_str (i : InterruptType) : String :=
   match i with
-  | I_Reserved_0 => "reserved-interrupt-0"
-  | I_S_Software => "supervisor-software-interrupt"
-  | I_VS_Software => "virtual-supervisor-software-interrupt"
-  | I_M_Software => "machine-software-interrupt"
-  | I_Reserved_4 => "reserved-interrupt-4"
-  | I_S_Timer => "supervisor-timer-interrupt"
-  | I_VS_Timer => "virtual-supervisor-timer-interrupt"
-  | I_M_Timer => "machine-timer-interrupt"
-  | I_Reserved_8 => "reserved-interrupt-8"
-  | I_S_External => "supervisor-external-interrupt"
-  | I_VS_External => "virtual-supervisor-external-interrupt"
-  | I_M_External => "machine-external-interrupt"
-  | I_SG_External => "supervisor guest-external-interrupt"
-  | I_COF => "counter-overflow interrupt"
+  | .I_Reserved_0 => "reserved-interrupt-0"
+  | .I_S_Software => "supervisor-software-interrupt"
+  | .I_VS_Software => "virtual-supervisor-software-interrupt"
+  | .I_M_Software => "machine-software-interrupt"
+  | .I_Reserved_4 => "reserved-interrupt-4"
+  | .I_S_Timer => "supervisor-timer-interrupt"
+  | .I_VS_Timer => "virtual-supervisor-timer-interrupt"
+  | .I_M_Timer => "machine-timer-interrupt"
+  | .I_Reserved_8 => "reserved-interrupt-8"
+  | .I_S_External => "supervisor-external-interrupt"
+  | .I_VS_External => "virtual-supervisor-external-interrupt"
+  | .I_M_External => "machine-external-interrupt"
+  | .I_SG_External => "supervisor guest-external-interrupt"
+  | .I_COF => "counter-overflow interrupt"
 
 def misaligned_fault_str_backwards (arg_ : String) : SailM misaligned_fault := do
   match arg_ with
@@ -10779,21 +10780,21 @@ def misaligned_fault_str_backwards (arg_ : String) : SailM misaligned_fault := d
 
 def misaligned_fault_str_forwards (arg_ : misaligned_fault) : String :=
   match arg_ with
-  | NoFault => "NoFault"
-  | AccessFault => "AccessFault"
-  | AlignmentFault => "AlignmentFault"
+  | .NoFault => "NoFault"
+  | .AccessFault => "AccessFault"
+  | .AlignmentFault => "AlignmentFault"
 
 def reservability_str_forwards (arg_ : Reservability) : String :=
   match arg_ with
-  | RsrvNone => "RsrvNone"
-  | RsrvNonEventual => "RsrvNonEventual"
-  | RsrvEventual => "RsrvEventual"
+  | .RsrvNone => "RsrvNone"
+  | .RsrvNonEventual => "RsrvNonEventual"
+  | .RsrvEventual => "RsrvEventual"
 
 def pma_attributes_to_str (attr : PMA) : String :=
   (HAppend.hAppend
     (match attr.mem_type with
-    | MainMemory => " main-memory"
-    | IOMemory => " io-memory")
+    | .MainMemory => " main-memory"
+    | .IOMemory => " io-memory")
     (HAppend.hAppend
       (if (attr.cacheable : Bool)
       then " cacheable"
@@ -10884,9 +10885,9 @@ def wait_name_backwards (arg_ : String) : SailM WaitReason := do
 
 def wait_name_forwards (arg_ : WaitReason) : String :=
   match arg_ with
-  | WAIT_WFI => "WAIT-WFI"
-  | WAIT_WRS_STO => "WAIT-WRS-STO"
-  | WAIT_WRS_NTO => "WAIT-WRS-NTO"
+  | .WAIT_WFI => "WAIT-WFI"
+  | .WAIT_WRS_STO => "WAIT-WRS-STO"
+  | .WAIT_WRS_NTO => "WAIT-WRS-NTO"
 
 /-- Type quantifiers: k_a : Type -/
 def is_load_store (access : (MemoryAccessType k_a)) : Bool :=
@@ -10923,9 +10924,9 @@ def CSRAccessType_of_num (arg_ : Nat) : CSRAccessType :=
 
 def num_of_CSRAccessType (arg_ : CSRAccessType) : Int :=
   match arg_ with
-  | CSRRead => 0
-  | CSRWrite => 1
-  | CSRReadWrite => 2
+  | .CSRRead => 0
+  | .CSRWrite => 1
+  | .CSRReadWrite => 2
 
 def undefined_InterruptType (_ : Unit) : SailM InterruptType := do
   (internal_pick
@@ -10951,37 +10952,37 @@ def InterruptType_of_num (arg_ : Nat) : InterruptType :=
 
 def num_of_InterruptType (arg_ : InterruptType) : Int :=
   match arg_ with
-  | I_Reserved_0 => 0
-  | I_S_Software => 1
-  | I_VS_Software => 2
-  | I_M_Software => 3
-  | I_Reserved_4 => 4
-  | I_S_Timer => 5
-  | I_VS_Timer => 6
-  | I_M_Timer => 7
-  | I_Reserved_8 => 8
-  | I_S_External => 9
-  | I_VS_External => 10
-  | I_M_External => 11
-  | I_SG_External => 12
-  | I_COF => 13
+  | .I_Reserved_0 => 0
+  | .I_S_Software => 1
+  | .I_VS_Software => 2
+  | .I_M_Software => 3
+  | .I_Reserved_4 => 4
+  | .I_S_Timer => 5
+  | .I_VS_Timer => 6
+  | .I_M_Timer => 7
+  | .I_Reserved_8 => 8
+  | .I_S_External => 9
+  | .I_VS_External => 10
+  | .I_M_External => 11
+  | .I_SG_External => 12
+  | .I_COF => 13
 
 def interruptType_bits_forwards (arg_ : InterruptType) : (BitVec 6) :=
   match arg_ with
-  | I_Reserved_0 => 0b000000#6
-  | I_S_Software => 0b000001#6
-  | I_VS_Software => 0b000010#6
-  | I_M_Software => 0b000011#6
-  | I_Reserved_4 => 0b000100#6
-  | I_S_Timer => 0b000101#6
-  | I_VS_Timer => 0b000110#6
-  | I_M_Timer => 0b000111#6
-  | I_Reserved_8 => 0b001000#6
-  | I_S_External => 0b001001#6
-  | I_VS_External => 0b001010#6
-  | I_M_External => 0b001011#6
-  | I_SG_External => 0b001100#6
-  | I_COF => 0b001101#6
+  | .I_Reserved_0 => 0b000000#6
+  | .I_S_Software => 0b000001#6
+  | .I_VS_Software => 0b000010#6
+  | .I_M_Software => 0b000011#6
+  | .I_Reserved_4 => 0b000100#6
+  | .I_S_Timer => 0b000101#6
+  | .I_VS_Timer => 0b000110#6
+  | .I_M_Timer => 0b000111#6
+  | .I_Reserved_8 => 0b001000#6
+  | .I_S_External => 0b001001#6
+  | .I_VS_External => 0b001010#6
+  | .I_M_External => 0b001011#6
+  | .I_SG_External => 0b001100#6
+  | .I_COF => 0b001101#6
 
 def interruptType_bits_backwards (arg_ : (BitVec 6)) : SailM InterruptType := do
   match arg_ with
@@ -11006,20 +11007,20 @@ def interruptType_bits_backwards (arg_ : (BitVec 6)) : SailM InterruptType := do
 
 def interruptType_bits_forwards_matches (arg_ : InterruptType) : Bool :=
   match arg_ with
-  | I_Reserved_0 => true
-  | I_S_Software => true
-  | I_VS_Software => true
-  | I_M_Software => true
-  | I_Reserved_4 => true
-  | I_S_Timer => true
-  | I_VS_Timer => true
-  | I_M_Timer => true
-  | I_Reserved_8 => true
-  | I_S_External => true
-  | I_VS_External => true
-  | I_M_External => true
-  | I_SG_External => true
-  | I_COF => true
+  | .I_Reserved_0 => true
+  | .I_S_Software => true
+  | .I_VS_Software => true
+  | .I_M_Software => true
+  | .I_Reserved_4 => true
+  | .I_S_Timer => true
+  | .I_VS_Timer => true
+  | .I_M_Timer => true
+  | .I_Reserved_8 => true
+  | .I_S_External => true
+  | .I_VS_External => true
+  | .I_M_External => true
+  | .I_SG_External => true
+  | .I_COF => true
 
 def interruptType_bits_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -11050,8 +11051,8 @@ def breakpoint_cause_of_num (arg_ : Nat) : breakpoint_cause :=
 
 def num_of_breakpoint_cause (arg_ : breakpoint_cause) : Int :=
   match arg_ with
-  | Brk_Software => 0
-  | Brk_Hardware => 1
+  | .Brk_Software => 0
+  | .Brk_Hardware => 1
 
 def exceptionType_bits_forwards (arg_ : ExceptionType) : (BitVec 6) :=
   match arg_ with
@@ -11078,8 +11079,8 @@ def exceptionType_bits_forwards (arg_ : ExceptionType) : (BitVec 6) :=
   | .E_Load_GPage_Fault () => 0b010101#6
   | .E_Virtual_Instr () => 0b010110#6
   | .E_SAMO_GPage_Fault () => 0b010111#6
-  | .E_Breakpoint Brk_Software => 0b000011#6
-  | .E_Breakpoint Brk_Hardware => 0b000011#6
+  | .E_Breakpoint .Brk_Software => 0b000011#6
+  | .E_Breakpoint .Brk_Hardware => 0b000011#6
   | .E_Extension e => (ext_exc_type_bits_forwards e)
 
 def exceptionType_bits_backwards (arg_ : (BitVec 6)) : SailM ExceptionType := do
@@ -11149,8 +11150,8 @@ def exceptionType_bits_forwards_matches (arg_ : ExceptionType) : Bool :=
   | .E_Load_GPage_Fault () => true
   | .E_Virtual_Instr () => true
   | .E_SAMO_GPage_Fault () => true
-  | .E_Breakpoint Brk_Software => true
-  | .E_Breakpoint Brk_Hardware => true
+  | .E_Breakpoint .Brk_Software => true
+  | .E_Breakpoint .Brk_Hardware => true
   | .E_Extension e => true
 
 def exceptionType_bits_backwards_matches (arg_ : (BitVec 6)) : SailM Bool := do
@@ -11204,11 +11205,11 @@ def SWCheckCodes_of_num (arg_ : Nat) : SWCheckCodes :=
 
 def num_of_SWCheckCodes (arg_ : SWCheckCodes) : Int :=
   match arg_ with
-  | LANDING_PAD_FAULT => 0
+  | .LANDING_PAD_FAULT => 0
 
 def sw_check_code_to_bits (c : SWCheckCodes) : (BitVec 32) :=
   match c with
-  | LANDING_PAD_FAULT => (zero_extend (m := 32) 0b010#3)
+  | .LANDING_PAD_FAULT => (zero_extend (m := 32) 0b010#3)
 
 def trapCause_bits_forwards (arg_ : TrapCause) : (BitVec 6) :=
   match arg_ with
@@ -11298,9 +11299,9 @@ def TrapVectorMode_of_num (arg_ : Nat) : TrapVectorMode :=
 
 def num_of_TrapVectorMode (arg_ : TrapVectorMode) : Int :=
   match arg_ with
-  | TV_Direct => 0
-  | TV_Vector => 1
-  | TV_Reserved => 2
+  | .TV_Direct => 0
+  | .TV_Vector => 1
+  | .TV_Reserved => 2
 
 def trapVectorMode_of_bits (m : (BitVec 2)) : TrapVectorMode :=
   match m with
@@ -11319,8 +11320,8 @@ def xRET_type_of_num (arg_ : Nat) : xRET_type :=
 
 def num_of_xRET_type (arg_ : xRET_type) : Int :=
   match arg_ with
-  | mRET => 0
-  | sRET => 1
+  | .mRET => 0
+  | .sRET => 1
 
 def undefined_ExtStatus (_ : Unit) : SailM ExtStatus := do
   (internal_pick [Off, Initial, Clean, Dirty])
@@ -11335,17 +11336,17 @@ def ExtStatus_of_num (arg_ : Nat) : ExtStatus :=
 
 def num_of_ExtStatus (arg_ : ExtStatus) : Int :=
   match arg_ with
-  | Off => 0
-  | Initial => 1
-  | Clean => 2
-  | Dirty => 3
+  | .Off => 0
+  | .Initial => 1
+  | .Clean => 2
+  | .Dirty => 3
 
 def extStatus_bits_forwards (arg_ : ExtStatus) : (BitVec 2) :=
   match arg_ with
-  | Off => 0b00#2
-  | Initial => 0b01#2
-  | Clean => 0b10#2
-  | Dirty => 0b11#2
+  | .Off => 0b00#2
+  | .Initial => 0b01#2
+  | .Clean => 0b10#2
+  | .Dirty => 0b11#2
 
 def extStatus_bits_backwards (arg_ : (BitVec 2)) : ExtStatus :=
   match arg_ with
@@ -11356,10 +11357,10 @@ def extStatus_bits_backwards (arg_ : (BitVec 2)) : ExtStatus :=
 
 def extStatus_bits_forwards_matches (arg_ : ExtStatus) : Bool :=
   match arg_ with
-  | Off => true
-  | Initial => true
-  | Clean => true
-  | Dirty => true
+  | .Off => true
+  | .Initial => true
+  | .Clean => true
+  | .Dirty => true
 
 def extStatus_bits_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
@@ -11389,19 +11390,19 @@ def SATPMode_of_num (arg_ : Nat) : SATPMode :=
 
 def num_of_SATPMode (arg_ : SATPMode) : Int :=
   match arg_ with
-  | Bare => 0
-  | Sv32 => 1
-  | Sv39 => 2
-  | Sv48 => 3
-  | Sv57 => 4
+  | .Bare => 0
+  | .Sv32 => 1
+  | .Sv39 => 2
+  | .Sv48 => 3
+  | .Sv57 => 4
 
 def satpMode_of_bits (a : Architecture) (m : (BitVec 4)) : (Option SATPMode) :=
   match (a, m) with
   | (_, 0x0) => (some Bare)
-  | (RV32, 0x1) => (some Sv32)
-  | (RV64, 0x8) => (some Sv39)
-  | (RV64, 0x9) => (some Sv48)
-  | (RV64, 0xA) => (some Sv57)
+  | (.RV32, 0x1) => (some Sv32)
+  | (.RV64, 0x8) => (some Sv39)
+  | (.RV64, 0x9) => (some Sv48)
+  | (.RV64, 0xA) => (some Sv57)
   | (_, _) => none
 
 def undefined_WaitReason (_ : Unit) : SailM WaitReason := do
@@ -11416,15 +11417,15 @@ def WaitReason_of_num (arg_ : Nat) : WaitReason :=
 
 def num_of_WaitReason (arg_ : WaitReason) : Int :=
   match arg_ with
-  | WAIT_WFI => 0
-  | WAIT_WRS_STO => 1
-  | WAIT_WRS_NTO => 2
+  | .WAIT_WFI => 0
+  | .WAIT_WRS_STO => 1
+  | .WAIT_WRS_NTO => 2
 
 def wait_name_forwards_matches (arg_ : WaitReason) : Bool :=
   match arg_ with
-  | WAIT_WFI => true
-  | WAIT_WRS_STO => true
-  | WAIT_WRS_NTO => true
+  | .WAIT_WFI => true
+  | .WAIT_WRS_STO => true
+  | .WAIT_WRS_NTO => true
 
 def wait_name_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

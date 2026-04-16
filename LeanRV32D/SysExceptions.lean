@@ -211,12 +211,12 @@ def handle_trap_extension (_p : Privilege) (_pc : (BitVec 32)) (_u : (Option Uni
 def prepare_trap_vector (p : Privilege) (cause : (BitVec 32)) : SailM (BitVec 32) := do
   let tvec ← (( do
     match p with
-    | Machine => readReg mtvec
-    | Supervisor => readReg stvec
-    | User => (internal_error "exceptions/sys_exceptions.sail" 25 "Invalid privilege level")
-    | VirtualUser =>
+    | .Machine => readReg mtvec
+    | .Supervisor => readReg stvec
+    | .User => (internal_error "exceptions/sys_exceptions.sail" 25 "Invalid privilege level")
+    | .VirtualUser =>
       (internal_error "exceptions/sys_exceptions.sail" 26 "Hypervisor extension not supported")
-    | VirtualSupervisor =>
+    | .VirtualSupervisor =>
       (internal_error "exceptions/sys_exceptions.sail" 27 "Hypervisor extension not supported") ) :
     SailM Mtvec )
   match (tvec_addr tvec cause) with
@@ -225,23 +225,23 @@ def prepare_trap_vector (p : Privilege) (cause : (BitVec 32)) : SailM (BitVec 32
 
 def get_xepc (p : Privilege) : SailM (BitVec 32) := do
   match p with
-  | Machine => (align_pc (← readReg mepc))
-  | Supervisor => (align_pc (← readReg sepc))
-  | User => (internal_error "exceptions/sys_exceptions.sail" 45 "Invalid privilege level")
-  | VirtualUser =>
+  | .Machine => (align_pc (← readReg mepc))
+  | .Supervisor => (align_pc (← readReg sepc))
+  | .User => (internal_error "exceptions/sys_exceptions.sail" 45 "Invalid privilege level")
+  | .VirtualUser =>
     (internal_error "exceptions/sys_exceptions.sail" 46 "Hypervisor extension not supported")
-  | VirtualSupervisor =>
+  | .VirtualSupervisor =>
     (internal_error "exceptions/sys_exceptions.sail" 47 "Hypervisor extension not supported")
 
 def set_xepc (p : Privilege) (value : (BitVec 32)) : SailM (BitVec 32) := do
   let target := (legalize_xepc value)
   match p with
-  | Machine => writeReg mepc target
-  | Supervisor => writeReg sepc target
-  | User => (internal_error "exceptions/sys_exceptions.sail" 55 "Invalid privilege level")
-  | VirtualUser =>
+  | .Machine => writeReg mepc target
+  | .Supervisor => writeReg sepc target
+  | .User => (internal_error "exceptions/sys_exceptions.sail" 55 "Invalid privilege level")
+  | .VirtualUser =>
     (internal_error "exceptions/sys_exceptions.sail" 56 "Hypervisor extension not supported")
-  | VirtualSupervisor =>
+  | .VirtualSupervisor =>
     (internal_error "exceptions/sys_exceptions.sail" 57 "Hypervisor extension not supported")
   (pure target)
 

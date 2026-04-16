@@ -213,8 +213,8 @@ def encdec_vvmfunct6_backwards (arg_ : (BitVec 6)) : SailM vvmfunct6 := do
 
 def encdec_vvmfunct6_forwards_matches (arg_ : vvmfunct6) : Bool :=
   match arg_ with
-  | VVM_VMADC => true
-  | VVM_VMSBC => true
+  | .VVM_VMADC => true
+  | .VVM_VMSBC => true
 
 def encdec_vvmfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def vvmtype_mnemonic_backwards (arg_ : String) : SailM vvmfunct6 := do
 
 def vvmtype_mnemonic_forwards_matches (arg_ : vvmfunct6) : Bool :=
   match arg_ with
-  | VVM_VMADC => true
-  | VVM_VMSBC => true
+  | .VVM_VMADC => true
+  | .VVM_VMSBC => true
 
 def vvmtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -253,8 +253,8 @@ def encdec_vvmcfunct6_backwards (arg_ : (BitVec 6)) : SailM vvmcfunct6 := do
 
 def encdec_vvmcfunct6_forwards_matches (arg_ : vvmcfunct6) : Bool :=
   match arg_ with
-  | VVMC_VMADC => true
-  | VVMC_VMSBC => true
+  | .VVMC_VMADC => true
+  | .VVMC_VMSBC => true
 
 def encdec_vvmcfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -273,8 +273,8 @@ def vvmctype_mnemonic_backwards (arg_ : String) : SailM vvmcfunct6 := do
 
 def vvmctype_mnemonic_forwards_matches (arg_ : vvmcfunct6) : Bool :=
   match arg_ with
-  | VVMC_VMADC => true
-  | VVMC_VMSBC => true
+  | .VVMC_VMADC => true
+  | .VVMC_VMSBC => true
 
 def vvmctype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -293,8 +293,8 @@ def encdec_vvmsfunct6_backwards (arg_ : (BitVec 6)) : SailM vvmsfunct6 := do
 
 def encdec_vvmsfunct6_forwards_matches (arg_ : vvmsfunct6) : Bool :=
   match arg_ with
-  | VVMS_VADC => true
-  | VVMS_VSBC => true
+  | .VVMS_VADC => true
+  | .VVMS_VSBC => true
 
 def encdec_vvmsfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -313,8 +313,8 @@ def vvmstype_mnemonic_backwards (arg_ : String) : SailM vvmsfunct6 := do
 
 def vvmstype_mnemonic_forwards_matches (arg_ : vvmsfunct6) : Bool :=
   match arg_ with
-  | VVMS_VADC => true
-  | VVMS_VSBC => true
+  | .VVMS_VADC => true
+  | .VVMS_VSBC => true
 
 def vvmstype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -337,12 +337,12 @@ def encdec_vvcmpfunct6_backwards (arg_ : (BitVec 6)) : SailM vvcmpfunct6 := do
 
 def encdec_vvcmpfunct6_forwards_matches (arg_ : vvcmpfunct6) : Bool :=
   match arg_ with
-  | VVCMP_VMSEQ => true
-  | VVCMP_VMSNE => true
-  | VVCMP_VMSLTU => true
-  | VVCMP_VMSLT => true
-  | VVCMP_VMSLEU => true
-  | VVCMP_VMSLE => true
+  | .VVCMP_VMSEQ => true
+  | .VVCMP_VMSNE => true
+  | .VVCMP_VMSLTU => true
+  | .VVCMP_VMSLT => true
+  | .VVCMP_VMSLEU => true
+  | .VVCMP_VMSLE => true
 
 def encdec_vvcmpfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -369,12 +369,12 @@ def vvcmptype_mnemonic_backwards (arg_ : String) : SailM vvcmpfunct6 := do
 
 def vvcmptype_mnemonic_forwards_matches (arg_ : vvcmpfunct6) : Bool :=
   match arg_ with
-  | VVCMP_VMSEQ => true
-  | VVCMP_VMSNE => true
-  | VVCMP_VMSLTU => true
-  | VVCMP_VMSLT => true
-  | VVCMP_VMSLEU => true
-  | VVCMP_VMSLE => true
+  | .VVCMP_VMSEQ => true
+  | .VVCMP_VMSNE => true
+  | .VVCMP_VMSLTU => true
+  | .VVCMP_VMSLT => true
+  | .VVCMP_VMSLEU => true
+  | .VVCMP_VMSLE => true
 
 def vvcmptype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -397,8 +397,8 @@ def encdec_vxmfunct6_backwards (arg_ : (BitVec 6)) : SailM vxmfunct6 := do
 
 def encdec_vxmfunct6_forwards_matches (arg_ : vxmfunct6) : Bool :=
   match arg_ with
-  | VXM_VMADC => true
-  | VXM_VMSBC => true
+  | .VXM_VMADC => true
+  | .VXM_VMSBC => true
 
 def encdec_vxmfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -417,8 +417,8 @@ def vxmtype_mnemonic_backwards (arg_ : String) : SailM vxmfunct6 := do
 
 def vxmtype_mnemonic_forwards_matches (arg_ : vxmfunct6) : Bool :=
   match arg_ with
-  | VXM_VMADC => true
-  | VXM_VMSBC => true
+  | .VXM_VMADC => true
+  | .VXM_VMSBC => true
 
 def vxmtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -437,8 +437,8 @@ def encdec_vxmcfunct6_backwards (arg_ : (BitVec 6)) : SailM vxmcfunct6 := do
 
 def encdec_vxmcfunct6_forwards_matches (arg_ : vxmcfunct6) : Bool :=
   match arg_ with
-  | VXMC_VMADC => true
-  | VXMC_VMSBC => true
+  | .VXMC_VMADC => true
+  | .VXMC_VMSBC => true
 
 def encdec_vxmcfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -457,8 +457,8 @@ def vxmctype_mnemonic_backwards (arg_ : String) : SailM vxmcfunct6 := do
 
 def vxmctype_mnemonic_forwards_matches (arg_ : vxmcfunct6) : Bool :=
   match arg_ with
-  | VXMC_VMADC => true
-  | VXMC_VMSBC => true
+  | .VXMC_VMADC => true
+  | .VXMC_VMSBC => true
 
 def vxmctype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -477,8 +477,8 @@ def encdec_vxmsfunct6_backwards (arg_ : (BitVec 6)) : SailM vxmsfunct6 := do
 
 def encdec_vxmsfunct6_forwards_matches (arg_ : vxmsfunct6) : Bool :=
   match arg_ with
-  | VXMS_VADC => true
-  | VXMS_VSBC => true
+  | .VXMS_VADC => true
+  | .VXMS_VSBC => true
 
 def encdec_vxmsfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -497,8 +497,8 @@ def vxmstype_mnemonic_backwards (arg_ : String) : SailM vxmsfunct6 := do
 
 def vxmstype_mnemonic_forwards_matches (arg_ : vxmsfunct6) : Bool :=
   match arg_ with
-  | VXMS_VADC => true
-  | VXMS_VSBC => true
+  | .VXMS_VADC => true
+  | .VXMS_VSBC => true
 
 def vxmstype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -523,14 +523,14 @@ def encdec_vxcmpfunct6_backwards (arg_ : (BitVec 6)) : SailM vxcmpfunct6 := do
 
 def encdec_vxcmpfunct6_forwards_matches (arg_ : vxcmpfunct6) : Bool :=
   match arg_ with
-  | VXCMP_VMSEQ => true
-  | VXCMP_VMSNE => true
-  | VXCMP_VMSLTU => true
-  | VXCMP_VMSLT => true
-  | VXCMP_VMSLEU => true
-  | VXCMP_VMSLE => true
-  | VXCMP_VMSGTU => true
-  | VXCMP_VMSGT => true
+  | .VXCMP_VMSEQ => true
+  | .VXCMP_VMSNE => true
+  | .VXCMP_VMSLTU => true
+  | .VXCMP_VMSLT => true
+  | .VXCMP_VMSLEU => true
+  | .VXCMP_VMSLE => true
+  | .VXCMP_VMSGTU => true
+  | .VXCMP_VMSGT => true
 
 def encdec_vxcmpfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -561,14 +561,14 @@ def vxcmptype_mnemonic_backwards (arg_ : String) : SailM vxcmpfunct6 := do
 
 def vxcmptype_mnemonic_forwards_matches (arg_ : vxcmpfunct6) : Bool :=
   match arg_ with
-  | VXCMP_VMSEQ => true
-  | VXCMP_VMSNE => true
-  | VXCMP_VMSLTU => true
-  | VXCMP_VMSLT => true
-  | VXCMP_VMSLEU => true
-  | VXCMP_VMSLE => true
-  | VXCMP_VMSGTU => true
-  | VXCMP_VMSGT => true
+  | .VXCMP_VMSEQ => true
+  | .VXCMP_VMSNE => true
+  | .VXCMP_VMSLTU => true
+  | .VXCMP_VMSLT => true
+  | .VXCMP_VMSLEU => true
+  | .VXCMP_VMSLE => true
+  | .VXCMP_VMSGTU => true
+  | .VXCMP_VMSGT => true
 
 def vxcmptype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -592,7 +592,7 @@ def encdec_vimfunct6_backwards (arg_ : (BitVec 6)) : SailM vimfunct6 := do
 
 def encdec_vimfunct6_forwards_matches (arg_ : vimfunct6) : Bool :=
   match arg_ with
-  | VIM_VMADC => true
+  | .VIM_VMADC => true
 
 def encdec_vimfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -609,7 +609,7 @@ def vimtype_mnemonic_backwards (arg_ : String) : SailM vimfunct6 := do
 
 def vimtype_mnemonic_forwards_matches (arg_ : vimfunct6) : Bool :=
   match arg_ with
-  | VIM_VMADC => true
+  | .VIM_VMADC => true
 
 def vimtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -626,7 +626,7 @@ def encdec_vimcfunct6_backwards (arg_ : (BitVec 6)) : SailM vimcfunct6 := do
 
 def encdec_vimcfunct6_forwards_matches (arg_ : vimcfunct6) : Bool :=
   match arg_ with
-  | VIMC_VMADC => true
+  | .VIMC_VMADC => true
 
 def encdec_vimcfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -643,7 +643,7 @@ def vimctype_mnemonic_backwards (arg_ : String) : SailM vimcfunct6 := do
 
 def vimctype_mnemonic_forwards_matches (arg_ : vimcfunct6) : Bool :=
   match arg_ with
-  | VIMC_VMADC => true
+  | .VIMC_VMADC => true
 
 def vimctype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -660,7 +660,7 @@ def encdec_vimsfunct6_backwards (arg_ : (BitVec 6)) : SailM vimsfunct6 := do
 
 def encdec_vimsfunct6_forwards_matches (arg_ : vimsfunct6) : Bool :=
   match arg_ with
-  | VIMS_VADC => true
+  | .VIMS_VADC => true
 
 def encdec_vimsfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -677,7 +677,7 @@ def vimstype_mnemonic_backwards (arg_ : String) : SailM vimsfunct6 := do
 
 def vimstype_mnemonic_forwards_matches (arg_ : vimsfunct6) : Bool :=
   match arg_ with
-  | VIMS_VADC => true
+  | .VIMS_VADC => true
 
 def vimstype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -699,12 +699,12 @@ def encdec_vicmpfunct6_backwards (arg_ : (BitVec 6)) : SailM vicmpfunct6 := do
 
 def encdec_vicmpfunct6_forwards_matches (arg_ : vicmpfunct6) : Bool :=
   match arg_ with
-  | VICMP_VMSEQ => true
-  | VICMP_VMSNE => true
-  | VICMP_VMSLEU => true
-  | VICMP_VMSLE => true
-  | VICMP_VMSGTU => true
-  | VICMP_VMSGT => true
+  | .VICMP_VMSEQ => true
+  | .VICMP_VMSNE => true
+  | .VICMP_VMSLEU => true
+  | .VICMP_VMSLE => true
+  | .VICMP_VMSGTU => true
+  | .VICMP_VMSGT => true
 
 def encdec_vicmpfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -731,12 +731,12 @@ def vicmptype_mnemonic_backwards (arg_ : String) : SailM vicmpfunct6 := do
 
 def vicmptype_mnemonic_forwards_matches (arg_ : vicmpfunct6) : Bool :=
   match arg_ with
-  | VICMP_VMSEQ => true
-  | VICMP_VMSNE => true
-  | VICMP_VMSLEU => true
-  | VICMP_VMSLE => true
-  | VICMP_VMSGTU => true
-  | VICMP_VMSGT => true
+  | .VICMP_VMSEQ => true
+  | .VICMP_VMSNE => true
+  | .VICMP_VMSLEU => true
+  | .VICMP_VMSLE => true
+  | .VICMP_VMSGTU => true
+  | .VICMP_VMSGT => true
 
 def vicmptype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

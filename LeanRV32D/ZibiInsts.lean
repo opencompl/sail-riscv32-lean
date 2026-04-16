@@ -213,8 +213,8 @@ def encdec_biop_backwards (arg_ : (BitVec 3)) : SailM biop := do
 
 def encdec_biop_forwards_matches (arg_ : biop) : Bool :=
   match arg_ with
-  | BEQI => true
-  | BNEI => true
+  | .BEQI => true
+  | .BNEI => true
 
 def encdec_biop_backwards_matches (arg_ : (BitVec 3)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def bitype_mnemonic_backwards (arg_ : String) : SailM biop := do
 
 def bitype_mnemonic_forwards_matches (arg_ : biop) : Bool :=
   match arg_ with
-  | BEQI => true
-  | BNEI => true
+  | .BEQI => true
+  | .BNEI => true
 
 def bitype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

@@ -212,8 +212,8 @@ def landing_pad_expectation_of_num (arg_ : Nat) : landing_pad_expectation :=
 
 def num_of_landing_pad_expectation (arg_ : landing_pad_expectation) : Int :=
   match arg_ with
-  | NO_LP_EXPECTED => 0
-  | LP_EXPECTED => 1
+  | .NO_LP_EXPECTED => 0
+  | .LP_EXPECTED => 1
 
 def landing_pad_bits_forwards (arg_ : (BitVec 1)) : landing_pad_expectation :=
   match arg_ with
@@ -222,8 +222,8 @@ def landing_pad_bits_forwards (arg_ : (BitVec 1)) : landing_pad_expectation :=
 
 def landing_pad_bits_backwards (arg_ : landing_pad_expectation) : (BitVec 1) :=
   match arg_ with
-  | NO_LP_EXPECTED => 0#1
-  | LP_EXPECTED => 1#1
+  | .NO_LP_EXPECTED => 0#1
+  | .LP_EXPECTED => 1#1
 
 def landing_pad_bits_forwards_matches (arg_ : (BitVec 1)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def landing_pad_bits_forwards_matches (arg_ : (BitVec 1)) : Bool :=
 
 def landing_pad_bits_backwards_matches (arg_ : landing_pad_expectation) : Bool :=
   match arg_ with
-  | NO_LP_EXPECTED => true
-  | LP_EXPECTED => true
+  | .NO_LP_EXPECTED => true
+  | .LP_EXPECTED => true
 
 def update_elp_state (rs1 : regidx) : SailM Unit := do
   if ((← (currentlyEnabled Ext_Zicfilp)) : Bool)
@@ -255,27 +255,27 @@ def reset_elp (_ : Unit) : SailM Unit := do
 
 def zicfilp_preserve_elp_on_trap (x : Privilege) : SailM Unit := do
   match x with
-  | Machine =>
+  | .Machine =>
     writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 41 41 (← readReg elp))
-  | Supervisor =>
+  | .Supervisor =>
     writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 23 23 (← readReg elp))
-  | User => (internal_error "extensions/cfi/zicfilp_regs.sail" 75 "Invalid privilege level")
-  | VirtualSupervisor =>
+  | .User => (internal_error "extensions/cfi/zicfilp_regs.sail" 75 "Invalid privilege level")
+  | .VirtualSupervisor =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 76 "Hypervisor extension not supported")
-  | VirtualUser =>
+  | .VirtualUser =>
     (internal_error "extensions/cfi/zicfilp_regs.sail" 77 "Hypervisor extension not supported")
   (reset_elp ())
 
 def zicfilp_restore_elp_on_xret (xret : xRET_type) (y : Privilege) : SailM Unit := do
   let pelp ← (( do
     match xret with
-    | mRET =>
+    | .mRET =>
       (do
         let pelp ← do (pure (_get_Mstatus_MPELP (← readReg mstatus)))
         writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 41 41
           (landing_pad_bits_backwards NO_LP_EXPECTED))
         (pure pelp))
-    | sRET =>
+    | .sRET =>
       (do
         let pelp ← do (pure (_get_Mstatus_SPELP (← readReg mstatus)))
         writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 23 23

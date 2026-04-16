@@ -213,8 +213,8 @@ def zbb_rtypew_mnemonic_backwards (arg_ : String) : SailM bropw_zbb := do
 
 def zbb_rtypew_mnemonic_forwards_matches (arg_ : bropw_zbb) : Bool :=
   match arg_ with
-  | ROLW => true
-  | RORW => true
+  | .ROLW => true
+  | .RORW => true
 
 def zbb_rtypew_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -240,15 +240,15 @@ def zbb_rtype_mnemonic_backwards (arg_ : String) : SailM brop_zbb := do
 
 def zbb_rtype_mnemonic_forwards_matches (arg_ : brop_zbb) : Bool :=
   match arg_ with
-  | ANDN => true
-  | ORN => true
-  | XNOR => true
-  | MAX => true
-  | MAXU => true
-  | MIN => true
-  | MINU => true
-  | ROL => true
-  | ROR => true
+  | .ANDN => true
+  | .ORN => true
+  | .XNOR => true
+  | .MAX => true
+  | .MAXU => true
+  | .MIN => true
+  | .MINU => true
+  | .ROL => true
+  | .ROR => true
 
 def zbb_rtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -275,9 +275,9 @@ def zbb_extop_mnemonic_backwards (arg_ : String) : SailM extop_zbb := do
 
 def zbb_extop_mnemonic_forwards_matches (arg_ : extop_zbb) : Bool :=
   match arg_ with
-  | SEXTB => true
-  | SEXTH => true
-  | ZEXTH => true
+  | .SEXTB => true
+  | .SEXTH => true
+  | .ZEXTH => true
 
 def zbb_extop_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

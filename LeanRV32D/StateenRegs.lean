@@ -214,10 +214,10 @@ def stateen_bit_of_num (arg_ : Nat) : stateen_bit :=
 
 def num_of_stateen_bit (arg_ : stateen_bit) : Int :=
   match arg_ with
-  | STATEEN_FCSR => 0
-  | STATEEN_SRMCFG => 1
-  | STATEEN_ENVCFG => 2
-  | STATEEN_SE => 3
+  | .STATEEN_FCSR => 0
+  | .STATEEN_SRMCFG => 1
+  | .STATEEN_ENVCFG => 2
+  | .STATEEN_SE => 3
 
 /-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 63 -/
 def stateen_bit_index_backwards (arg_ : Nat) : SailM stateen_bit := do
@@ -233,10 +233,10 @@ def stateen_bit_index_backwards (arg_ : Nat) : SailM stateen_bit := do
 
 def stateen_bit_index_forwards_matches (arg_ : stateen_bit) : Bool :=
   match arg_ with
-  | STATEEN_SE => true
-  | STATEEN_ENVCFG => true
-  | STATEEN_SRMCFG => true
-  | STATEEN_FCSR => true
+  | .STATEEN_SE => true
+  | .STATEEN_ENVCFG => true
+  | .STATEEN_SRMCFG => true
+  | .STATEEN_FCSR => true
 
 /-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 63 -/
 def stateen_bit_index_backwards_matches (arg_ : Nat) : Bool :=

@@ -203,26 +203,28 @@ open AmocasOddRegisterReservedBehavior
 def accessFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM ExceptionType := do
   match access with
   | .InstructionFetch () => (pure (E_Fetch_Access_Fault ()))
-  | .Load Data => (pure (E_Load_Access_Fault ()))
-  | .Load PageTableEntry => (pure (E_Load_Access_Fault ()))
-  | .LoadReserved Data => (pure (E_Load_Access_Fault ()))
-  | .Store Data => (pure (E_SAMO_Access_Fault ()))
-  | .Store PageTableEntry => (pure (E_SAMO_Access_Fault ()))
-  | .StoreConditional Data => (pure (E_SAMO_Access_Fault ()))
-  | .Atomic (_, Data, Data) => (pure (E_SAMO_Access_Fault ()))
-  | .Load ShadowStack => (pure (E_SAMO_Access_Fault ()))
-  | .Store ShadowStack => (pure (E_SAMO_Access_Fault ()))
-  | .Atomic (_, ShadowStack, ShadowStack) => (pure (E_SAMO_Access_Fault ()))
+  | .Load .Data => (pure (E_Load_Access_Fault ()))
+  | .Load .Vector => (pure (E_Load_Access_Fault ()))
+  | .Load .PageTableEntry => (pure (E_Load_Access_Fault ()))
+  | .LoadReserved .Data => (pure (E_Load_Access_Fault ()))
+  | .Store .Data => (pure (E_SAMO_Access_Fault ()))
+  | .Store .Vector => (pure (E_SAMO_Access_Fault ()))
+  | .Store .PageTableEntry => (pure (E_SAMO_Access_Fault ()))
+  | .StoreConditional .Data => (pure (E_SAMO_Access_Fault ()))
+  | .Atomic (_, .Data, .Data) => (pure (E_SAMO_Access_Fault ()))
+  | .Load .ShadowStack => (pure (E_SAMO_Access_Fault ()))
+  | .Store .ShadowStack => (pure (E_SAMO_Access_Fault ()))
+  | .Atomic (_, .ShadowStack, .ShadowStack) => (pure (E_SAMO_Access_Fault ()))
   | .LoadReserved p =>
-    (internal_error "core/mem_type_utils.sail" 28
+    (internal_error "core/mem_type_utils.sail" 30
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
   | .StoreConditional p =>
-    (internal_error "core/mem_type_utils.sail" 29
+    (internal_error "core/mem_type_utils.sail" 31
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
   | .Atomic (_, rp, wp) =>
-    (internal_error "core/mem_type_utils.sail" 30
+    (internal_error "core/mem_type_utils.sail" 32
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
@@ -230,33 +232,35 @@ def accessFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM 
   | .CacheAccess (.CB_zero ()) => (pure (E_SAMO_Access_Fault ()))
   | .CacheAccess (.CB_prefetch p) =>
     (match p with
-    | PREFETCH_R => (pure (E_Load_Access_Fault ()))
-    | PREFETCH_W => (pure (E_SAMO_Access_Fault ()))
-    | PREFETCH_I => (pure (E_Fetch_Access_Fault ())))
+    | .PREFETCH_R => (pure (E_Load_Access_Fault ()))
+    | .PREFETCH_W => (pure (E_SAMO_Access_Fault ()))
+    | .PREFETCH_I => (pure (E_Fetch_Access_Fault ())))
 
 def alignmentFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM ExceptionType := do
   match access with
   | .InstructionFetch () => (pure (E_Fetch_Addr_Align ()))
-  | .Load Data => (pure (E_Load_Addr_Align ()))
-  | .Load PageTableEntry => (pure (E_Load_Addr_Align ()))
-  | .LoadReserved Data => (pure (E_Load_Addr_Align ()))
-  | .Store Data => (pure (E_SAMO_Addr_Align ()))
-  | .Store PageTableEntry => (pure (E_SAMO_Addr_Align ()))
-  | .StoreConditional Data => (pure (E_SAMO_Addr_Align ()))
-  | .Atomic (_, Data, Data) => (pure (E_SAMO_Addr_Align ()))
-  | .Load ShadowStack => (pure (E_SAMO_Addr_Align ()))
-  | .Store ShadowStack => (pure (E_SAMO_Addr_Align ()))
-  | .Atomic (_, ShadowStack, ShadowStack) => (pure (E_SAMO_Addr_Align ()))
+  | .Load .Data => (pure (E_Load_Addr_Align ()))
+  | .Load .Vector => (pure (E_Load_Addr_Align ()))
+  | .Load .PageTableEntry => (pure (E_Load_Addr_Align ()))
+  | .LoadReserved .Data => (pure (E_Load_Addr_Align ()))
+  | .Store .Data => (pure (E_SAMO_Addr_Align ()))
+  | .Store .Vector => (pure (E_SAMO_Addr_Align ()))
+  | .Store .PageTableEntry => (pure (E_SAMO_Addr_Align ()))
+  | .StoreConditional .Data => (pure (E_SAMO_Addr_Align ()))
+  | .Atomic (_, .Data, .Data) => (pure (E_SAMO_Addr_Align ()))
+  | .Load .ShadowStack => (pure (E_SAMO_Addr_Align ()))
+  | .Store .ShadowStack => (pure (E_SAMO_Addr_Align ()))
+  | .Atomic (_, .ShadowStack, .ShadowStack) => (pure (E_SAMO_Addr_Align ()))
   | .LoadReserved p =>
-    (internal_error "core/mem_type_utils.sail" 66
+    (internal_error "core/mem_type_utils.sail" 70
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
   | .StoreConditional p =>
-    (internal_error "core/mem_type_utils.sail" 67
+    (internal_error "core/mem_type_utils.sail" 71
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
   | .Atomic (_, rp, wp) =>
-    (internal_error "core/mem_type_utils.sail" 68
+    (internal_error "core/mem_type_utils.sail" 72
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
@@ -264,7 +268,7 @@ def alignmentFaultFromAccessType (access : (MemoryAccessType mem_payload)) : Sai
   | .CacheAccess (.CB_zero ()) => (pure (E_SAMO_Addr_Align ()))
   | .CacheAccess (.CB_prefetch p) =>
     (match p with
-    | PREFETCH_R => (pure (E_Load_Addr_Align ()))
-    | PREFETCH_W => (pure (E_SAMO_Addr_Align ()))
-    | PREFETCH_I => (pure (E_Fetch_Addr_Align ())))
+    | .PREFETCH_R => (pure (E_Load_Addr_Align ()))
+    | .PREFETCH_W => (pure (E_SAMO_Addr_Align ()))
+    | .PREFETCH_I => (pure (E_Fetch_Addr_Align ())))
 

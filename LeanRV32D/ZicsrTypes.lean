@@ -214,7 +214,7 @@ def csrop_of_num (arg_ : Nat) : csrop :=
 
 def num_of_csrop (arg_ : csrop) : Int :=
   match arg_ with
-  | CSRRW => 0
-  | CSRRS => 1
-  | CSRRC => 2
+  | .CSRRW => 0
+  | .CSRRS => 1
+  | .CSRRC => 2
 

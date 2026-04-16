@@ -220,9 +220,9 @@ def encdec_cbop_backwards (arg_ : (BitVec 12)) : SailM cbop_zicbom := do
 
 def encdec_cbop_forwards_matches (arg_ : cbop_zicbom) : Bool :=
   match arg_ with
-  | CBO_CLEAN => true
-  | CBO_FLUSH => true
-  | CBO_INVAL => true
+  | .CBO_CLEAN => true
+  | .CBO_FLUSH => true
+  | .CBO_INVAL => true
 
 def encdec_cbop_backwards_matches (arg_ : (BitVec 12)) : Bool :=
   match arg_ with
@@ -243,9 +243,9 @@ def cbop_mnemonic_backwards (arg_ : String) : SailM cbop_zicbom := do
 
 def cbop_mnemonic_forwards_matches (arg_ : cbop_zicbom) : Bool :=
   match arg_ with
-  | CBO_CLEAN => true
-  | CBO_FLUSH => true
-  | CBO_INVAL => true
+  | .CBO_CLEAN => true
+  | .CBO_FLUSH => true
+  | .CBO_INVAL => true
 
 def cbop_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -266,15 +266,15 @@ def cbie_of_num (arg_ : Nat) : cbie :=
 
 def num_of_cbie (arg_ : cbie) : Int :=
   match arg_ with
-  | CBIE_ILLEGAL => 0
-  | CBIE_EXEC_FLUSH => 1
-  | CBIE_EXEC_INVAL => 2
+  | .CBIE_ILLEGAL => 0
+  | .CBIE_EXEC_FLUSH => 1
+  | .CBIE_EXEC_INVAL => 2
 
 def encdec_cbie_forwards (arg_ : cbie) : (BitVec 2) :=
   match arg_ with
-  | CBIE_ILLEGAL => 0b00#2
-  | CBIE_EXEC_FLUSH => 0b01#2
-  | CBIE_EXEC_INVAL => 0b11#2
+  | .CBIE_ILLEGAL => 0b00#2
+  | .CBIE_EXEC_FLUSH => 0b01#2
+  | .CBIE_EXEC_INVAL => 0b11#2
 
 def encdec_cbie_backwards (arg_ : (BitVec 2)) : SailM cbie := do
   match arg_ with
@@ -285,9 +285,9 @@ def encdec_cbie_backwards (arg_ : (BitVec 2)) : SailM cbie := do
 
 def encdec_cbie_forwards_matches (arg_ : cbie) : Bool :=
   match arg_ with
-  | CBIE_ILLEGAL => true
-  | CBIE_EXEC_FLUSH => true
-  | CBIE_EXEC_INVAL => true
+  | .CBIE_ILLEGAL => true
+  | .CBIE_EXEC_FLUSH => true
+  | .CBIE_EXEC_INVAL => true
 
 def encdec_cbie_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
@@ -310,10 +310,10 @@ def checked_cbop_of_num (arg_ : Nat) : checked_cbop :=
 
 def num_of_checked_cbop (arg_ : checked_cbop) : Int :=
   match arg_ with
-  | CBOP_ILLEGAL => 0
-  | CBOP_ILLEGAL_VIRTUAL => 1
-  | CBOP_INVAL_FLUSH => 2
-  | CBOP_INVAL_INVAL => 3
+  | .CBOP_ILLEGAL => 0
+  | .CBOP_ILLEGAL_VIRTUAL => 1
+  | .CBOP_INVAL_FLUSH => 2
+  | .CBOP_INVAL_INVAL => 3
 
 def cbop_priv_check (p : Privilege) : SailM checked_cbop := do
   let mCBIE ← (( do (encdec_cbie_backwards (_get_MEnvcfg_CBIE (← readReg menvcfg))) ) : SailM
@@ -323,15 +323,15 @@ def cbop_priv_check (p : Privilege) : SailM checked_cbop := do
     then (encdec_cbie_backwards (_get_SEnvcfg_CBIE (← (read_senvcfg ()))))
     else (encdec_cbie_backwards (_get_MEnvcfg_CBIE (← readReg menvcfg))) ) : SailM cbie )
   match (p, mCBIE, sCBIE) with
-  | (VirtualUser, _, _) =>
+  | (.VirtualUser, _, _) =>
     (internal_error "extensions/Zicbom/zicbom_insts.sail" 57 "Hypervisor extension not supported")
-  | (VirtualSupervisor, _, _) =>
+  | (.VirtualSupervisor, _, _) =>
     (internal_error "extensions/Zicbom/zicbom_insts.sail" 58 "Hypervisor extension not supported")
-  | (Machine, _, _) => (pure CBOP_INVAL_INVAL)
-  | (_, CBIE_ILLEGAL, _) => (pure CBOP_ILLEGAL)
-  | (User, _, CBIE_ILLEGAL) => (pure CBOP_ILLEGAL)
-  | (_, CBIE_EXEC_FLUSH, _) => (pure CBOP_INVAL_FLUSH)
-  | (User, _, CBIE_EXEC_FLUSH) => (pure CBOP_INVAL_FLUSH)
+  | (.Machine, _, _) => (pure CBOP_INVAL_INVAL)
+  | (_, .CBIE_ILLEGAL, _) => (pure CBOP_ILLEGAL)
+  | (.User, _, .CBIE_ILLEGAL) => (pure CBOP_ILLEGAL)
+  | (_, .CBIE_EXEC_FLUSH, _) => (pure CBOP_INVAL_FLUSH)
+  | (.User, _, .CBIE_EXEC_FLUSH) => (pure CBOP_INVAL_FLUSH)
   | _ => (pure CBOP_INVAL_INVAL)
 
 def process_clean_inval (rs1 : regidx) (cbop : cbop_zicbom) : SailM ExecutionResult := do
@@ -352,7 +352,7 @@ def process_clean_inval (rs1 : regidx) (cbop : cbop_zicbom) : SailM ExecutionRes
           let ep ← do
             (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
           match (← (phys_access_check access pbmt ep paddr cache_block_size false)) with
-          | .some e => (pure (Memory_Exception (vaddr_for_error, e)))
+          | .some e => (memory_exception vaddr_for_error e)
           | none => (pure RETIRE_SUCCESS))
-      | .Err (e, _) => (pure (Memory_Exception (vaddr_for_error, e))))
+      | .Err (e, _) => (memory_exception vaddr_for_error e))
 

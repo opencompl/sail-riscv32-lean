@@ -213,6 +213,6 @@ def zicondop_of_num (arg_ : Nat) : zicondop :=
 
 def num_of_zicondop (arg_ : zicondop) : Int :=
   match arg_ with
-  | CZERO_EQZ => 0
-  | CZERO_NEZ => 1
+  | .CZERO_EQZ => 0
+  | .CZERO_NEZ => 1
 

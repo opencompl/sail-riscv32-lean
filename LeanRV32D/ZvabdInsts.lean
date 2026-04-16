@@ -213,8 +213,8 @@ def encdec_zvabd_vabd_func6_backwards (arg_ : (BitVec 6)) : SailM zvabd_vabd_fun
 
 def encdec_zvabd_vabd_func6_forwards_matches (arg_ : zvabd_vabd_func6) : Bool :=
   match arg_ with
-  | VV_VABD => true
-  | VV_VABDU => true
+  | .VV_VABD => true
+  | .VV_VABDU => true
 
 def encdec_zvabd_vabd_func6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def vabd_mnemonic_backwards (arg_ : String) : SailM zvabd_vabd_func6 := do
 
 def vabd_mnemonic_forwards_matches (arg_ : zvabd_vabd_func6) : Bool :=
   match arg_ with
-  | VV_VABD => true
-  | VV_VABDU => true
+  | .VV_VABD => true
+  | .VV_VABDU => true
 
 def vabd_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -253,8 +253,8 @@ def encdec_zvabd_vwabda_func6_backwards (arg_ : (BitVec 6)) : SailM zvabd_vwabda
 
 def encdec_zvabd_vwabda_func6_forwards_matches (arg_ : zvabd_vwabda_func6) : Bool :=
   match arg_ with
-  | VV_VWABDA => true
-  | VV_VWABDAU => true
+  | .VV_VWABDA => true
+  | .VV_VWABDAU => true
 
 def encdec_zvabd_vwabda_func6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -273,8 +273,8 @@ def vwabda_mnemonic_backwards (arg_ : String) : SailM zvabd_vwabda_func6 := do
 
 def vwabda_mnemonic_forwards_matches (arg_ : zvabd_vwabda_func6) : Bool :=
   match arg_ with
-  | VV_VWABDA => true
-  | VV_VWABDAU => true
+  | .VV_VWABDA => true
+  | .VV_VWABDAU => true
 
 def vwabda_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

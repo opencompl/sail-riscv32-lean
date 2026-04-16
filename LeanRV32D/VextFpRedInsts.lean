@@ -215,10 +215,10 @@ def encdec_rfvvfunct6_backwards (arg_ : (BitVec 6)) : SailM rfvvfunct6 := do
 
 def encdec_rfvvfunct6_forwards_matches (arg_ : rfvvfunct6) : Bool :=
   match arg_ with
-  | FVV_VFREDOSUM => true
-  | FVV_VFREDUSUM => true
-  | FVV_VFREDMAX => true
-  | FVV_VFREDMIN => true
+  | .FVV_VFREDOSUM => true
+  | .FVV_VFREDUSUM => true
+  | .FVV_VFREDMAX => true
+  | .FVV_VFREDMIN => true
 
 def encdec_rfvvfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -241,10 +241,10 @@ def rfvvtype_mnemonic_backwards (arg_ : String) : SailM rfvvfunct6 := do
 
 def rfvvtype_mnemonic_forwards_matches (arg_ : rfvvfunct6) : Bool :=
   match arg_ with
-  | FVV_VFREDOSUM => true
-  | FVV_VFREDUSUM => true
-  | FVV_VFREDMAX => true
-  | FVV_VFREDMIN => true
+  | .FVV_VFREDOSUM => true
+  | .FVV_VFREDUSUM => true
+  | .FVV_VFREDMAX => true
+  | .FVV_VFREDMIN => true
 
 def rfvvtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -265,8 +265,8 @@ def encdec_rfwvvfunct6_backwards (arg_ : (BitVec 6)) : SailM rfwvvfunct6 := do
 
 def encdec_rfwvvfunct6_forwards_matches (arg_ : rfwvvfunct6) : Bool :=
   match arg_ with
-  | FVV_VFWREDOSUM => true
-  | FVV_VFWREDUSUM => true
+  | .FVV_VFWREDOSUM => true
+  | .FVV_VFWREDUSUM => true
 
 def encdec_rfwvvfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -285,8 +285,8 @@ def rfwvvtype_mnemonic_backwards (arg_ : String) : SailM rfwvvfunct6 := do
 
 def rfwvvtype_mnemonic_forwards_matches (arg_ : rfwvvfunct6) : Bool :=
   match arg_ with
-  | FVV_VFWREDOSUM => true
-  | FVV_VFWREDUSUM => true
+  | .FVV_VFWREDOSUM => true
+  | .FVV_VFWREDUSUM => true
 
 def rfwvvtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

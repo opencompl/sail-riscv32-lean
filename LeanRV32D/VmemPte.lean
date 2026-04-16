@@ -270,7 +270,7 @@ def pte_is_invalid (pte_flags : (BitVec 8)) (pte_ext : (BitVec 10)) : SailM Bool
                       (← (currentlyEnabled Ext_Svrsw60t59b)))) || ((_get_PTE_Ext_reserved pte_ext) != (zeros
                       (n := 5)))))))))))
 
-/-- Type quantifiers: k_ex699809_ : Bool, k_ex699808_ : Bool -/
+/-- Type quantifiers: k_ex699859_ : Bool, k_ex699858_ : Bool -/
 def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := SailME.run do
   let pte_U := (bit_to_bool (_get_PTE_Flags_U pte_flags))
   let pte_R := (bit_to_bool (_get_PTE_Flags_R pte_flags))
@@ -279,11 +279,11 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
   assert (zopz0zJzJzK pte_W pte_R) "sys/vmem_pte.sail:143.24-143.25"
   let priv_ok ← (( do
     match priv with
-    | User => (pure pte_U)
-    | Supervisor => (pure ((not pte_U) || (do_sum && (is_load_store access))))
-    | Machine => (internal_error "sys/vmem_pte.sail" 151 "m-mode mem perm check")
-    | VirtualUser => (internal_error "sys/vmem_pte.sail" 152 "Hypervisor extension not supported")
-    | VirtualSupervisor =>
+    | .User => (pure pte_U)
+    | .Supervisor => (pure ((not pte_U) || (do_sum && (is_load_store access))))
+    | .Machine => (internal_error "sys/vmem_pte.sail" 151 "m-mode mem perm check")
+    | .VirtualUser => (internal_error "sys/vmem_pte.sail" 152 "Hypervisor extension not supported")
+    | .VirtualSupervisor =>
       (internal_error "sys/vmem_pte.sail" 153 "Hypervisor extension not supported") ) : SailME
     PTE_Check Bool )
   if ((not priv_ok) : Bool)
@@ -297,27 +297,29 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
           let shadow_stack_ok ← (( do
             match access with
             | .InstructionFetch () => (pure false)
-            | .Load PageTableEntry => (pure false)
-            | .Store PageTableEntry => (pure false)
-            | .Load Data => (pure true)
-            | .Load ShadowStack => (pure true)
-            | .LoadReserved Data => (pure true)
-            | .Store Data => (pure false)
-            | .StoreConditional Data => (pure false)
-            | .Atomic (_, Data, Data) => (pure false)
-            | .Store ShadowStack => (pure true)
-            | .Atomic (_, ShadowStack, ShadowStack) => (pure true)
+            | .Load .PageTableEntry => (pure false)
+            | .Store .PageTableEntry => (pure false)
+            | .Load .Data => (pure true)
+            | .Load .Vector => (pure true)
+            | .Load .ShadowStack => (pure true)
+            | .LoadReserved .Data => (pure true)
+            | .Store .Data => (pure false)
+            | .Store .Vector => (pure false)
+            | .StoreConditional .Data => (pure false)
+            | .Atomic (_, .Data, .Data) => (pure false)
+            | .Store .ShadowStack => (pure true)
+            | .Atomic (_, .ShadowStack, .ShadowStack) => (pure true)
             | .CacheAccess _ => (pure false)
             | .LoadReserved p =>
-              (internal_error "sys/vmem_pte.sail" 189
+              (internal_error "sys/vmem_pte.sail" 191
                 (HAppend.hAppend "Invalid payload ("
                   (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
             | .StoreConditional p =>
-              (internal_error "sys/vmem_pte.sail" 190
+              (internal_error "sys/vmem_pte.sail" 192
                 (HAppend.hAppend "Invalid payload ("
                   (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
             | .Atomic (_, rp, wp) =>
-              (internal_error "sys/vmem_pte.sail" 191
+              (internal_error "sys/vmem_pte.sail" 193
                 (HAppend.hAppend "Invalid payloads ("
                   (HAppend.hAppend (mem_payload_name_forwards rp)
                     (HAppend.hAppend ", "
@@ -348,9 +350,9 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
         | .CacheAccess (.CB_zero ()) => pte_W
         | .CacheAccess (.CB_prefetch p) =>
           (match p with
-          | PREFETCH_R => pte_R
-          | PREFETCH_W => pte_W
-          | PREFETCH_I => pte_X)
+          | .PREFETCH_R => pte_R
+          | .PREFETCH_W => pte_W
+          | .PREFETCH_I => pte_X)
         | .CacheAccess (.CB_manage _) => (pte_R || pte_W)
       if ((not access_ok) : Bool)
       then (pure (PTE_Check_Failure ((), (PTE_No_Permission ()))))

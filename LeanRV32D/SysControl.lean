@@ -229,15 +229,15 @@ def csrPriv (csr : (BitVec 12)) : (BitVec 2) :=
 
 def privLevel_to_CSR_privbits (p : Privilege) : SailM (BitVec 2) := do
   match p with
-  | User => (pure 0b00#2)
-  | VirtualUser => (pure 0b00#2)
-  | Supervisor =>
+  | .User => (pure 0b00#2)
+  | .VirtualUser => (pure 0b00#2)
+  | .Supervisor =>
     (do
       if ((← (currentlyEnabled Ext_H)) : Bool)
       then (pure 0b10#2)
       else (pure 0b01#2))
-  | VirtualSupervisor => (pure 0b01#2)
-  | Machine => (pure 0b11#2)
+  | .VirtualSupervisor => (pure 0b01#2)
+  | .Machine => (pure 0b11#2)
 
 def check_CSR_priv (csr : (BitVec 12)) (p : Privilege) : SailM Bool := do
   (pure (zopz0zKzJ_u (← (privLevel_to_CSR_privbits p)) (csrPriv csr)))
@@ -247,13 +247,13 @@ def check_CSR_access (csr : (BitVec 12)) (access_type : CSRAccessType) : Bool :=
 
 def is_ssp_accessible (priv : Privilege) : SailM Bool := do
   match priv with
-  | Machine => (pure true)
-  | Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))))
-  | VirtualSupervisor =>
+  | .Machine => (pure true)
+  | .Supervisor => (pure (bool_bit_backwards (_get_MEnvcfg_SSE (← readReg menvcfg))))
+  | .VirtualSupervisor =>
     (internal_error "extensions/cfi/zicfiss_regs.sail" 40 "Hypervisor extension not supported")
-  | VirtualUser =>
+  | .VirtualUser =>
     (internal_error "extensions/cfi/zicfiss_regs.sail" 43 "Hypervisor extension not supported")
-  | User =>
+  | .User =>
     (pure (((← (currentlyEnabled Ext_S)) && (bool_bit_backwards
             (_get_SEnvcfg_SSE (← (read_senvcfg ()))))) || (bool_bit_backwards
           (_get_MEnvcfg_SSE (← readReg menvcfg)))))
@@ -390,15 +390,15 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
                           | (0x015, g__72, g__73) =>
                             (pure ((← (currentlyEnabled Ext_Zkr)) && ((bne g__73 CSRRead) && (← do
                                     match g__72 with
-                                    | Machine => (pure true)
-                                    | Supervisor =>
+                                    | .Machine => (pure true)
+                                    | .Supervisor =>
                                       (pure ((_get_Seccfg_SSEED (← readReg mseccfg)) == 1#1))
-                                    | User =>
+                                    | .User =>
                                       (pure ((_get_Seccfg_USEED (← readReg mseccfg)) == 1#1))
-                                    | VirtualSupervisor =>
+                                    | .VirtualSupervisor =>
                                       (internal_error "extensions/K/zkr_control.sail" 52
                                         "Hypervisor extension not supported")
-                                    | VirtualUser =>
+                                    | .VirtualUser =>
                                       (internal_error "extensions/K/zkr_control.sail" 53
                                         "Hypervisor extension not supported")))))
                           | (v__3840, g__143, g__144) =>
@@ -567,28 +567,29 @@ def tval (excinfo : (Option (BitVec 32))) : (BitVec 32) :=
   | .some e => e
   | none => (zeros (n := 32))
 
-def track_trap (p : Privilege) : SailM Unit := do
+/-- Type quantifiers: k_ex694475_ : Bool -/
+def track_trap (p : Privilege) (is_interrupt : Bool) (cause : (BitVec 6)) : SailM Unit := do
   (long_csr_write_callback "mstatus" "mstatush" (← readReg mstatus))
   match p with
-  | Machine =>
+  | .Machine =>
     (do
       (csr_name_write_callback "mcause" (← readReg mcause))
       (csr_name_write_callback "mtval" (← readReg mtval))
       (csr_name_write_callback "mepc" (← readReg mepc)))
-  | Supervisor =>
+  | .Supervisor =>
     (do
       (csr_name_write_callback "scause" (← readReg scause))
       (csr_name_write_callback "stval" (← readReg stval))
       (csr_name_write_callback "sepc" (← readReg sepc)))
-  | User => (internal_error "sys/sys_control.sail" 169 "Invalid privilege level")
-  | VirtualUser => (internal_error "sys/sys_control.sail" 170 "Hypervisor extension not supported")
-  | VirtualSupervisor =>
+  | .User => (internal_error "sys/sys_control.sail" 169 "Invalid privilege level")
+  | .VirtualUser => (internal_error "sys/sys_control.sail" 170 "Hypervisor extension not supported")
+  | .VirtualSupervisor =>
     (internal_error "sys/sys_control.sail" 171 "Hypervisor extension not supported")
+  (pure (trap_callback is_interrupt cause))
 
 def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 32)) (info : (Option (BitVec 32))) (ext : (Option Unit)) : SailM (BitVec 32) := do
   let is_interrupt := (trapCause_is_interrupt c)
   let cause := (trapCause_bits_forwards c)
-  let _ : Unit := (trap_callback is_interrupt cause)
   if (((get_config_print_exception ()) || (get_config_print_interrupt ())) : Bool)
   then
     (pure (print_endline
@@ -602,7 +603,7 @@ def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 32)) (info
   then (zicfilp_preserve_elp_on_trap del_priv)
   else (pure ())
   match del_priv with
-  | Machine =>
+  | .Machine =>
     (do
       writeReg mcause (Sail.BitVec.updateSubrange (← readReg mcause) (32 -i 1) (32 -i 1)
         (bool_to_bit is_interrupt))
@@ -617,9 +618,9 @@ def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 32)) (info
       writeReg mepc pc
       writeReg cur_privilege del_priv
       let _ : Unit := (handle_trap_extension del_priv pc ext)
-      (track_trap del_priv)
+      (track_trap del_priv is_interrupt cause)
       (prepare_trap_vector del_priv (← readReg mcause)))
-  | Supervisor =>
+  | .Supervisor =>
     (do
       assert (← (currentlyEnabled Ext_S)) "no supervisor mode present for delegation"
       writeReg scause (Sail.BitVec.updateSubrange (← readReg scause) (32 -i 1) (32 -i 1)
@@ -632,23 +633,23 @@ def trap_handler (del_priv : Privilege) (c : TrapCause) (pc : (BitVec 32)) (info
       writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 8 8
         (← do
           match (← readReg cur_privilege) with
-          | User => (pure 0#1)
-          | Supervisor => (pure 1#1)
-          | Machine =>
+          | .User => (pure 0#1)
+          | .Supervisor => (pure 1#1)
+          | .Machine =>
             (internal_error "sys/sys_control.sail" 220 "invalid privilege for s-mode trap")
-          | VirtualUser =>
+          | .VirtualUser =>
             (internal_error "sys/sys_control.sail" 221 "Hypervisor extension not supported")
-          | VirtualSupervisor =>
+          | .VirtualSupervisor =>
             (internal_error "sys/sys_control.sail" 222 "Hypervisor extension not supported")))
       writeReg stval (tval info)
       writeReg sepc pc
       writeReg cur_privilege del_priv
       let _ : Unit := (handle_trap_extension del_priv pc ext)
-      (track_trap del_priv)
+      (track_trap del_priv is_interrupt cause)
       (prepare_trap_vector del_priv (← readReg scause)))
-  | User => (internal_error "sys/sys_control.sail" 235 "Invalid privilege level")
-  | VirtualUser => (internal_error "sys/sys_control.sail" 236 "Hypervisor extension not supported")
-  | VirtualSupervisor =>
+  | .User => (internal_error "sys/sys_control.sail" 235 "Invalid privilege level")
+  | .VirtualUser => (internal_error "sys/sys_control.sail" 236 "Hypervisor extension not supported")
+  | .VirtualSupervisor =>
     (internal_error "sys/sys_control.sail" 237 "Hypervisor extension not supported")
 
 def exception_handler (cur_priv : Privilege) (ctl : ctl_result) (pc : (BitVec 32)) : SailM (BitVec 32) := do
@@ -726,8 +727,8 @@ def xtval_exception_value (e : ExceptionType) (excinfo : (BitVec 32)) : (Option 
   if ((match e with
      | .E_Illegal_Instr () => illegal_instruction_writes_xtval
      | .E_Virtual_Instr () => virtual_instruction_writes_xtval
-     | .E_Breakpoint Brk_Software => software_breakpoint_writes_xtval
-     | .E_Breakpoint Brk_Hardware => hardware_breakpoint_writes_xtval
+     | .E_Breakpoint .Brk_Software => software_breakpoint_writes_xtval
+     | .E_Breakpoint .Brk_Hardware => hardware_breakpoint_writes_xtval
      | .E_Load_Addr_Align () => misaligned_load_writes_xtval
      | .E_Load_Access_Fault () => load_access_fault_writes_xtval
      | .E_Load_Page_Fault () => load_page_fault_writes_xtval

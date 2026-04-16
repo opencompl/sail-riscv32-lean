@@ -222,19 +222,19 @@ def float_class_of_num (arg_ : Nat) : float_class :=
 
 def num_of_float_class (arg_ : float_class) : Int :=
   match arg_ with
-  | float_class_negative_inf => 0
-  | float_class_negative_normal => 1
-  | float_class_negative_subnormal => 2
-  | float_class_negative_zero => 3
-  | float_class_positive_zero => 4
-  | float_class_positive_subnormal => 5
-  | float_class_positive_normal => 6
-  | float_class_positive_inf => 7
-  | float_class_snan => 8
-  | float_class_qnan => 9
+  | .float_class_negative_inf => 0
+  | .float_class_negative_normal => 1
+  | .float_class_negative_subnormal => 2
+  | .float_class_negative_zero => 3
+  | .float_class_positive_zero => 4
+  | .float_class_positive_subnormal => 5
+  | .float_class_positive_normal => 6
+  | .float_class_positive_inf => 7
+  | .float_class_snan => 8
+  | .float_class_qnan => 9
 
-/-- Type quantifiers: k_ex679279_ : Nat, k_ex679279_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex679279_)) : SailM float_class := do
+/-- Type quantifiers: k_ex679325_ : Nat, k_ex679325_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex679325_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else

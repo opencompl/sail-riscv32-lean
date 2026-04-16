@@ -254,7 +254,7 @@ def ones {n : _} : (BitVec n) :=
 def trunc {m : _} (v : (BitVec k_n)) : (BitVec m) :=
   (Sail.BitVec.truncate v m)
 
-/-- Type quantifiers: k_ex679300_ : Bool -/
+/-- Type quantifiers: k_ex679346_ : Bool -/
 def bool_bit_forwards (arg_ : Bool) : (BitVec 1) :=
   match arg_ with
   | true => 1#1
@@ -265,7 +265,7 @@ def bool_bit_backwards (arg_ : (BitVec 1)) : Bool :=
   | 1 => true
   | _ => false
 
-/-- Type quantifiers: k_ex679301_ : Bool -/
+/-- Type quantifiers: k_ex679347_ : Bool -/
 def bool_bit_forwards_matches (arg_ : Bool) : Bool :=
   match arg_ with
   | true => true
@@ -277,7 +277,7 @@ def bool_bit_backwards_matches (arg_ : (BitVec 1)) : Bool :=
   | 0 => true
   | _ => false
 
-/-- Type quantifiers: k_ex679302_ : Bool -/
+/-- Type quantifiers: k_ex679348_ : Bool -/
 def bool_int_forwards (arg_ : Bool) : Int :=
   match arg_ with
   | false => 0
@@ -289,7 +289,7 @@ def bool_int_backwards (arg_ : Nat) : Bool :=
   | 0 => false
   | _ => true
 
-/-- Type quantifiers: k_ex679306_ : Bool -/
+/-- Type quantifiers: k_ex679352_ : Bool -/
 def bool_int_forwards_matches (arg_ : Bool) : Bool :=
   match arg_ with
   | false => true
@@ -302,7 +302,7 @@ def bool_int_backwards_matches (arg_ : Nat) : Bool :=
   | 1 => true
   | _ => false
 
-/-- Type quantifiers: k_ex679308_ : Bool -/
+/-- Type quantifiers: k_ex679354_ : Bool -/
 def bool_to_bit (x : Bool) : (BitVec 1) :=
   (bool_bit_forwards x)
 
@@ -340,8 +340,8 @@ def Signedness_of_num (arg_ : Nat) : Signedness :=
 
 def num_of_Signedness (arg_ : Signedness) : Int :=
   match arg_ with
-  | Signed => 0
-  | Unsigned => 1
+  | .Signed => 0
+  | .Unsigned => 1
 
 def undefined_VectorHalf (_ : Unit) : SailM VectorHalf := do
   (internal_pick [High, Low])
@@ -354,8 +354,8 @@ def VectorHalf_of_num (arg_ : Nat) : VectorHalf :=
 
 def num_of_VectorHalf (arg_ : VectorHalf) : Int :=
   match arg_ with
-  | High => 0
-  | Low => 1
+  | .High => 0
+  | .Low => 1
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, k_n > 0 -/
 def zopz0zI_s (x : (BitVec k_n)) (y : (BitVec k_n)) : Bool :=
@@ -389,7 +389,7 @@ def zopz0zIzJ_u (x : (BitVec k_n)) (y : (BitVec k_n)) : Bool :=
 def zopz0zKzJ_u (x : (BitVec k_n)) (y : (BitVec k_n)) : Bool :=
   ((BitVec.toNatInt x) ≥b (BitVec.toNatInt y))
 
-/-- Type quantifiers: k_ex679382_ : Bool, k_ex679381_ : Bool -/
+/-- Type quantifiers: k_ex679428_ : Bool, k_ex679427_ : Bool -/
 def zopz0zJzJzK (x : Bool) (y : Bool) : Bool :=
   ((not x) || y)
 

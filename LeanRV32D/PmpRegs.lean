@@ -222,17 +222,17 @@ def PmpAddrMatchType_of_num (arg_ : Nat) : PmpAddrMatchType :=
 
 def num_of_PmpAddrMatchType (arg_ : PmpAddrMatchType) : Int :=
   match arg_ with
-  | OFF => 0
-  | TOR => 1
-  | NA4 => 2
-  | NAPOT => 3
+  | .OFF => 0
+  | .TOR => 1
+  | .NA4 => 2
+  | .NAPOT => 3
 
 def pmpAddrMatchType_encdec_forwards (arg_ : PmpAddrMatchType) : (BitVec 2) :=
   match arg_ with
-  | OFF => 0b00#2
-  | TOR => 0b01#2
-  | NA4 => 0b10#2
-  | NAPOT => 0b11#2
+  | .OFF => 0b00#2
+  | .TOR => 0b01#2
+  | .NA4 => 0b10#2
+  | .NAPOT => 0b11#2
 
 def pmpAddrMatchType_encdec_backwards (arg_ : (BitVec 2)) : PmpAddrMatchType :=
   match arg_ with
@@ -243,10 +243,10 @@ def pmpAddrMatchType_encdec_backwards (arg_ : (BitVec 2)) : PmpAddrMatchType :=
 
 def pmpAddrMatchType_encdec_forwards_matches (arg_ : PmpAddrMatchType) : Bool :=
   match arg_ with
-  | OFF => true
-  | TOR => true
-  | NA4 => true
-  | NAPOT => true
+  | .OFF => true
+  | .TOR => true
+  | .NA4 => true
+  | .NAPOT => true
 
 def pmpAddrMatchType_encdec_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
@@ -305,17 +305,17 @@ def pmpWriteCfg (cfg : (BitVec 8)) (v : (BitVec 8)) : SailM (BitVec 8) := do
         then
           (do
             match pmp_write_only_reserved_behavior with
-            | PMP_Fatal => (reserved_behavior "pmpcfg with R=0,W=1")
-            | PMP_ClearPermissions =>
+            | .PMP_Fatal => (reserved_behavior "pmpcfg with R=0,W=1")
+            | .PMP_ClearPermissions =>
               (pure (_update_Pmpcfg_ent_R (_update_Pmpcfg_ent_W (_update_Pmpcfg_ent_X cfg 0#1) 0#1)
                   0#1)))
         else (pure cfg)
       let mode_supported : Bool :=
         match (pmpAddrMatchType_encdec_backwards (_get_Pmpcfg_ent_A cfg)) with
-        | OFF => true
-        | TOR => true
-        | NA4 => ((true : Bool) && (sys_pmp_grain == 0))
-        | NAPOT => true
+        | .OFF => true
+        | .TOR => true
+        | .NA4 => ((true : Bool) && (sys_pmp_grain == 0))
+        | .NAPOT => true
       if (mode_supported : Bool)
       then (pure cfg)
       else (pure (_update_Pmpcfg_ent_A cfg (pmpAddrMatchType_encdec_forwards OFF))))
@@ -337,7 +337,7 @@ def pmpWriteCfgReg (n : Nat) (v : (BitVec 32)) : SailM Unit := do
       else (pure ())
   (pure loop_vars)
 
-/-- Type quantifiers: k_ex691696_ : Bool, k_ex691695_ : Bool -/
+/-- Type quantifiers: k_ex691744_ : Bool, k_ex691743_ : Bool -/
 def pmpWriteAddr (locked : Bool) (tor_locked : Bool) (reg : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
   if ((locked || tor_locked) : Bool)
   then reg

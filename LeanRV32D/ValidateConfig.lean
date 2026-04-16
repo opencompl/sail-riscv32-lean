@@ -519,7 +519,7 @@ def check_vext_config (_ : Unit) : Bool :=
 def check_pma_region (region : PMA_Region) : Bool := ExceptM.run do
   let pma := region.attributes
   match pma.mem_type with
-  | MainMemory =>
+  | .MainMemory =>
     (do
       if ((not (pma.readable && (pma.writable && (pma.read_idempotent && pma.write_idempotent)))) : Bool)
       then
@@ -530,7 +530,7 @@ def check_pma_region (region : PMA_Region) : Bool := ExceptM.run do
                   " is marked as MainMemory but is not readable, read-idempotent, writable, and write-idempotent.")))
           false : Bool)
       else (pure ()))
-  | IOMemory => (pure ())
+  | .IOMemory => (pure ())
   (pure true)
 
 def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
@@ -540,7 +540,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex770241_ : Bool -/
+/-- Type quantifiers: k_ex770293_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -665,7 +665,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex770329_ : Bool -/
+/-- Type quantifiers: k_ex770381_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then

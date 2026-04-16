@@ -230,9 +230,9 @@ def encdec_csrop_backwards (arg_ : (BitVec 2)) : SailM csrop := do
 
 def encdec_csrop_forwards_matches (arg_ : csrop) : Bool :=
   match arg_ with
-  | CSRRW => true
-  | CSRRS => true
-  | CSRRC => true
+  | .CSRRW => true
+  | .CSRRS => true
+  | .CSRRC => true
 
 def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
@@ -241,15 +241,15 @@ def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_ex704332_ : Bool, k_ex704331_ : Bool -/
+/-- Type quantifiers: k_ex704384_ : Bool, k_ex704383_ : Bool -/
 def csr_access_type (op : csrop) (rd_is_x0 : Bool) (rs1_imm_is_zero : Bool) : CSRAccessType :=
   match (op, rd_is_x0, rs1_imm_is_zero) with
-  | (CSRRW, true, _) => CSRWrite
-  | (CSRRW, false, _) => CSRReadWrite
-  | (CSRRS, _, true) => CSRRead
-  | (CSRRC, _, true) => CSRRead
-  | (CSRRS, _, false) => CSRReadWrite
-  | (CSRRC, _, false) => CSRReadWrite
+  | (.CSRRW, true, _) => CSRWrite
+  | (.CSRRW, false, _) => CSRReadWrite
+  | (.CSRRS, _, true) => CSRRead
+  | (.CSRRC, _, true) => CSRRead
+  | (.CSRRS, _, false) => CSRReadWrite
+  | (.CSRRC, _, false) => CSRReadWrite
 
 def _get_HpmEvent_OF (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 63 63)
@@ -291,13 +291,13 @@ def get_scountovf (priv : Privilege) : SailM (BitVec 32) := do
                                                                   (GetElem?.getElem!
                                                                     (← readReg mhpmevent) 3)) +++ 0b000#3))))))))))))))))))))))))))))))
   match priv with
-  | Machine => (pure overflow)
-  | Supervisor => (pure (overflow &&& (← readReg mcounteren)))
-  | User =>
+  | .Machine => (pure overflow)
+  | .Supervisor => (pure (overflow &&& (← readReg mcounteren)))
+  | .User =>
     (internal_error "extensions/Sscofpmf/sscofpmf.sail" 74 "scountovf not readable from User mode")
-  | VirtualUser =>
+  | .VirtualUser =>
     (internal_error "extensions/Sscofpmf/sscofpmf.sail" 75 "Hypervisor extension not supported")
-  | VirtualSupervisor =>
+  | .VirtualSupervisor =>
     (internal_error "extensions/Sscofpmf/sscofpmf.sail" 76 "Hypervisor extension not supported")
 
 def hpmidx_from_bits (b : (BitVec 5)) : SailM Nat := do
@@ -1266,9 +1266,9 @@ def doCSR (csr : (BitVec 12)) (rs1_val : (BitVec 32)) (rd : regidx) (op : csrop)
             (do
               let new_val : xlenbits :=
                 match op with
-                | CSRRW => rs1_val
-                | CSRRS => (csr_val ||| rs1_val)
-                | CSRRC => (csr_val &&& (Complement.complement rs1_val))
+                | .CSRRW => rs1_val
+                | .CSRRS => (csr_val ||| rs1_val)
+                | .CSRRC => (csr_val &&& (Complement.complement rs1_val))
               match (← (write_CSR csr new_val)) with
               | .Ok final_val =>
                 (do
@@ -1294,9 +1294,9 @@ def csr_mnemonic_backwards (arg_ : String) : SailM csrop := do
 
 def csr_mnemonic_forwards_matches (arg_ : csrop) : Bool :=
   match arg_ with
-  | CSRRW => true
-  | CSRRS => true
-  | CSRRC => true
+  | .CSRRW => true
+  | .CSRRS => true
+  | .CSRRC => true
 
 def csr_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

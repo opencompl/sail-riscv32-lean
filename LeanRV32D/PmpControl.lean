@@ -207,31 +207,33 @@ open AmocasOddRegisterReservedBehavior
 
 def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : SailM Bool := do
   match access with
-  | .Load Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
-  | .Load PageTableEntry => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
-  | .LoadReserved Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
-  | .Store Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .Store PageTableEntry => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .StoreConditional Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .Atomic (_, Data, Data) =>
+  | .Load .Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .Load .Vector => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .Load .PageTableEntry => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .LoadReserved .Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .Store .Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .Store .Vector => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .Store .PageTableEntry => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .StoreConditional .Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .Atomic (_, .Data, .Data) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
   | .InstructionFetch () => (pure ((_get_Pmpcfg_ent_X ent) == 1#1))
-  | .Load ShadowStack =>
+  | .Load .ShadowStack =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .Store ShadowStack =>
+  | .Store .ShadowStack =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .Atomic (_, ShadowStack, ShadowStack) =>
+  | .Atomic (_, .ShadowStack, .ShadowStack) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
   | .LoadReserved p =>
-    (internal_error "pmp/pmp_control.sail" 30
+    (internal_error "pmp/pmp_control.sail" 32
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
   | .StoreConditional p =>
-    (internal_error "pmp/pmp_control.sail" 31
+    (internal_error "pmp/pmp_control.sail" 33
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
   | .Atomic (_, rp, wp) =>
-    (internal_error "pmp/pmp_control.sail" 32
+    (internal_error "pmp/pmp_control.sail" 34
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
@@ -240,9 +242,9 @@ def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : S
   | .CacheAccess (.CB_zero ()) => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
   | .CacheAccess (.CB_prefetch p) =>
     (match p with
-    | PREFETCH_I => (pure ((_get_Pmpcfg_ent_X ent) == 1#1))
-    | PREFETCH_R => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
-    | PREFETCH_W => (pure ((_get_Pmpcfg_ent_W ent) == 1#1)))
+    | .PREFETCH_I => (pure ((_get_Pmpcfg_ent_X ent) == 1#1))
+    | .PREFETCH_R => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+    | .PREFETCH_W => (pure ((_get_Pmpcfg_ent_W ent) == 1#1)))
 
 def undefined_pmpAddrMatch (_ : Unit) : SailM pmpAddrMatch := do
   (internal_pick [PMP_NoMatch, PMP_PartialMatch, PMP_Match])
@@ -256,9 +258,9 @@ def pmpAddrMatch_of_num (arg_ : Nat) : pmpAddrMatch :=
 
 def num_of_pmpAddrMatch (arg_ : pmpAddrMatch) : Int :=
   match arg_ with
-  | PMP_NoMatch => 0
-  | PMP_PartialMatch => 1
-  | PMP_Match => 2
+  | .PMP_NoMatch => 0
+  | .PMP_PartialMatch => 1
+  | .PMP_Match => 2
 
 /-- Type quantifiers: width : Nat, addr : Nat, end_ : Nat, begin : Nat, 0 ≤ begin, 0 ≤ end_, 0
   ≤ addr, 0 ≤ width -/
@@ -275,19 +277,19 @@ def pmpMatchAddr (typ_0 : physaddr) (width : (BitVec 32)) (ent : (BitVec 8)) (pm
   let addr := (BitVec.toNatInt addr)
   let width := (BitVec.toNatInt width)
   match (pmpAddrMatchType_encdec_backwards (_get_Pmpcfg_ent_A ent)) with
-  | OFF => (pure PMP_NoMatch)
-  | TOR =>
+  | .OFF => (pure PMP_NoMatch)
+  | .TOR =>
     (if ((zopz0zKzJ_u prev_pmpaddr pmpaddr) : Bool)
     then (pure PMP_NoMatch)
     else
       (pure (pmpRangeMatch ((BitVec.toNatInt prev_pmpaddr) *i 4) ((BitVec.toNatInt pmpaddr) *i 4)
           addr width)))
-  | NA4 =>
+  | .NA4 =>
     (do
       assert (sys_pmp_grain <b 1) "NA4 cannot be selected when PMP grain G >= 1."
       let begin := ((BitVec.toNatInt pmpaddr) *i 4)
       (pure (pmpRangeMatch begin (begin +i 4) addr width)))
-  | NAPOT =>
+  | .NAPOT =>
     (let mask := (pmpaddr ^^^ (BitVec.addInt pmpaddr 1))
     let begin_words := (BitVec.toNatInt (pmpaddr &&& (Complement.complement mask)))
     let end_words := ((begin_words +i (BitVec.toNatInt mask)) +i 1)
@@ -312,11 +314,11 @@ def pmpCheck (addr : physaddr) (width : Nat) (access : (MemoryAccessType mem_pay
             else (pure (zeros (n := 32)))
           let cfg ← do (pure (GetElem?.getElem! (← readReg pmpcfg_n) i))
           match (← (pmpMatchAddr addr width cfg (← (pmpReadAddrReg i)) prev_pmpaddr)) with
-          | PMP_NoMatch => (pure ())
-          | PMP_PartialMatch =>
+          | .PMP_NoMatch => (pure ())
+          | .PMP_PartialMatch =>
             SailME.throw (← do
                 (pure (some (← (accessFaultFromAccessType access)))))
-          | PMP_Match =>
+          | .PMP_Match =>
             SailME.throw (← do
                 if (((← (pmpCheckRWX cfg access)) || ((priv == Machine) && (not (pmpLocked cfg)))) : Bool)
                 then (pure none)

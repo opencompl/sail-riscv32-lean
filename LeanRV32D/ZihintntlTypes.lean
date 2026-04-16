@@ -215,10 +215,10 @@ def ntl_type_of_num (arg_ : Nat) : ntl_type :=
 
 def num_of_ntl_type (arg_ : ntl_type) : Int :=
   match arg_ with
-  | NTL_P1 => 0
-  | NTL_PALL => 1
-  | NTL_S1 => 2
-  | NTL_ALL => 3
+  | .NTL_P1 => 0
+  | .NTL_PALL => 1
+  | .NTL_S1 => 2
+  | .NTL_ALL => 3
 
 def ntl_name_backwards (arg_ : String) : SailM ntl_type := do
   match arg_ with
@@ -233,10 +233,10 @@ def ntl_name_backwards (arg_ : String) : SailM ntl_type := do
 
 def ntl_name_forwards_matches (arg_ : ntl_type) : Bool :=
   match arg_ with
-  | NTL_P1 => true
-  | NTL_PALL => true
-  | NTL_S1 => true
-  | NTL_ALL => true
+  | .NTL_P1 => true
+  | .NTL_PALL => true
+  | .NTL_S1 => true
+  | .NTL_ALL => true
 
 def ntl_name_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -259,10 +259,10 @@ def encdec_ntl_backwards (arg_ : (BitVec 5)) : SailM ntl_type := do
 
 def encdec_ntl_forwards_matches (arg_ : ntl_type) : Bool :=
   match arg_ with
-  | NTL_P1 => true
-  | NTL_PALL => true
-  | NTL_S1 => true
-  | NTL_ALL => true
+  | .NTL_P1 => true
+  | .NTL_PALL => true
+  | .NTL_S1 => true
+  | .NTL_ALL => true
 
 def encdec_ntl_backwards_matches (arg_ : (BitVec 5)) : Bool :=
   match arg_ with

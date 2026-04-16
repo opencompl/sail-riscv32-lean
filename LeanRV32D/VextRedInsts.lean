@@ -213,8 +213,8 @@ def encdec_rivvfunct6_backwards (arg_ : (BitVec 6)) : SailM rivvfunct6 := do
 
 def encdec_rivvfunct6_forwards_matches (arg_ : rivvfunct6) : Bool :=
   match arg_ with
-  | IVV_VWREDSUMU => true
-  | IVV_VWREDSUM => true
+  | .IVV_VWREDSUMU => true
+  | .IVV_VWREDSUM => true
 
 def encdec_rivvfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def rivvtype_mnemonic_backwards (arg_ : String) : SailM rivvfunct6 := do
 
 def rivvtype_mnemonic_forwards_matches (arg_ : rivvfunct6) : Bool :=
   match arg_ with
-  | IVV_VWREDSUMU => true
-  | IVV_VWREDSUM => true
+  | .IVV_VWREDSUMU => true
+  | .IVV_VWREDSUM => true
 
 def rivvtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -259,14 +259,14 @@ def encdec_rmvvfunct6_backwards (arg_ : (BitVec 6)) : SailM rmvvfunct6 := do
 
 def encdec_rmvvfunct6_forwards_matches (arg_ : rmvvfunct6) : Bool :=
   match arg_ with
-  | MVV_VREDSUM => true
-  | MVV_VREDAND => true
-  | MVV_VREDOR => true
-  | MVV_VREDXOR => true
-  | MVV_VREDMINU => true
-  | MVV_VREDMIN => true
-  | MVV_VREDMAXU => true
-  | MVV_VREDMAX => true
+  | .MVV_VREDSUM => true
+  | .MVV_VREDAND => true
+  | .MVV_VREDOR => true
+  | .MVV_VREDXOR => true
+  | .MVV_VREDMINU => true
+  | .MVV_VREDMIN => true
+  | .MVV_VREDMAXU => true
+  | .MVV_VREDMAX => true
 
 def encdec_rmvvfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -297,14 +297,14 @@ def rmvvtype_mnemonic_backwards (arg_ : String) : SailM rmvvfunct6 := do
 
 def rmvvtype_mnemonic_forwards_matches (arg_ : rmvvfunct6) : Bool :=
   match arg_ with
-  | MVV_VREDSUM => true
-  | MVV_VREDAND => true
-  | MVV_VREDOR => true
-  | MVV_VREDXOR => true
-  | MVV_VREDMINU => true
-  | MVV_VREDMIN => true
-  | MVV_VREDMAXU => true
-  | MVV_VREDMAX => true
+  | .MVV_VREDSUM => true
+  | .MVV_VREDAND => true
+  | .MVV_VREDOR => true
+  | .MVV_VREDXOR => true
+  | .MVV_VREDMINU => true
+  | .MVV_VREDMIN => true
+  | .MVV_VREDMAXU => true
+  | .MVV_VREDMAX => true
 
 def rmvvtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

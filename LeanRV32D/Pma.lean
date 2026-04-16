@@ -217,13 +217,13 @@ def AtomicSupport_of_num (arg_ : Nat) : AtomicSupport :=
 
 def atomic_support_str_forwards_matches (arg_ : AtomicSupport) : Bool :=
   match arg_ with
-  | AMONone => true
-  | AMOSwap => true
-  | AMOLogical => true
-  | AMOArithmetic => true
-  | AMOCASW => true
-  | AMOCASD => true
-  | AMOCASQ => true
+  | .AMONone => true
+  | .AMOSwap => true
+  | .AMOLogical => true
+  | .AMOArithmetic => true
+  | .AMOCASW => true
+  | .AMOCASD => true
+  | .AMOCASQ => true
 
 def atomic_support_str_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -239,13 +239,13 @@ def atomic_support_str_backwards_matches (arg_ : String) : Bool :=
 /-- Type quantifiers: width : Nat, 0 < width ∧ width ≤ max_mem_access -/
 def pma_allows_atomic_op (pma : AtomicSupport) (op : amoop) (width : Nat) : Bool :=
   match pma with
-  | AMONone => false
-  | AMOSwap => (op == AMOSWAP)
-  | AMOLogical => ((op == AMOSWAP) || ((op == AMOAND) || ((op == AMOOR) || (op == AMOXOR))))
-  | AMOArithmetic => (bne op AMOCAS)
-  | AMOCASW => ((bne op AMOCAS) || (width ≤b 4))
-  | AMOCASD => ((bne op AMOCAS) || (width ≤b 8))
-  | AMOCASQ => ((bne op AMOCAS) || (width ≤b 16))
+  | .AMONone => false
+  | .AMOSwap => (op == AMOSWAP)
+  | .AMOLogical => ((op == AMOSWAP) || ((op == AMOAND) || ((op == AMOOR) || (op == AMOXOR))))
+  | .AMOArithmetic => (bne op AMOCAS)
+  | .AMOCASW => ((bne op AMOCAS) || (width ≤b 4))
+  | .AMOCASD => ((bne op AMOCAS) || (width ≤b 8))
+  | .AMOCASQ => ((bne op AMOCAS) || (width ≤b 16))
 
 def undefined_Reservability (_ : Unit) : SailM Reservability := do
   (internal_pick [RsrvNone, RsrvNonEventual, RsrvEventual])
@@ -259,15 +259,15 @@ def Reservability_of_num (arg_ : Nat) : Reservability :=
 
 def num_of_Reservability (arg_ : Reservability) : Int :=
   match arg_ with
-  | RsrvNone => 0
-  | RsrvNonEventual => 1
-  | RsrvEventual => 2
+  | .RsrvNone => 0
+  | .RsrvNonEventual => 1
+  | .RsrvEventual => 2
 
 def reservability_str_forwards_matches (arg_ : Reservability) : Bool :=
   match arg_ with
-  | RsrvNone => true
-  | RsrvNonEventual => true
-  | RsrvEventual => true
+  | .RsrvNone => true
+  | .RsrvNonEventual => true
+  | .RsrvEventual => true
 
 def reservability_str_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -288,15 +288,15 @@ def misaligned_fault_of_num (arg_ : Nat) : misaligned_fault :=
 
 def num_of_misaligned_fault (arg_ : misaligned_fault) : Int :=
   match arg_ with
-  | NoFault => 0
-  | AccessFault => 1
-  | AlignmentFault => 2
+  | .NoFault => 0
+  | .AccessFault => 1
+  | .AlignmentFault => 2
 
 def misaligned_fault_str_forwards_matches (arg_ : misaligned_fault) : Bool :=
   match arg_ with
-  | NoFault => true
-  | AccessFault => true
-  | AlignmentFault => true
+  | .NoFault => true
+  | .AccessFault => true
+  | .AlignmentFault => true
 
 def misaligned_fault_str_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -316,8 +316,8 @@ def MemoryRegionType_of_num (arg_ : Nat) : MemoryRegionType :=
 
 def num_of_MemoryRegionType (arg_ : MemoryRegionType) : Int :=
   match arg_ with
-  | MainMemory => 0
-  | IOMemory => 1
+  | .MainMemory => 0
+  | .IOMemory => 1
 
 def undefined_PMA (_ : Unit) : SailM PMA := do
   (pure { mem_type := ← (undefined_MemoryRegionType ())
@@ -337,10 +337,10 @@ def undefined_PMA (_ : Unit) : SailM PMA := do
 
 def override_PMA (pma : PMA) (pbmt : page_based_mem_type) : PMA :=
   match pbmt with
-  | PBMT_PMA => pma
-  | PBMT_NC =>
+  | .PBMT_PMA => pma
+  | .PBMT_NC =>
     { pma with mem_type := MainMemory, cacheable := false, read_idempotent := true, write_idempotent := true }
-  | PBMT_IO =>
+  | .PBMT_IO =>
     { pma with mem_type := IOMemory, cacheable := false, read_idempotent := false, write_idempotent := false }
 
 def undefined_PMA_Region (_ : Unit) : SailM PMA_Region := do

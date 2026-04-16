@@ -222,8 +222,8 @@ def ISA_Format_of_num (arg_ : Nat) : ISA_Format :=
 
 def num_of_ISA_Format (arg_ : ISA_Format) : Int :=
   match arg_ with
-  | Canonical_Lowercase => 0
-  | DeviceTree_ISA_Extensions => 1
+  | .Canonical_Lowercase => 0
+  | .DeviceTree_ISA_Extensions => 1
 
 def ext_wrap (ext : extension) (fmt : ISA_Format) : String :=
   if ((not (hartSupports ext)) : Bool)
@@ -231,17 +231,17 @@ def ext_wrap (ext : extension) (fmt : ISA_Format) : String :=
   else
     (let s := (extensionName_forwards ext)
     match fmt with
-    | Canonical_Lowercase =>
+    | .Canonical_Lowercase =>
       (if (((String.length s) == 1) : Bool)
       then s
       else (HAppend.hAppend "_" s))
-    | DeviceTree_ISA_Extensions => (HAppend.hAppend ", \"" (HAppend.hAppend s "\"")))
+    | .DeviceTree_ISA_Extensions => (HAppend.hAppend ", \"" (HAppend.hAppend s "\"")))
 
 def generate_isa_string (fmt : ISA_Format) : String := Id.run do
   let isa_string : String :=
     match fmt with
-    | Canonical_Lowercase => (HAppend.hAppend "rv" (HAppend.hAppend (Int.repr xlen) "i"))
-    | DeviceTree_ISA_Extensions => "\"i\""
+    | .Canonical_Lowercase => (HAppend.hAppend "rv" (HAppend.hAppend (Int.repr xlen) "i"))
+    | .DeviceTree_ISA_Extensions => "\"i\""
   let loop_i_lower := 0
   let loop_i_upper := ((Vector.length extensions_ordered_for_isa_string) -i 1)
   let mut loop_vars := isa_string

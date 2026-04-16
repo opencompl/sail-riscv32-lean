@@ -214,7 +214,7 @@ def cbop_zicbom_of_num (arg_ : Nat) : cbop_zicbom :=
 
 def num_of_cbop_zicbom (arg_ : cbop_zicbom) : Int :=
   match arg_ with
-  | CBO_CLEAN => 0
-  | CBO_FLUSH => 1
-  | CBO_INVAL => 2
+  | .CBO_CLEAN => 0
+  | .CBO_FLUSH => 1
+  | .CBO_INVAL => 2
 

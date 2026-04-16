@@ -214,15 +214,15 @@ def Software_Check_Code_of_num (arg_ : Nat) : Software_Check_Code :=
 
 def num_of_Software_Check_Code (arg_ : Software_Check_Code) : Int :=
   match arg_ with
-  | SWC_NO_INFO => 0
-  | SWC_LANDING_PAD_FAULT => 1
-  | SWC_SHADOW_STACK_FAULT => 2
+  | .SWC_NO_INFO => 0
+  | .SWC_LANDING_PAD_FAULT => 1
+  | .SWC_SHADOW_STACK_FAULT => 2
 
 def software_check_cause_forwards (arg_ : Software_Check_Code) : (BitVec 2) :=
   match arg_ with
-  | SWC_NO_INFO => 0b00#2
-  | SWC_LANDING_PAD_FAULT => 0b10#2
-  | SWC_SHADOW_STACK_FAULT => 0b11#2
+  | .SWC_NO_INFO => 0b00#2
+  | .SWC_LANDING_PAD_FAULT => 0b10#2
+  | .SWC_SHADOW_STACK_FAULT => 0b11#2
 
 def software_check_cause_backwards (arg_ : (BitVec 2)) : SailM Software_Check_Code := do
   match arg_ with
@@ -236,9 +236,9 @@ def software_check_cause_backwards (arg_ : (BitVec 2)) : SailM Software_Check_Co
 
 def software_check_cause_forwards_matches (arg_ : Software_Check_Code) : Bool :=
   match arg_ with
-  | SWC_NO_INFO => true
-  | SWC_LANDING_PAD_FAULT => true
-  | SWC_SHADOW_STACK_FAULT => true
+  | .SWC_NO_INFO => true
+  | .SWC_LANDING_PAD_FAULT => true
+  | .SWC_SHADOW_STACK_FAULT => true
 
 def software_check_cause_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with

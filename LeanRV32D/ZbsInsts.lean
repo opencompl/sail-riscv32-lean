@@ -215,10 +215,10 @@ def zbs_iop_mnemonic_backwards (arg_ : String) : SailM biop_zbs := do
 
 def zbs_iop_mnemonic_forwards_matches (arg_ : biop_zbs) : Bool :=
   match arg_ with
-  | BCLRI => true
-  | BEXTI => true
-  | BINVI => true
-  | BSETI => true
+  | .BCLRI => true
+  | .BEXTI => true
+  | .BINVI => true
+  | .BSETI => true
 
 def zbs_iop_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -241,10 +241,10 @@ def zbs_rtype_mnemonic_backwards (arg_ : String) : SailM brop_zbs := do
 
 def zbs_rtype_mnemonic_forwards_matches (arg_ : brop_zbs) : Bool :=
   match arg_ with
-  | BCLR => true
-  | BEXT => true
-  | BINV => true
-  | BSET => true
+  | .BCLR => true
+  | .BEXT => true
+  | .BINV => true
+  | .BSET => true
 
 def zbs_rtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

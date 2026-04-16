@@ -227,10 +227,10 @@ def encdec_mul_op_backwards (arg_ : (BitVec 3)) : SailM mul_op := do
 
 def encdec_mul_op_forwards_matches (arg_ : mul_op) : Bool :=
   match arg_ with
-  | { result_part := Low, signed_rs1 := Signed, signed_rs2 := Signed } => true
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Signed } => true
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Unsigned } => true
-  | { result_part := High, signed_rs1 := Unsigned, signed_rs2 := Unsigned } => true
+  | { result_part := .Low, signed_rs1 := .Signed, signed_rs2 := .Signed } => true
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Signed } => true
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Unsigned } => true
+  | { result_part := .High, signed_rs1 := .Unsigned, signed_rs2 := .Unsigned } => true
   | _ => false
 
 def encdec_mul_op_backwards_matches (arg_ : (BitVec 3)) : Bool :=
@@ -266,10 +266,10 @@ def mul_mnemonic_backwards (arg_ : String) : SailM mul_op := do
 
 def mul_mnemonic_forwards_matches (arg_ : mul_op) : Bool :=
   match arg_ with
-  | { result_part := Low, signed_rs1 := Signed, signed_rs2 := Signed } => true
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Signed } => true
-  | { result_part := High, signed_rs1 := Signed, signed_rs2 := Unsigned } => true
-  | { result_part := High, signed_rs1 := Unsigned, signed_rs2 := Unsigned } => true
+  | { result_part := .Low, signed_rs1 := .Signed, signed_rs2 := .Signed } => true
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Signed } => true
+  | { result_part := .High, signed_rs1 := .Signed, signed_rs2 := .Unsigned } => true
+  | { result_part := .High, signed_rs1 := .Unsigned, signed_rs2 := .Unsigned } => true
   | _ => false
 
 def mul_mnemonic_backwards_matches (arg_ : String) : Bool :=

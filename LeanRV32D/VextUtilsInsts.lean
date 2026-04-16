@@ -438,8 +438,8 @@ def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : 
                 (let result : (Vector (BitVec _EEW) num_elem) :=
                   (vectorUpdate result i
                     (match tail_ag with
-                    | UNDISTURBED => (GetElem?.getElem! vd_val i)
-                    | AGNOSTIC => (GetElem?.getElem! vd_val i)))
+                    | .UNDISTURBED => (GetElem?.getElem! vd_val i)
+                    | .AGNOSTIC => (GetElem?.getElem! vd_val i)))
                 let mask : (BitVec num_elem) := (BitVec.update mask i 0#1)
                 (mask, result))
               else
@@ -449,8 +449,8 @@ def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : 
                     (let result : (Vector (BitVec _EEW) num_elem) :=
                       (vectorUpdate result i
                         (match tail_ag with
-                        | UNDISTURBED => (GetElem?.getElem! vd_val i)
-                        | AGNOSTIC => (GetElem?.getElem! vd_val i)))
+                        | .UNDISTURBED => (GetElem?.getElem! vd_val i)
+                        | .AGNOSTIC => (GetElem?.getElem! vd_val i)))
                     let mask : (BitVec num_elem) := (BitVec.update mask i 0#1)
                     (mask, result))
                   else
@@ -460,8 +460,8 @@ def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : 
                         (let result : (Vector (BitVec _EEW) num_elem) :=
                           (vectorUpdate result i
                             (match mask_ag with
-                            | UNDISTURBED => (GetElem?.getElem! vd_val i)
-                            | AGNOSTIC => (GetElem?.getElem! vd_val i)))
+                            | .UNDISTURBED => (GetElem?.getElem! vd_val i)
+                            | .AGNOSTIC => (GetElem?.getElem! vd_val i)))
                         let mask : (BitVec num_elem) := (BitVec.update mask i 0#1)
                         (mask, result))
                       else
@@ -623,8 +623,8 @@ def init_masked_result_cmp (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_va
                         (let result : (BitVec num_elem) :=
                           (BitVec.update result i
                             (match mask_ag with
-                            | UNDISTURBED => (BitVec.access vd_val i)
-                            | AGNOSTIC => (BitVec.access vd_val i)))
+                            | .UNDISTURBED => (BitVec.access vd_val i)
+                            | .AGNOSTIC => (BitVec.access vd_val i)))
                         let mask : (BitVec num_elem) := (BitVec.update mask i 0#1)
                         (mask, result))
                       else

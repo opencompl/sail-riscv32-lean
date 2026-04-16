@@ -284,7 +284,7 @@ inductive stateen_bit where | STATEEN_FCSR | STATEEN_SRMCFG | STATEEN_ENVCFG | S
   deriving BEq, Inhabited, Repr
   open stateen_bit
 
-inductive mem_payload where | Data | PageTableEntry | ShadowStack
+inductive mem_payload where | Data | Vector | PageTableEntry | ShadowStack
   deriving BEq, Inhabited, Repr
   open mem_payload
 
@@ -1479,7 +1479,6 @@ inductive ExecutionResult where
   | Illegal_Instruction (_ : Unit)
   | Virtual_Instruction (_ : Unit)
   | Trap (_ : (Privilege × ctl_result × xlenbits))
-  | Memory_Exception (_ : (virtaddr × ExceptionType))
   | Ext_CSR_Check_Failure (_ : Unit)
   | Ext_ControlAddr_Check_Failure (_ : ext_control_addr_error)
   | Ext_DataAddr_Check_Failure (_ : ext_data_addr_error)

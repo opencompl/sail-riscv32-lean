@@ -219,14 +219,14 @@ def encdec_mmfunct6_backwards (arg_ : (BitVec 6)) : SailM mmfunct6 := do
 
 def encdec_mmfunct6_forwards_matches (arg_ : mmfunct6) : Bool :=
   match arg_ with
-  | MM_VMAND => true
-  | MM_VMNAND => true
-  | MM_VMANDN => true
-  | MM_VMXOR => true
-  | MM_VMOR => true
-  | MM_VMNOR => true
-  | MM_VMORN => true
-  | MM_VMXNOR => true
+  | .MM_VMAND => true
+  | .MM_VMNAND => true
+  | .MM_VMANDN => true
+  | .MM_VMXOR => true
+  | .MM_VMOR => true
+  | .MM_VMNOR => true
+  | .MM_VMORN => true
+  | .MM_VMXNOR => true
 
 def encdec_mmfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -257,14 +257,14 @@ def mmtype_mnemonic_backwards (arg_ : String) : SailM mmfunct6 := do
 
 def mmtype_mnemonic_forwards_matches (arg_ : mmfunct6) : Bool :=
   match arg_ with
-  | MM_VMAND => true
-  | MM_VMNAND => true
-  | MM_VMANDN => true
-  | MM_VMXOR => true
-  | MM_VMOR => true
-  | MM_VMNOR => true
-  | MM_VMORN => true
-  | MM_VMXNOR => true
+  | .MM_VMAND => true
+  | .MM_VMNAND => true
+  | .MM_VMANDN => true
+  | .MM_VMXOR => true
+  | .MM_VMOR => true
+  | .MM_VMNOR => true
+  | .MM_VMORN => true
+  | .MM_VMXNOR => true
 
 def mmtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

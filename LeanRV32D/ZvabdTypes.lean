@@ -213,8 +213,8 @@ def zvabd_vabd_func6_of_num (arg_ : Nat) : zvabd_vabd_func6 :=
 
 def num_of_zvabd_vabd_func6 (arg_ : zvabd_vabd_func6) : Int :=
   match arg_ with
-  | VV_VABD => 0
-  | VV_VABDU => 1
+  | .VV_VABD => 0
+  | .VV_VABDU => 1
 
 def undefined_zvabd_vwabda_func6 (_ : Unit) : SailM zvabd_vwabda_func6 := do
   (internal_pick [VV_VWABDA, VV_VWABDAU])
@@ -227,6 +227,6 @@ def zvabd_vwabda_func6_of_num (arg_ : Nat) : zvabd_vwabda_func6 :=
 
 def num_of_zvabd_vwabda_func6 (arg_ : zvabd_vwabda_func6) : Int :=
   match arg_ with
-  | VV_VWABDA => 0
-  | VV_VWABDAU => 1
+  | .VV_VWABDA => 0
+  | .VV_VWABDAU => 1
 

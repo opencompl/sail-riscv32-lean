@@ -221,29 +221,29 @@ def amoop_of_num (arg_ : Nat) : amoop :=
 
 def num_of_amoop (arg_ : amoop) : Int :=
   match arg_ with
-  | AMOSWAP => 0
-  | AMOAND => 1
-  | AMOOR => 2
-  | AMOXOR => 3
-  | AMOADD => 4
-  | AMOMIN => 5
-  | AMOMAX => 6
-  | AMOMINU => 7
-  | AMOMAXU => 8
-  | AMOCAS => 9
+  | .AMOSWAP => 0
+  | .AMOAND => 1
+  | .AMOOR => 2
+  | .AMOXOR => 3
+  | .AMOADD => 4
+  | .AMOMIN => 5
+  | .AMOMAX => 6
+  | .AMOMINU => 7
+  | .AMOMAXU => 8
+  | .AMOCAS => 9
 
 def amo_mnemonic_forwards (arg_ : amoop) : String :=
   match arg_ with
-  | AMOSWAP => "amoswap"
-  | AMOAND => "amoand"
-  | AMOOR => "amoor"
-  | AMOXOR => "amoxor"
-  | AMOADD => "amoadd"
-  | AMOMIN => "amomin"
-  | AMOMAX => "amomax"
-  | AMOMINU => "amominu"
-  | AMOMAXU => "amomaxu"
-  | AMOCAS => "amocas"
+  | .AMOSWAP => "amoswap"
+  | .AMOAND => "amoand"
+  | .AMOOR => "amoor"
+  | .AMOXOR => "amoxor"
+  | .AMOADD => "amoadd"
+  | .AMOMIN => "amomin"
+  | .AMOMAX => "amomax"
+  | .AMOMINU => "amominu"
+  | .AMOMAXU => "amomaxu"
+  | .AMOCAS => "amocas"
 
 def amo_mnemonic_backwards (arg_ : String) : SailM amoop := do
   match arg_ with
@@ -264,16 +264,16 @@ def amo_mnemonic_backwards (arg_ : String) : SailM amoop := do
 
 def amo_mnemonic_forwards_matches (arg_ : amoop) : Bool :=
   match arg_ with
-  | AMOSWAP => true
-  | AMOAND => true
-  | AMOOR => true
-  | AMOXOR => true
-  | AMOADD => true
-  | AMOMIN => true
-  | AMOMAX => true
-  | AMOMINU => true
-  | AMOMAXU => true
-  | AMOCAS => true
+  | .AMOSWAP => true
+  | .AMOAND => true
+  | .AMOOR => true
+  | .AMOXOR => true
+  | .AMOADD => true
+  | .AMOMIN => true
+  | .AMOMAX => true
+  | .AMOMINU => true
+  | .AMOMAXU => true
+  | .AMOCAS => true
 
 def amo_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

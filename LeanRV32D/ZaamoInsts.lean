@@ -221,16 +221,16 @@ def encdec_amoop_backwards (arg_ : (BitVec 5)) : SailM amoop := do
 
 def encdec_amoop_forwards_matches (arg_ : amoop) : Bool :=
   match arg_ with
-  | AMOSWAP => true
-  | AMOADD => true
-  | AMOXOR => true
-  | AMOAND => true
-  | AMOOR => true
-  | AMOMIN => true
-  | AMOMAX => true
-  | AMOMINU => true
-  | AMOMAXU => true
-  | AMOCAS => true
+  | .AMOSWAP => true
+  | .AMOADD => true
+  | .AMOXOR => true
+  | .AMOAND => true
+  | .AMOOR => true
+  | .AMOMIN => true
+  | .AMOMAX => true
+  | .AMOMINU => true
+  | .AMOMAXU => true
+  | .AMOCAS => true
 
 def encdec_amoop_backwards_matches (arg_ : (BitVec 5)) : Bool :=
   match arg_ with

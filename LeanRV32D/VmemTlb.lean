@@ -231,6 +231,20 @@ def tlb_get_pbmt (ent : TLB_Entry) : SailM page_based_mem_type := do
 
 def num_tlb_entries_exp := 6
 
+/-- Type quantifiers: x_1 : Nat, 0 ≤ x_1 ∧ x_1 ≤ (2 ^ 6) -/
+def tlb_add_callback (x_0 : (Vector (Option TLB_Entry) (2 ^ 6))) (x_1 : Nat) : Unit :=
+  ()
+
+def tlb_flush_begin_callback (x_0 : Unit) : Unit :=
+  ()
+
+/-- Type quantifiers: x_0 : Nat, 0 ≤ x_0 ∧ x_0 ≤ (2 ^ 6) -/
+def tlb_flush_callback (x_0 : Nat) : Unit :=
+  ()
+
+def tlb_flush_end_callback (x_0 : (Vector (Option TLB_Entry) (2 ^ 6))) : Unit :=
+  ()
+
 /-- Type quantifiers: _sv_mode : Nat, is_sv_mode(_sv_mode) -/
 def tlb_hash (_sv_mode : Nat) (vpn : (BitVec (_sv_mode - 12))) : Nat :=
   (BitVec.toNatInt (Sail.BitVec.extractLsb vpn (num_tlb_entries_exp -i 1) 0))
@@ -269,7 +283,7 @@ def lookup_TLB (sv_width : Nat) (asid : (BitVec (if ( 32 = 32  : Bool) then 9 el
     then (pure (some (index, entry)))
     else (pure none))
 
-/-- Type quantifiers: k_ex699988_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
+/-- Type quantifiers: k_ex700040_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
   level ∧
   level ≤
   (if ( sv_width = 32  : Bool) then 1 else (if ( sv_width = 39  : Bool) then 2 else (if ( sv_width =
@@ -298,8 +312,10 @@ def add_to_TLB (sv_width : Nat) (asid : (BitVec (if ( 32 = 32  : Bool) then 9 el
       vpn := (sign_extend (m := (57 -i 12)) vpn)
       ppn := (zero_extend (m := 44) ppn) }
   writeReg tlb (vectorUpdate (← readReg tlb) index (some entry))
+  (pure (tlb_add_callback (← readReg tlb) index))
 
 def flush_TLB (asid : (Option (BitVec (if ( 32 = 32  : Bool) then 9 else 16)))) (addr : (Option (BitVec 32))) : SailM Unit := do
+  let _ : Unit := (tlb_flush_begin_callback ())
   let loop_i_lower := 0
   let loop_i_upper ← do (pure ((Vector.length (← readReg tlb)) -i 1))
   let mut loop_vars := ()
@@ -311,7 +327,11 @@ def flush_TLB (asid : (Option (BitVec (if ( 32 = 32  : Bool) then 9 else 16)))) 
       | .some entry =>
         (do
           if ((flush_TLB_Entry entry asid addr) : Bool)
-          then writeReg tlb (vectorUpdate (← readReg tlb) i none)
+          then
+            (do
+              writeReg tlb (vectorUpdate (← readReg tlb) i none)
+              (pure (tlb_flush_callback i)))
           else (pure ()))
   (pure loop_vars)
+  (pure (tlb_flush_end_callback (← readReg tlb)))
 

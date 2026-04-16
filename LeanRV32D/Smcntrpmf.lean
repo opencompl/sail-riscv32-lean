@@ -329,9 +329,9 @@ def legalize_smcntrpmf (c : (BitVec 64)) (value : (BitVec 64)) : SailM (BitVec 6
 
 def counter_priv_filter_bit (reg : (BitVec 64)) (priv : Privilege) : (BitVec 1) :=
   match priv with
-  | Machine => (_get_CountSmcntrpmf_MINH reg)
-  | Supervisor => (_get_CountSmcntrpmf_SINH reg)
-  | VirtualSupervisor => (_get_CountSmcntrpmf_VSINH reg)
-  | User => (_get_CountSmcntrpmf_UINH reg)
-  | VirtualUser => (_get_CountSmcntrpmf_VUINH reg)
+  | .Machine => (_get_CountSmcntrpmf_MINH reg)
+  | .Supervisor => (_get_CountSmcntrpmf_SINH reg)
+  | .VirtualSupervisor => (_get_CountSmcntrpmf_VSINH reg)
+  | .User => (_get_CountSmcntrpmf_UINH reg)
+  | .VirtualUser => (_get_CountSmcntrpmf_VUINH reg)
 

@@ -215,10 +215,10 @@ def encdec_fvvmfunct6_backwards (arg_ : (BitVec 6)) : SailM fvvmfunct6 := do
 
 def encdec_fvvmfunct6_forwards_matches (arg_ : fvvmfunct6) : Bool :=
   match arg_ with
-  | FVVM_VMFEQ => true
-  | FVVM_VMFLE => true
-  | FVVM_VMFLT => true
-  | FVVM_VMFNE => true
+  | .FVVM_VMFEQ => true
+  | .FVVM_VMFLE => true
+  | .FVVM_VMFLT => true
+  | .FVVM_VMFNE => true
 
 def encdec_fvvmfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -241,10 +241,10 @@ def fvvmtype_mnemonic_backwards (arg_ : String) : SailM fvvmfunct6 := do
 
 def fvvmtype_mnemonic_forwards_matches (arg_ : fvvmfunct6) : Bool :=
   match arg_ with
-  | FVVM_VMFEQ => true
-  | FVVM_VMFLE => true
-  | FVVM_VMFLT => true
-  | FVVM_VMFNE => true
+  | .FVVM_VMFEQ => true
+  | .FVVM_VMFLE => true
+  | .FVVM_VMFLT => true
+  | .FVVM_VMFNE => true
 
 def fvvmtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -269,12 +269,12 @@ def encdec_fvfmfunct6_backwards (arg_ : (BitVec 6)) : SailM fvfmfunct6 := do
 
 def encdec_fvfmfunct6_forwards_matches (arg_ : fvfmfunct6) : Bool :=
   match arg_ with
-  | VFM_VMFEQ => true
-  | VFM_VMFLE => true
-  | VFM_VMFLT => true
-  | VFM_VMFNE => true
-  | VFM_VMFGT => true
-  | VFM_VMFGE => true
+  | .VFM_VMFEQ => true
+  | .VFM_VMFLE => true
+  | .VFM_VMFLT => true
+  | .VFM_VMFNE => true
+  | .VFM_VMFGT => true
+  | .VFM_VMFGE => true
 
 def encdec_fvfmfunct6_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -301,12 +301,12 @@ def fvfmtype_mnemonic_backwards (arg_ : String) : SailM fvfmfunct6 := do
 
 def fvfmtype_mnemonic_forwards_matches (arg_ : fvfmfunct6) : Bool :=
   match arg_ with
-  | VFM_VMFEQ => true
-  | VFM_VMFLE => true
-  | VFM_VMFLT => true
-  | VFM_VMFNE => true
-  | VFM_VMFGT => true
-  | VFM_VMFGE => true
+  | .VFM_VMFEQ => true
+  | .VFM_VMFLE => true
+  | .VFM_VMFLT => true
+  | .VFM_VMFNE => true
+  | .VFM_VMFGT => true
+  | .VFM_VMFGE => true
 
 def fvfmtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

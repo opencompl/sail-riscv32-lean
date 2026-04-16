@@ -213,8 +213,8 @@ def encdec_zicondop_backwards (arg_ : (BitVec 3)) : SailM zicondop := do
 
 def encdec_zicondop_forwards_matches (arg_ : zicondop) : Bool :=
   match arg_ with
-  | CZERO_EQZ => true
-  | CZERO_NEZ => true
+  | .CZERO_EQZ => true
+  | .CZERO_NEZ => true
 
 def encdec_zicondop_backwards_matches (arg_ : (BitVec 3)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def zicond_mnemonic_backwards (arg_ : String) : SailM zicondop := do
 
 def zicond_mnemonic_forwards_matches (arg_ : zicondop) : Bool :=
   match arg_ with
-  | CZERO_EQZ => true
-  | CZERO_NEZ => true
+  | .CZERO_EQZ => true
+  | .CZERO_NEZ => true
 
 def zicond_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

@@ -209,26 +209,30 @@ def ext_get_ptw_error (failure : pte_check_failure) : PTW_Error :=
 def translationException (access : (MemoryAccessType mem_payload)) (err : PTW_Error) : SailM ExceptionType := do
   match (access, err) with
   | (_, .PTW_Ext_Error e) => (pure (E_Extension (ext_translate_exception e)))
-  | (.Atomic (_, Data, Data), .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.Atomic (_, Data, Data), _) => (pure (E_SAMO_Page_Fault ()))
-  | (.Load Data, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
-  | (.Load Data, _) => (pure (E_Load_Page_Fault ()))
-  | (.Load PageTableEntry, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
-  | (.Load PageTableEntry, _) => (pure (E_Load_Page_Fault ()))
-  | (.LoadReserved Data, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
-  | (.LoadReserved Data, _) => (pure (E_Load_Page_Fault ()))
-  | (.Store Data, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.Store Data, _) => (pure (E_SAMO_Page_Fault ()))
-  | (.Store PageTableEntry, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.Store PageTableEntry, _) => (pure (E_SAMO_Page_Fault ()))
-  | (.StoreConditional Data, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.StoreConditional Data, _) => (pure (E_SAMO_Page_Fault ()))
-  | (.Atomic (_, ShadowStack, ShadowStack), .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.Atomic (_, ShadowStack, ShadowStack), _) => (pure (E_SAMO_Page_Fault ()))
-  | (.Load ShadowStack, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.Load ShadowStack, _) => (pure (E_SAMO_Page_Fault ()))
-  | (.Store ShadowStack, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
-  | (.Store ShadowStack, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Atomic (_, .Data, .Data), .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Atomic (_, .Data, .Data), _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Load .Data, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
+  | (.Load .Data, _) => (pure (E_Load_Page_Fault ()))
+  | (.Load .Vector, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
+  | (.Load .Vector, _) => (pure (E_Load_Page_Fault ()))
+  | (.Load .PageTableEntry, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
+  | (.Load .PageTableEntry, _) => (pure (E_Load_Page_Fault ()))
+  | (.LoadReserved .Data, .PTW_No_Access ()) => (pure (E_Load_Access_Fault ()))
+  | (.LoadReserved .Data, _) => (pure (E_Load_Page_Fault ()))
+  | (.Store .Data, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Store .Data, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Store .Vector, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Store .Vector, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Store .PageTableEntry, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Store .PageTableEntry, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.StoreConditional .Data, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.StoreConditional .Data, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Atomic (_, .ShadowStack, .ShadowStack), .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Atomic (_, .ShadowStack, .ShadowStack), _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Load .ShadowStack, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Load .ShadowStack, _) => (pure (E_SAMO_Page_Fault ()))
+  | (.Store .ShadowStack, .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
+  | (.Store .ShadowStack, _) => (pure (E_SAMO_Page_Fault ()))
   | (.InstructionFetch (), .PTW_No_Access ()) => (pure (E_Fetch_Access_Fault ()))
   | (.InstructionFetch (), _) => (pure (E_Fetch_Page_Fault ()))
   | (.CacheAccess (.CB_manage _), .PTW_No_Access ()) => (pure (E_SAMO_Access_Fault ()))
@@ -237,24 +241,24 @@ def translationException (access : (MemoryAccessType mem_payload)) (err : PTW_Er
   | (.CacheAccess (.CB_zero ()), _) => (pure (E_SAMO_Page_Fault ()))
   | (.CacheAccess (.CB_prefetch p), .PTW_No_Access ()) =>
     (match p with
-    | PREFETCH_R => (pure (E_Load_Access_Fault ()))
-    | PREFETCH_W => (pure (E_SAMO_Access_Fault ()))
-    | PREFETCH_I => (pure (E_Fetch_Access_Fault ())))
+    | .PREFETCH_R => (pure (E_Load_Access_Fault ()))
+    | .PREFETCH_W => (pure (E_SAMO_Access_Fault ()))
+    | .PREFETCH_I => (pure (E_Fetch_Access_Fault ())))
   | (.CacheAccess (.CB_prefetch p), _) =>
     (match p with
-    | PREFETCH_R => (pure (E_Load_Page_Fault ()))
-    | PREFETCH_W => (pure (E_SAMO_Page_Fault ()))
-    | PREFETCH_I => (pure (E_Fetch_Page_Fault ())))
+    | .PREFETCH_R => (pure (E_Load_Page_Fault ()))
+    | .PREFETCH_W => (pure (E_SAMO_Page_Fault ()))
+    | .PREFETCH_I => (pure (E_Fetch_Page_Fault ())))
   | (.LoadReserved p, _) =>
-    (internal_error "sys/vmem_ptw.sail" 109
+    (internal_error "sys/vmem_ptw.sail" 113
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
   | (.StoreConditional p, _) =>
-    (internal_error "sys/vmem_ptw.sail" 110
+    (internal_error "sys/vmem_ptw.sail" 114
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
   | (.Atomic (_, rp, wp), _) =>
-    (internal_error "sys/vmem_ptw.sail" 111
+    (internal_error "sys/vmem_ptw.sail" 115
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic.")))))

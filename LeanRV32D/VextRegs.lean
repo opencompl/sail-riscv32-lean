@@ -586,8 +586,8 @@ def agtype_of_num (arg_ : Nat) : agtype :=
 
 def num_of_agtype (arg_ : agtype) : Int :=
   match arg_ with
-  | UNDISTURBED => 0
-  | AGNOSTIC => 1
+  | .UNDISTURBED => 0
+  | .AGNOSTIC => 1
 
 def decode_agtype (ag : (BitVec 1)) : agtype :=
   match ag with

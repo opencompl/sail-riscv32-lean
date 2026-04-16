@@ -213,6 +213,6 @@ def wrsop_of_num (arg_ : Nat) : wrsop :=
 
 def num_of_wrsop (arg_ : wrsop) : Int :=
   match arg_ with
-  | WRS_STO => 0
-  | WRS_NTO => 1
+  | .WRS_STO => 0
+  | .WRS_NTO => 1
 

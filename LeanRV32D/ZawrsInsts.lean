@@ -213,8 +213,8 @@ def encdec_wrsop_backwards (arg_ : (BitVec 12)) : SailM wrsop := do
 
 def encdec_wrsop_forwards_matches (arg_ : wrsop) : Bool :=
   match arg_ with
-  | WRS_STO => true
-  | WRS_NTO => true
+  | .WRS_STO => true
+  | .WRS_NTO => true
 
 def encdec_wrsop_backwards_matches (arg_ : (BitVec 12)) : Bool :=
   match arg_ with

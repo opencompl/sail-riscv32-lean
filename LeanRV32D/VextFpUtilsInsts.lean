@@ -591,7 +591,7 @@ def riscv_f32ToUi16 (rm : (BitVec 3)) (v : (BitVec 32)) : ((BitVec 5) × (BitVec
   then ((nvFlag ()), (ones (n := 16)))
   else (flag, (Sail.BitVec.extractLsb sig32 15 0))
 
-/-- Type quantifiers: k_ex703229_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex703281_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with
@@ -638,50 +638,50 @@ def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
 
 def riscv_f16Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 16)) : SailM ((BitVec 5) × (BitVec 16)) := do
   match (← (float_classify v)) with
-  | float_class_negative_inf => (pure ((nvFlag ()), 0x7E00#16))
-  | float_class_negative_normal => (pure ((nvFlag ()), 0x7E00#16))
-  | float_class_negative_subnormal => (pure ((nvFlag ()), 0x7E00#16))
-  | float_class_snan => (pure ((nvFlag ()), 0x7E00#16))
-  | float_class_qnan => (pure ((zeros (n := 5)), 0x7E00#16))
-  | float_class_negative_zero => (pure ((dzFlag ()), 0xFC00#16))
-  | float_class_positive_zero => (pure ((dzFlag ()), 0x7C00#16))
-  | float_class_positive_inf => (pure ((zeros (n := 5)), 0x0000#16))
-  | float_class_positive_subnormal =>
+  | .float_class_negative_inf => (pure ((nvFlag ()), 0x7E00#16))
+  | .float_class_negative_normal => (pure ((nvFlag ()), 0x7E00#16))
+  | .float_class_negative_subnormal => (pure ((nvFlag ()), 0x7E00#16))
+  | .float_class_snan => (pure ((nvFlag ()), 0x7E00#16))
+  | .float_class_qnan => (pure ((zeros (n := 5)), 0x7E00#16))
+  | .float_class_negative_zero => (pure ((dzFlag ()), 0xFC00#16))
+  | .float_class_positive_zero => (pure ((dzFlag ()), 0x7C00#16))
+  | .float_class_positive_inf => (pure ((zeros (n := 5)), 0x0000#16))
+  | .float_class_positive_subnormal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v true)) 15 0)))
-  | float_class_positive_normal =>
+  | .float_class_positive_normal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v false)) 15 0)))
 
 def riscv_f32Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 32)) : SailM ((BitVec 5) × (BitVec 32)) := do
   match (← (float_classify v)) with
-  | float_class_negative_inf => (pure ((nvFlag ()), 0x7FC00000#32))
-  | float_class_negative_normal => (pure ((nvFlag ()), 0x7FC00000#32))
-  | float_class_negative_subnormal => (pure ((nvFlag ()), 0x7FC00000#32))
-  | float_class_snan => (pure ((nvFlag ()), 0x7FC00000#32))
-  | float_class_qnan => (pure ((zeros (n := 5)), 0x7FC00000#32))
-  | float_class_negative_zero => (pure ((dzFlag ()), 0xFF800000#32))
-  | float_class_positive_zero => (pure ((dzFlag ()), 0x7F800000#32))
-  | float_class_positive_inf => (pure ((zeros (n := 5)), 0x00000000#32))
-  | float_class_positive_subnormal =>
+  | .float_class_negative_inf => (pure ((nvFlag ()), 0x7FC00000#32))
+  | .float_class_negative_normal => (pure ((nvFlag ()), 0x7FC00000#32))
+  | .float_class_negative_subnormal => (pure ((nvFlag ()), 0x7FC00000#32))
+  | .float_class_snan => (pure ((nvFlag ()), 0x7FC00000#32))
+  | .float_class_qnan => (pure ((zeros (n := 5)), 0x7FC00000#32))
+  | .float_class_negative_zero => (pure ((dzFlag ()), 0xFF800000#32))
+  | .float_class_positive_zero => (pure ((dzFlag ()), 0x7F800000#32))
+  | .float_class_positive_inf => (pure ((zeros (n := 5)), 0x00000000#32))
+  | .float_class_positive_subnormal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v true)) 31 0)))
-  | float_class_positive_normal =>
+  | .float_class_positive_normal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v false)) 31 0)))
 
 def riscv_f64Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 64)) : SailM ((BitVec 5) × (BitVec 64)) := do
   match (← (float_classify v)) with
-  | float_class_negative_inf => (pure ((nvFlag ()), 0x7FF8000000000000#64))
-  | float_class_negative_normal => (pure ((nvFlag ()), 0x7FF8000000000000#64))
-  | float_class_negative_subnormal => (pure ((nvFlag ()), 0x7FF8000000000000#64))
-  | float_class_snan => (pure ((nvFlag ()), 0x7FF8000000000000#64))
-  | float_class_qnan => (pure ((zeros (n := 5)), 0x7FF8000000000000#64))
-  | float_class_negative_zero => (pure ((dzFlag ()), 0xFFF0000000000000#64))
-  | float_class_positive_zero => (pure ((dzFlag ()), 0x7FF0000000000000#64))
-  | float_class_positive_inf => (pure ((zeros (n := 5)), (zeros (n := 64))))
-  | float_class_positive_subnormal =>
+  | .float_class_negative_inf => (pure ((nvFlag ()), 0x7FF8000000000000#64))
+  | .float_class_negative_normal => (pure ((nvFlag ()), 0x7FF8000000000000#64))
+  | .float_class_negative_subnormal => (pure ((nvFlag ()), 0x7FF8000000000000#64))
+  | .float_class_snan => (pure ((nvFlag ()), 0x7FF8000000000000#64))
+  | .float_class_qnan => (pure ((zeros (n := 5)), 0x7FF8000000000000#64))
+  | .float_class_negative_zero => (pure ((dzFlag ()), 0xFFF0000000000000#64))
+  | .float_class_positive_zero => (pure ((dzFlag ()), 0x7FF0000000000000#64))
+  | .float_class_positive_inf => (pure ((zeros (n := 5)), (zeros (n := 64))))
+  | .float_class_positive_subnormal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v true)) 63 0)))
-  | float_class_positive_normal =>
+  | .float_class_positive_normal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v false)) 63 0)))
 
-/-- Type quantifiers: k_ex703438_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex703490_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool × (BitVec 64)) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with
@@ -733,17 +733,17 @@ def riscv_f16Recip7 (rm : (BitVec 3)) (v : (BitVec 16)) : SailM ((BitVec 5) × (
   let (round_abnormal_true, res_true) ← do (recip7 v rm true)
   let (round_abnormal_false, res_false) ← do (recip7 v rm false)
   match (← (float_classify v)) with
-  | float_class_negative_inf => (pure ((zeros (n := 5)), 0x8000#16))
-  | float_class_positive_inf => (pure ((zeros (n := 5)), 0x0000#16))
-  | float_class_negative_zero => (pure ((dzFlag ()), 0xFC00#16))
-  | float_class_positive_zero => (pure ((dzFlag ()), 0x7C00#16))
-  | float_class_snan => (pure ((nvFlag ()), 0x7E00#16))
-  | float_class_qnan => (pure ((zeros (n := 5)), 0x7E00#16))
-  | float_class_negative_subnormal =>
+  | .float_class_negative_inf => (pure ((zeros (n := 5)), 0x8000#16))
+  | .float_class_positive_inf => (pure ((zeros (n := 5)), 0x0000#16))
+  | .float_class_negative_zero => (pure ((dzFlag ()), 0xFC00#16))
+  | .float_class_positive_zero => (pure ((dzFlag ()), 0x7C00#16))
+  | .float_class_snan => (pure ((nvFlag ()), 0x7E00#16))
+  | .float_class_qnan => (pure ((zeros (n := 5)), 0x7E00#16))
+  | .float_class_negative_subnormal =>
     (if (round_abnormal_true : Bool)
     then (pure (((nxFlag ()) ||| (ofFlag ())), (Sail.BitVec.extractLsb res_true 15 0)))
     else (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb res_true 15 0))))
-  | float_class_positive_subnormal =>
+  | .float_class_positive_subnormal =>
     (if (round_abnormal_true : Bool)
     then (pure (((nxFlag ()) ||| (ofFlag ())), (Sail.BitVec.extractLsb res_true 15 0)))
     else (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb res_true 15 0))))
@@ -756,17 +756,17 @@ def riscv_f32Recip7 (rm : (BitVec 3)) (v : (BitVec 32)) : SailM ((BitVec 5) × (
   let (round_abnormal_true, res_true) ← do (recip7 v rm true)
   let (round_abnormal_false, res_false) ← do (recip7 v rm false)
   match (← (float_classify v)) with
-  | float_class_negative_inf => (pure ((zeros (n := 5)), 0x80000000#32))
-  | float_class_positive_inf => (pure ((zeros (n := 5)), 0x00000000#32))
-  | float_class_negative_zero => (pure ((dzFlag ()), 0xFF800000#32))
-  | float_class_positive_zero => (pure ((dzFlag ()), 0x7F800000#32))
-  | float_class_snan => (pure ((nvFlag ()), 0x7FC00000#32))
-  | float_class_qnan => (pure ((zeros (n := 5)), 0x7FC00000#32))
-  | float_class_negative_subnormal =>
+  | .float_class_negative_inf => (pure ((zeros (n := 5)), 0x80000000#32))
+  | .float_class_positive_inf => (pure ((zeros (n := 5)), 0x00000000#32))
+  | .float_class_negative_zero => (pure ((dzFlag ()), 0xFF800000#32))
+  | .float_class_positive_zero => (pure ((dzFlag ()), 0x7F800000#32))
+  | .float_class_snan => (pure ((nvFlag ()), 0x7FC00000#32))
+  | .float_class_qnan => (pure ((zeros (n := 5)), 0x7FC00000#32))
+  | .float_class_negative_subnormal =>
     (if (round_abnormal_true : Bool)
     then (pure (((nxFlag ()) ||| (ofFlag ())), (Sail.BitVec.extractLsb res_true 31 0)))
     else (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb res_true 31 0))))
-  | float_class_positive_subnormal =>
+  | .float_class_positive_subnormal =>
     (if (round_abnormal_true : Bool)
     then (pure (((nxFlag ()) ||| (ofFlag ())), (Sail.BitVec.extractLsb res_true 31 0)))
     else (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb res_true 31 0))))
@@ -779,17 +779,17 @@ def riscv_f64Recip7 (rm : (BitVec 3)) (v : (BitVec 64)) : SailM ((BitVec 5) × (
   let (round_abnormal_true, res_true) ← do (recip7 v rm true)
   let (round_abnormal_false, res_false) ← do (recip7 v rm false)
   match (← (float_classify v)) with
-  | float_class_negative_inf => (pure ((zeros (n := 5)), 0x8000000000000000#64))
-  | float_class_positive_inf => (pure ((zeros (n := 5)), 0x0000000000000000#64))
-  | float_class_negative_zero => (pure ((dzFlag ()), 0xFFF0000000000000#64))
-  | float_class_positive_zero => (pure ((dzFlag ()), 0x7FF0000000000000#64))
-  | float_class_snan => (pure ((nvFlag ()), 0x7FF8000000000000#64))
-  | float_class_qnan => (pure ((zeros (n := 5)), 0x7FF8000000000000#64))
-  | float_class_negative_subnormal =>
+  | .float_class_negative_inf => (pure ((zeros (n := 5)), 0x8000000000000000#64))
+  | .float_class_positive_inf => (pure ((zeros (n := 5)), 0x0000000000000000#64))
+  | .float_class_negative_zero => (pure ((dzFlag ()), 0xFFF0000000000000#64))
+  | .float_class_positive_zero => (pure ((dzFlag ()), 0x7FF0000000000000#64))
+  | .float_class_snan => (pure ((nvFlag ()), 0x7FF8000000000000#64))
+  | .float_class_qnan => (pure ((zeros (n := 5)), 0x7FF8000000000000#64))
+  | .float_class_negative_subnormal =>
     (if (round_abnormal_true : Bool)
     then (pure (((nxFlag ()) ||| (ofFlag ())), (Sail.BitVec.extractLsb res_true 63 0)))
     else (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb res_true 63 0))))
-  | float_class_positive_subnormal =>
+  | .float_class_positive_subnormal =>
     (if (round_abnormal_true : Bool)
     then (pure (((nxFlag ()) ||| (ofFlag ())), (Sail.BitVec.extractLsb res_true 63 0)))
     else (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb res_true 63 0))))

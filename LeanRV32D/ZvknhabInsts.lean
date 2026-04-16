@@ -213,8 +213,8 @@ def encdec_vsha2_backwards (arg_ : (BitVec 6)) : SailM zvk_vsha2_funct6 := do
 
 def encdec_vsha2_forwards_matches (arg_ : zvk_vsha2_funct6) : Bool :=
   match arg_ with
-  | ZVK_VSHA2CH_VV => true
-  | ZVK_VSHA2CL_VV => true
+  | .ZVK_VSHA2CH_VV => true
+  | .ZVK_VSHA2CL_VV => true
 
 def encdec_vsha2_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
@@ -233,8 +233,8 @@ def vsha2_mnemonic_backwards (arg_ : String) : SailM zvk_vsha2_funct6 := do
 
 def vsha2_mnemonic_forwards_matches (arg_ : zvk_vsha2_funct6) : Bool :=
   match arg_ with
-  | ZVK_VSHA2CH_VV => true
-  | ZVK_VSHA2CL_VV => true
+  | .ZVK_VSHA2CH_VV => true
+  | .ZVK_VSHA2CL_VV => true
 
 def vsha2_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

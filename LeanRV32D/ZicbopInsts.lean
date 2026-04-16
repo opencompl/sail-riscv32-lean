@@ -214,9 +214,9 @@ def encdec_cbop_zicbop_backwards (arg_ : (BitVec 5)) : SailM cbop_zicbop := do
 
 def encdec_cbop_zicbop_forwards_matches (arg_ : cbop_zicbop) : Bool :=
   match arg_ with
-  | PREFETCH_I => true
-  | PREFETCH_R => true
-  | PREFETCH_W => true
+  | .PREFETCH_I => true
+  | .PREFETCH_R => true
+  | .PREFETCH_W => true
 
 def encdec_cbop_zicbop_backwards_matches (arg_ : (BitVec 5)) : Bool :=
   match arg_ with
@@ -237,9 +237,9 @@ def prefetch_mnemonic_backwards (arg_ : String) : SailM cbop_zicbop := do
 
 def prefetch_mnemonic_forwards_matches (arg_ : cbop_zicbop) : Bool :=
   match arg_ with
-  | PREFETCH_I => true
-  | PREFETCH_R => true
-  | PREFETCH_W => true
+  | .PREFETCH_I => true
+  | .PREFETCH_R => true
+  | .PREFETCH_W => true
 
 def prefetch_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

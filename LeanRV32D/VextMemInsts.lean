@@ -223,10 +223,10 @@ def vlewidth_bitsnumberstr_backwards (arg_ : String) : SailM vlewidth := do
 
 def vlewidth_bitsnumberstr_forwards_matches (arg_ : vlewidth) : Bool :=
   match arg_ with
-  | VLE8 => true
-  | VLE16 => true
-  | VLE32 => true
-  | VLE64 => true
+  | .VLE8 => true
+  | .VLE16 => true
+  | .VLE32 => true
+  | .VLE64 => true
 
 def vlewidth_bitsnumberstr_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -249,10 +249,10 @@ def encdec_vlewidth_backwards (arg_ : (BitVec 3)) : SailM vlewidth := do
 
 def encdec_vlewidth_forwards_matches (arg_ : vlewidth) : Bool :=
   match arg_ with
-  | VLE8 => true
-  | VLE16 => true
-  | VLE32 => true
-  | VLE64 => true
+  | .VLE8 => true
+  | .VLE16 => true
+  | .VLE32 => true
+  | .VLE64 => true
 
 def encdec_vlewidth_backwards_matches (arg_ : (BitVec 3)) : Bool :=
   match arg_ with
@@ -272,10 +272,10 @@ def vlewidth_pow_backwards (arg_ : Nat) : vlewidth :=
 
 def vlewidth_pow_forwards_matches (arg_ : vlewidth) : Bool :=
   match arg_ with
-  | VLE8 => true
-  | VLE16 => true
-  | VLE32 => true
-  | VLE64 => true
+  | .VLE8 => true
+  | .VLE16 => true
+  | .VLE32 => true
+  | .VLE64 => true
 
 /-- Type quantifiers: arg_ : Nat, arg_ ∈ {3, 4, 5, 6} -/
 def vlewidth_pow_backwards_matches (arg_ : Nat) : Bool :=
@@ -297,8 +297,8 @@ def encdec_indexed_mop_backwards (arg_ : (BitVec 2)) : SailM indexed_mop := do
 
 def encdec_indexed_mop_forwards_matches (arg_ : indexed_mop) : Bool :=
   match arg_ with
-  | INDEXED_UNORDERED => true
-  | INDEXED_ORDERED => true
+  | .INDEXED_UNORDERED => true
+  | .INDEXED_ORDERED => true
 
 def encdec_indexed_mop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
@@ -317,8 +317,8 @@ def indexed_mop_mnemonic_backwards (arg_ : String) : SailM indexed_mop := do
 
 def indexed_mop_mnemonic_forwards_matches (arg_ : indexed_mop) : Bool :=
   match arg_ with
-  | INDEXED_UNORDERED => true
-  | INDEXED_ORDERED => true
+  | .INDEXED_UNORDERED => true
+  | .INDEXED_ORDERED => true
 
 def indexed_mop_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -360,7 +360,7 @@ def process_vlseg (nf : Nat) (vm : (BitVec 1)) (vd : vregidx) (load_width_bytes 
             loop_vars_2 ← do
               let elem_offset := (((i *i nf) +i j) *i load_width_bytes)
               match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) elem_offset) load_width_bytes
-                  (Load Data) false false false)) with
+                  (Load Vector) false false false)) with
               | .Ok elem =>
                 (write_single_element (load_width_bytes *i 8) i
                   (vregidx_offset vd (to_bits_unsafe (l := 5) (j *i EMUL_reg))) elem)
@@ -424,7 +424,7 @@ def process_vlsegff (nf : Nat) (vm : (BitVec 1)) (vd : vregidx) (load_width_byte
                   loop_vars_3 ← do
                     let elem_offset := (((i *i nf) +i j) *i load_width_bytes)
                     match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) elem_offset)
-                        load_width_bytes (Load Data) false false false)) with
+                        load_width_bytes (Load Vector) false false false)) with
                     | .Ok elem =>
                       (do
                         (write_single_element (load_width_bytes *i 8) i
@@ -515,7 +515,7 @@ def process_vsseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (load_width_bytes
               let vs := (vregidx_offset vs3 (to_bits_unsafe (l := 5) (j *i EMUL_reg)))
               let data ← do (read_single_element (load_width_bytes *i 8) i vs)
               match (← (vmem_write rs1 (to_bits_unsafe (l := xlen) elem_offset) load_width_bytes
-                  data (Store Data) false false false)) with
+                  data (Store Vector) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
                 (internal_error "extensions/V/vext_mem_insts.sail" 219
@@ -562,7 +562,7 @@ def process_vlsseg (nf : Nat) (vm : (BitVec 1)) (vd : vregidx) (load_width_bytes
             loop_vars_2 ← do
               let elem_offset := ((i *i rs2_val) +i (j *i load_width_bytes))
               match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) elem_offset) load_width_bytes
-                  (Load Data) false false false)) with
+                  (Load Vector) false false false)) with
               | .Ok elem =>
                 (write_single_element (load_width_bytes *i 8) i
                   (vregidx_offset vd (to_bits_unsafe (l := 5) (j *i EMUL_reg))) elem)
@@ -623,7 +623,7 @@ def process_vssseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (load_width_byte
               let vs := (vregidx_offset vs3 (to_bits_unsafe (l := 5) (j *i EMUL_reg)))
               let data ← do (read_single_element (load_width_bytes *i 8) i vs)
               match (← (vmem_write rs1 (to_bits_unsafe (l := xlen) elem_offset) load_width_bytes
-                  data (Store Data) false false false)) with
+                  data (Store Vector) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
                 (internal_error "extensions/V/vext_mem_insts.sail" 346
@@ -673,7 +673,7 @@ def process_vlxseg (nf : Nat) (vm : (BitVec 1)) (vd : vregidx) (EEW_index_bytes 
               let elem_offset : Int :=
                 ((BitVec.toNatInt (GetElem?.getElem! vs2_val i)) +i (j *i EEW_data_bytes))
               match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) elem_offset) EEW_data_bytes
-                  (Load Data) false false false)) with
+                  (Load Vector) false false false)) with
               | .Ok elem =>
                 (write_single_element (EEW_data_bytes *i 8) i
                   (vregidx_offset vd (to_bits_unsafe (l := 5) (j *i EMUL_data_reg))) elem)
@@ -736,7 +736,7 @@ def process_vsxseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (EEW_index_bytes
               let vs := (vregidx_offset vs3 (to_bits_unsafe (l := 5) (j *i EMUL_data_reg)))
               let data ← do (read_single_element (EEW_data_bytes *i 8) i vs)
               match (← (vmem_write rs1 (to_bits_unsafe (l := xlen) elem_offset) EEW_data_bytes
-                  data (Store Data) false false false)) with
+                  data (Store Vector) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
                 (internal_error "extensions/V/vext_mem_insts.sail" 481
@@ -777,7 +777,7 @@ def process_vlre (nf : Nat) (vd : vregidx) (load_width_bytes : Nat) (rs1 : regid
                   (set_vstart (to_bits_unsafe (l := 16) cur_elem))
                   let elem_offset := (cur_elem *i load_width_bytes)
                   match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) elem_offset)
-                      load_width_bytes (Load Data) false false false)) with
+                      load_width_bytes (Load Vector) false false false)) with
                   | .Ok elem =>
                     (write_single_element (load_width_bytes *i 8) i
                       (vregidx_offset vd (to_bits_unsafe (l := 5) cur_field)) elem)
@@ -803,7 +803,7 @@ def process_vlre (nf : Nat) (vd : vregidx) (load_width_bytes : Nat) (rs1 : regid
                 (set_vstart (to_bits_unsafe (l := 16) cur_elem))
                 let elem_offset := (cur_elem *i load_width_bytes)
                 match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) elem_offset) load_width_bytes
-                    (Load Data) false false false)) with
+                    (Load Vector) false false false)) with
                 | .Ok elem =>
                   (write_single_element (load_width_bytes *i 8) i
                     (vregidx_offset vd (to_bits_unsafe (l := 5) j)) elem)
@@ -845,7 +845,7 @@ def process_vsre (nf : Nat) (load_width_bytes : Nat) (rs1 : regidx) (vs3 : vregi
                   let vs := (vregidx_offset vs3 (to_bits_unsafe (l := 5) cur_field))
                   let data ← do (read_single_element (load_width_bytes *i 8) i vs)
                   match (← (vmem_write rs1 (to_bits_unsafe (l := xlen) elem_offset)
-                      load_width_bytes data (Store Data) false false false)) with
+                      load_width_bytes data (Store Vector) false false false)) with
                   | .Ok true => (pure ())
                   | .Ok false =>
                     (internal_error "extensions/V/vext_mem_insts.sail" 601
@@ -875,7 +875,7 @@ def process_vsre (nf : Nat) (load_width_bytes : Nat) (rs1 : regidx) (vs3 : vregi
                 (set_vstart (to_bits_unsafe (l := 16) cur_elem))
                 let elem_offset := (cur_elem *i load_width_bytes)
                 match (← (vmem_write rs1 (to_bits_unsafe (l := xlen) elem_offset) load_width_bytes
-                    (GetElem?.getElem! vs3_val i) (Store Data) false false false)) with
+                    (GetElem?.getElem! vs3_val i) (Store Vector) false false false)) with
                 | .Ok true => (pure ())
                 | .Ok false =>
                   (internal_error "extensions/V/vext_mem_insts.sail" 616
@@ -898,8 +898,8 @@ def encdec_lsop_backwards (arg_ : (BitVec 7)) : SailM vmlsop := do
 
 def encdec_lsop_forwards_matches (arg_ : vmlsop) : Bool :=
   match arg_ with
-  | VLM => true
-  | VSM => true
+  | .VLM => true
+  | .VSM => true
 
 def encdec_lsop_backwards_matches (arg_ : (BitVec 7)) : Bool :=
   match arg_ with
@@ -930,7 +930,7 @@ def process_vm (vd_or_vs3 : vregidx) (rs1 : regidx) (num_elem : Nat) (evl : Nat)
           if ((op == VLM) : Bool)
           then
             (do
-              match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) i) 1 (Load Data) false false
+              match (← (vmem_read rs1 (to_bits_unsafe (l := xlen) i) 1 (Load Vector) false false
                   false)) with
               | .Ok elem => (write_single_element 8 i vd_or_vs3 elem)
               | .Err e => SailME.throw (e : ExecutionResult))
@@ -940,7 +940,7 @@ def process_vm (vd_or_vs3 : vregidx) (rs1 : regidx) (num_elem : Nat) (evl : Nat)
               then
                 (do
                   match (← (vmem_write rs1 (to_bits_unsafe (l := xlen) i) 1
-                      (GetElem?.getElem! vd_or_vs3_val i) (Store Data) false false false)) with
+                      (GetElem?.getElem! vd_or_vs3_val i) (Store Vector) false false false)) with
                   | .Ok true => (pure ())
                   | .Ok false =>
                     (internal_error "extensions/V/vext_mem_insts.sail" 672
@@ -967,8 +967,8 @@ def vmtype_mnemonic_backwards (arg_ : String) : SailM vmlsop := do
 
 def vmtype_mnemonic_forwards_matches (arg_ : vmlsop) : Bool :=
   match arg_ with
-  | VLM => true
-  | VSM => true
+  | .VLM => true
+  | .VSM => true
 
 def vmtype_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

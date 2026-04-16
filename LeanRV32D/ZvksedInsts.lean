@@ -213,8 +213,8 @@ def vsm4r_mnemonic_backwards (arg_ : String) : SailM zvk_vsm4r_funct6 := do
 
 def vsm4r_mnemonic_forwards_matches (arg_ : zvk_vsm4r_funct6) : Bool :=
   match arg_ with
-  | ZVK_VSM4R_VV => true
-  | ZVK_VSM4R_VS => true
+  | .ZVK_VSM4R_VV => true
+  | .ZVK_VSM4R_VS => true
 
 def vsm4r_mnemonic_backwards_matches (arg_ : String) : Bool :=
   match arg_ with

@@ -214,7 +214,7 @@ def cbop_zicbop_of_num (arg_ : Nat) : cbop_zicbop :=
 
 def num_of_cbop_zicbop (arg_ : cbop_zicbop) : Int :=
   match arg_ with
-  | PREFETCH_I => 0
-  | PREFETCH_R => 1
-  | PREFETCH_W => 2
+  | .PREFETCH_I => 0
+  | .PREFETCH_R => 1
+  | .PREFETCH_W => 2
 
