@@ -217,3 +217,6 @@ def ptw_success_callback (x_0 : (BitVec 64)) (x_1 : Nat) : Unit :=
 def ptw_fail_callback (x_0 : PTW_Error) (x_1 : Nat) (x_2 : (BitVec (if ( 32 = 32  : Bool) then 34 else 64))) : Unit :=
   ()
 
+def instret_callback (_ : Unit) : Unit :=
+  ()
+

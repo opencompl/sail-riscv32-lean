@@ -15,6 +15,7 @@ import LeanRV32D.SysExceptions
 import LeanRV32D.ZicfilpRegs
 import LeanRV32D.SysControl
 import LeanRV32D.Platform
+import LeanRV32D.Callbacks0
 import LeanRV32D.InstsBegin
 import LeanRV32D.ZicfilpInsts
 import LeanRV32D.InstsEnd
@@ -221,7 +222,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex769655_ : Bool, _step_no : Int -/
+/-- Type quantifiers: k_ex769575_ : Bool, _step_no : Int -/
 def run_hart_waiting (_step_no : Int) (wr : WaitReason) (instbits : (BitVec 32)) (exit_wait : Bool) : SailM Step := do
   if ((← (shouldWakeForInterrupt ())) : Bool)
   then
@@ -393,7 +394,7 @@ def wait_is_nop (wr : WaitReason) : Bool :=
   | .WAIT_WRS_STO => false
   | .WAIT_WRS_NTO => false
 
-/-- Type quantifiers: k_ex769705_ : Bool, step_no : Nat, 0 ≤ step_no -/
+/-- Type quantifiers: k_ex769625_ : Bool, step_no : Nat, 0 ≤ step_no -/
 def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   let _ : Unit := (ext_pre_step_hook ())
   writeReg minstret_increment (← (should_inc_minstret (← readReg cur_privilege)))
@@ -463,6 +464,10 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
           (zero_extend (m := 64) (← (get_arch_pc ()))))
       else (pure ())
       let _ : Unit := (ext_post_step_hook ())
+      let _ : Unit :=
+        if (retired : Bool)
+        then (instret_callback ())
+        else ()
       (pure false))
 
 def loop (_ : Unit) : SailM Unit := do
