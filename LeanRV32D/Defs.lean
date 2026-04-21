@@ -1405,6 +1405,13 @@ inductive landing_pad_expectation where | NO_LP_EXPECTED | LP_EXPECTED
   deriving BEq, Inhabited, Repr
   open landing_pad_expectation
 
+inductive CSRCheckResult where
+  | CSR_Check_OK (_ : Unit)
+  | CSR_Illegal (_ : Unit)
+  | CSR_Virtual (_ : Unit)
+  deriving Inhabited, BEq, Repr
+  open CSRCheckResult
+
 inductive ctl_result where
   | CTL_TRAP (_ : sync_exception)
   | CTL_SRET (_ : Unit)

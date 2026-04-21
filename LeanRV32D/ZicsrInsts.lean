@@ -213,6 +213,7 @@ open Ext_DataAddr_Check
 open ExtStatus
 open ExecutionResult
 open ExceptionType
+open CSRCheckResult
 open CSRAccessType
 open AtomicSupport
 open Architecture
@@ -241,7 +242,7 @@ def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_ex704304_ : Bool, k_ex704303_ : Bool -/
+/-- Type quantifiers: k_ex704562_ : Bool, k_ex704561_ : Bool -/
 def csr_access_type (op : csrop) (rd_is_x0 : Bool) (rs1_imm_is_zero : Bool) : CSRAccessType :=
   match (op, rd_is_x0, rs1_imm_is_zero) with
   | (.CSRRW, true, _) => CSRWrite
@@ -293,12 +294,12 @@ def get_scountovf (priv : Privilege) : SailM (BitVec 32) := do
   match priv with
   | .Machine => (pure overflow)
   | .Supervisor => (pure (overflow &&& (← readReg mcounteren)))
+  | .VirtualSupervisor => (pure (overflow &&& (← readReg mcounteren)))
   | .User =>
-    (internal_error "extensions/Sscofpmf/sscofpmf.sail" 74 "scountovf not readable from User mode")
+    (internal_error "extensions/Sscofpmf/sscofpmf.sail" 75 "scountovf not readable from User mode")
   | .VirtualUser =>
-    (internal_error "extensions/Sscofpmf/sscofpmf.sail" 75 "Hypervisor extension not supported")
-  | .VirtualSupervisor =>
-    (internal_error "extensions/Sscofpmf/sscofpmf.sail" 76 "Hypervisor extension not supported")
+    (internal_error "extensions/Sscofpmf/sscofpmf.sail" 76
+      "scountovf not readable from VirtualUser mode")
 
 def hpmidx_from_bits (b : (BitVec 5)) : SailM Nat := do
   let index := (BitVec.toNatInt b)
@@ -1249,9 +1250,10 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
                                                     (BitVec.toFormatted v__3884))))))))))))))
 
 def doCSR (csr : (BitVec 12)) (rs1_val : (BitVec 32)) (rd : regidx) (op : csrop) (access_type : CSRAccessType) : SailM ExecutionResult := do
-  if ((not (← (check_CSR csr (← readReg cur_privilege) access_type))) : Bool)
-  then (pure (Illegal_Instruction ()))
-  else
+  match (← (check_CSR_result csr (← readReg cur_privilege) access_type)) with
+  | .CSR_Illegal () => (pure (Illegal_Instruction ()))
+  | .CSR_Virtual () => (pure (Virtual_Instruction ()))
+  | .CSR_Check_OK () =>
     (do
       if ((not (ext_check_CSR csr (← readReg cur_privilege) access_type)) : Bool)
       then (pure (Ext_CSR_Check_Failure ()))

@@ -193,16 +193,17 @@ open Ext_DataAddr_Check
 open ExtStatus
 open ExecutionResult
 open ExceptionType
+open CSRCheckResult
 open CSRAccessType
 open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex678851_ : Nat, k_ex678851_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex678851_)) : Bool :=
+/-- Type quantifiers: k_ex679067_ : Nat, k_ex679067_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex679067_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex678853_ : Nat, k_ex678853_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex678853_)) : Bool :=
+/-- Type quantifiers: k_ex679069_ : Nat, k_ex679069_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex679069_)) : Bool :=
   (is_highest_one op)
 
