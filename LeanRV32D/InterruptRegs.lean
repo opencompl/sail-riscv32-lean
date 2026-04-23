@@ -164,6 +164,7 @@ open barrier_kind
 open amoop
 open agtype
 open XtvecModeReservedBehavior
+open XipReadType
 open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
@@ -585,6 +586,37 @@ def _set_Medeleg_UEnvCall (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) :
 def legalize_medeleg (_o : (BitVec 64)) (v : (BitVec 64)) : (BitVec 64) :=
   (_update_Medeleg_MEnvCall (Mk_Medeleg v) 0#1)
 
+def undefined_XipReadType (_ : Unit) : SailM XipReadType := do
+  (internal_pick [IncludePlatformInterrupts, ExcludePlatformInterrupts])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def XipReadType_of_num (arg_ : Nat) : XipReadType :=
+  match arg_ with
+  | 0 => IncludePlatformInterrupts
+  | _ => ExcludePlatformInterrupts
+
+def num_of_XipReadType (arg_ : XipReadType) : Int :=
+  match arg_ with
+  | .IncludePlatformInterrupts => 0
+  | .ExcludePlatformInterrupts => 1
+
+def external_interrupts_pending (_ : Unit) : SailM (BitVec 32) := do
+  (pure (_update_Minterrupts_SEI
+      (_update_Minterrupts_MEI (Mk_Minterrupts (zeros (n := 32))) (← readReg sig_meip))
+      (← do
+        if ((← (currentlyEnabled Ext_S)) : Bool)
+        then readReg sig_seip
+        else (pure 0#1))))
+
+def read_mip (read_type : XipReadType) : SailM (BitVec 32) := do
+  match read_type with
+  | .IncludePlatformInterrupts =>
+    (pure (Mk_Minterrupts ((← readReg mip) ||| (← (external_interrupts_pending ())))))
+  | .ExcludePlatformInterrupts => readReg mip
+
+def write_mip (value : (BitVec 32)) : SailM Unit := do
+  writeReg mip (← (legalize_mip (← readReg mip) value))
+
 def undefined_Sinterrupts (_ : Unit) : SailM (BitVec 32) := do
   (undefined_bitvector 32)
 
@@ -623,6 +655,12 @@ def lift_sip (o : (BitVec 32)) (d : (BitVec 32)) (s : (BitVec 32)) : (BitVec 32)
 
 def legalize_sip (m : (BitVec 32)) (d : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
   (lift_sip m d (Mk_Sinterrupts v))
+
+def read_sip (read_type : XipReadType) : SailM (BitVec 32) := do
+  (pure (lower_mip (← (read_mip read_type)) (← readReg mideleg)))
+
+def write_sip (value : (BitVec 32)) : SailM Unit := do
+  writeReg mip (legalize_sip (← readReg mip) (← readReg mideleg) value)
 
 def lift_sie (o : (BitVec 32)) (d : (BitVec 32)) (s : (BitVec 32)) : (BitVec 32) :=
   (_update_Minterrupts_LCOFI

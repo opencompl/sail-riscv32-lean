@@ -183,6 +183,7 @@ open barrier_kind
 open amoop
 open agtype
 open XtvecModeReservedBehavior
+open XipReadType
 open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
@@ -242,7 +243,7 @@ def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_ex704562_ : Bool, k_ex704561_ : Bool -/
+/-- Type quantifiers: k_ex710588_ : Bool, k_ex710587_ : Bool -/
 def csr_access_type (op : csrop) (rd_is_x0 : Bool) (rs1_imm_is_zero : Bool) : CSRAccessType :=
   match (op, rd_is_x0, rs1_imm_is_zero) with
   | (.CSRRW, true, _) => CSRWrite
@@ -349,11 +350,11 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 32) := do
   | 0x143 => readReg stval
   | 0x7A0 => (pure (Complement.complement (← readReg tselect)))
   | 0x304 => readReg mie
-  | 0x344 => readReg mip
+  | 0x344 => (read_mip ExcludePlatformInterrupts)
   | 0x302 => (pure (Sail.BitVec.extractLsb (← readReg medeleg) (xlen -i 1) 0))
   | 0x312 => (pure (Sail.BitVec.extractLsb (← readReg medeleg) 63 32))
   | 0x303 => readReg mideleg
-  | 0x144 => (pure (lower_mip (← readReg mip) (← readReg mideleg)))
+  | 0x144 => (read_sip ExcludePlatformInterrupts)
   | 0x104 => (pure (lower_mie (← readReg mie) (← readReg mideleg)))
   | 0x105 => (get_stvec ())
   | 0x141 => (get_xepc Supervisor)
@@ -809,8 +810,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
       (pure (Ok (← readReg mie))))
   | (0x344, value) =>
     (do
-      writeReg mip (← (legalize_mip (← readReg mip) value))
-      (pure (Ok (← readReg mip))))
+      (write_mip value)
+      (pure (Ok (← (read_mip IncludePlatformInterrupts)))))
   | (0x302, value) =>
     (do
       if ((xlen == 64) : Bool)
@@ -834,8 +835,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
       (pure (Ok (← readReg mideleg))))
   | (0x144, value) =>
     (do
-      writeReg mip (legalize_sip (← readReg mip) (← readReg mideleg) value)
-      (pure (Ok (lower_mip (← readReg mip) (← readReg mideleg)))))
+      (write_sip value)
+      (pure (Ok (← (read_sip IncludePlatformInterrupts)))))
   | (0x104, value) =>
     (do
       writeReg mie (legalize_sie (← readReg mie) (← readReg mideleg) value)
@@ -1259,30 +1260,35 @@ def doCSR (csr : (BitVec 12)) (rs1_val : (BitVec 32)) (rd : regidx) (op : csrop)
       then (pure (Ext_CSR_Check_Failure ()))
       else
         (do
-          let csr_val ← (( do
+          let read_val ← (( do
             if ((bne access_type CSRWrite) : Bool)
             then (read_CSR csr)
             else (pure (zeros (n := 32))) ) : SailM xlenbits )
-          if ((bne access_type CSRRead) : Bool)
+          let dest_val ← (( do
+            match csr with
+            | 0x344 => (read_mip IncludePlatformInterrupts)
+            | 0x144 => (read_sip IncludePlatformInterrupts)
+            | _ => (pure read_val) ) : SailM xlenbits )
+          if ((access_type == CSRRead) : Bool)
           then
             (do
-              let new_val : xlenbits :=
-                match op with
-                | .CSRRW => rs1_val
-                | .CSRRS => (csr_val ||| rs1_val)
-                | .CSRRC => (csr_val &&& (Complement.complement rs1_val))
-              match (← (write_CSR csr new_val)) with
-              | .Ok final_val =>
-                (do
-                  (csr_id_write_callback csr final_val)
-                  (wX_bits rd csr_val)
-                  (pure RETIRE_SUCCESS))
-              | .Err () => (pure (Illegal_Instruction ())))
+              (csr_id_read_callback csr dest_val)
+              (wX_bits rd dest_val)
+              (pure RETIRE_SUCCESS))
           else
             (do
-              (csr_id_read_callback csr csr_val)
-              (wX_bits rd csr_val)
-              (pure RETIRE_SUCCESS))))
+              let write_val : xlenbits :=
+                match op with
+                | .CSRRW => rs1_val
+                | .CSRRS => (read_val ||| rs1_val)
+                | .CSRRC => (read_val &&& (Complement.complement rs1_val))
+              match (← (write_CSR csr write_val)) with
+              | .Ok final_val =>
+                (do
+                  (wX_bits rd dest_val)
+                  (csr_id_write_callback csr final_val)
+                  (pure RETIRE_SUCCESS))
+              | .Err () => (pure (Illegal_Instruction ())))))
 
 def csr_mnemonic_backwards (arg_ : String) : SailM csrop := do
   match arg_ with

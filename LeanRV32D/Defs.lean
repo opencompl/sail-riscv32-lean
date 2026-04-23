@@ -1310,6 +1310,10 @@ abbrev Minterrupts := (BitVec 32)
 
 abbrev Medeleg := (BitVec 64)
 
+inductive XipReadType where | IncludePlatformInterrupts | ExcludePlatformInterrupts
+  deriving BEq, Inhabited, Repr
+  open XipReadType
+
 abbrev Sinterrupts := (BitVec 32)
 
 /-- Type quantifiers: k_a : Type -/
@@ -1637,6 +1641,8 @@ inductive Register : Type where
   | f0
   | pmpaddr_n
   | pmpcfg_n
+  | sig_seip
+  | sig_meip
   | mideleg
   | medeleg
   | mip
@@ -1819,6 +1825,8 @@ abbrev RegisterType : Register → Type
   | .f0 => (BitVec (if ( true  : Bool) then 8 else 4 * 8))
   | .pmpaddr_n => (Vector (BitVec 32) 64)
   | .pmpcfg_n => (Vector (BitVec 8) 64)
+  | .sig_seip => (BitVec 1)
+  | .sig_meip => (BitVec 1)
   | .mideleg => (BitVec 32)
   | .medeleg => (BitVec 64)
   | .mip => (BitVec 32)
@@ -1915,7 +1923,7 @@ instance : Inhabited (RegisterRef RegisterType HartState) where
 instance : Inhabited (RegisterRef RegisterType Privilege) where
   default := .Reg cur_privilege
 instance : Inhabited (RegisterRef RegisterType (BitVec 1)) where
-  default := .Reg elp
+  default := .Reg sig_meip
 instance : Inhabited (RegisterRef RegisterType (BitVec 128)) where
   default := .Reg rvfi_pc_data
 instance : Inhabited (RegisterRef RegisterType (BitVec 192)) where

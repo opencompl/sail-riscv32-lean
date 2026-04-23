@@ -163,6 +163,7 @@ open barrier_kind
 open amoop
 open agtype
 open XtvecModeReservedBehavior
+open XipReadType
 open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
@@ -208,6 +209,10 @@ def plat_enable_misaligned_access : Bool := true
 def plat_clint_base : physaddrbits := unwrapValue ((to_bits_checked (l := 34) (33554432 : Int)))
 
 def plat_clint_size : physaddrbits := unwrapValue ((to_bits_checked (l := 34) (786432 : Int)))
+
+def plat_sig_base : physaddrbits := unwrapValue ((to_bits_checked (l := 34) (201326592 : Int)))
+
+def plat_sig_size : physaddrbits := (zero_extend (m := 34) 0x20#8)
 
 def plat_insns_per_tick : nat1 := 2
 

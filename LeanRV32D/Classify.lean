@@ -167,6 +167,7 @@ open barrier_kind
 open amoop
 open agtype
 open XtvecModeReservedBehavior
+open XipReadType
 open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
@@ -234,8 +235,8 @@ def num_of_float_class (arg_ : float_class) : Int :=
   | .float_class_snan => 8
   | .float_class_qnan => 9
 
-/-- Type quantifiers: k_ex679472_ : Nat, k_ex679472_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex679472_)) : SailM float_class := do
+/-- Type quantifiers: k_ex685422_ : Nat, k_ex685422_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex685422_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else

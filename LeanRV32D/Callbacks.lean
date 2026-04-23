@@ -165,6 +165,7 @@ open barrier_kind
 open amoop
 open agtype
 open XtvecModeReservedBehavior
+open XipReadType
 open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
@@ -231,11 +232,11 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 32)
 def redirect_callback (x_0 : (BitVec 32)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex691525_ : Bool -/
+/-- Type quantifiers: k_ex697477_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex691526_ : Bool -/
+/-- Type quantifiers: k_ex697478_ : Bool -/
 def xret_callback (x_0 : Bool) : Unit :=
   ()
 

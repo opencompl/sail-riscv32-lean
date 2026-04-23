@@ -184,6 +184,7 @@ open barrier_kind
 open amoop
 open agtype
 open XtvecModeReservedBehavior
+open XipReadType
 open XenvcfgCbieReservedBehavior
 open WaitReason
 open VectorHalf
@@ -392,6 +393,8 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
   writeReg marchid (← (to_bits_checked (l := 32) (0 : Int)))
   writeReg mhartid (← (to_bits_checked (l := 32) (0 : Int)))
   writeReg mconfigptr (zeros (n := 32))
+  writeReg sig_meip 0#1
+  writeReg sig_seip 0#1
   writeReg pc_reset_address (zeros (n := 32))
   writeReg htif_tohost_base none
   writeReg htif_tohost (zeros (n := 64))
@@ -416,7 +419,7 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
                                           supports_pte_read := false
                                           supports_pte_write := false }
                           include_in_device_tree := false }, { base := 0b0000000000000000000000000000000000000010000000000000000000000000#64
-                                                               size := 0b0000000000000000000000000000000000000010000000000000000000000000#64
+                                                               size := 0b0000000000000000000000000000000000010000000000000000000000000000#64
                                                                attributes := { mem_type := IOMemory
                                                                                cacheable := false
                                                                                coherent := true
