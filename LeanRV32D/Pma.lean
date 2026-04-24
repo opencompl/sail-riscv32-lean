@@ -145,7 +145,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -191,6 +190,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -320,6 +320,17 @@ def num_of_MemoryRegionType (arg_ : MemoryRegionType) : Int :=
   match arg_ with
   | .MainMemory => 0
   | .IOMemory => 1
+
+def memory_region_type_str_forwards_matches (arg_ : MemoryRegionType) : Bool :=
+  match arg_ with
+  | .MainMemory => true
+  | .IOMemory => true
+
+def memory_region_type_str_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "main memory" => true
+  | "IO memory" => true
+  | _ => false
 
 def undefined_PMA (_ : Unit) : SailM PMA := do
   (pure { mem_type := ← (undefined_MemoryRegionType ())

@@ -162,7 +162,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -208,6 +207,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -243,7 +243,7 @@ def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_ex710588_ : Bool, k_ex710587_ : Bool -/
+/-- Type quantifiers: k_ex710949_ : Bool, k_ex710948_ : Bool -/
 def csr_access_type (op : csrop) (rd_is_x0 : Bool) (rs1_imm_is_zero : Bool) : CSRAccessType :=
   match (op, rd_is_x0, rs1_imm_is_zero) with
   | (.CSRRW, true, _) => CSRWrite

@@ -1,4 +1,3 @@
-import LeanRV32D.Option
 import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Xlen
@@ -152,7 +151,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -198,6 +196,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -563,11 +562,12 @@ def check_pma_region (region : PMA_Region) : Bool := ExceptM.run do
 def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
   (pure { ziccamoa := ← (undefined_bool ())
           ziccamoc := ← (undefined_bool ())
+          ziccif := ← (undefined_bool ())
           ziccrse := ← (undefined_bool ())
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex776496_ : Bool -/
+/-- Type quantifiers: k_ex776875_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -628,35 +628,71 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                           false : Bool)
                       else
                         (do
-                          if ((check_opts.ziccrse && (bne attributes.reservability RsrvEventual)) : Bool)
+                          if ((check_opts.ziccif && (not attributes.executable)) : Bool)
                           then
                             throw (let _ : Unit :=
                                 (print_endline
                                   (HAppend.hAppend "Memory region starting at "
                                     (HAppend.hAppend (BitVec.toFormatted region.base)
-                                      (HAppend.hAppend " is coherent and cacheable with "
-                                        (HAppend.hAppend
-                                          (reservability_str_forwards attributes.reservability)
-                                          " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
+                                      " is coherent and cacheable with no instruction fetch support, but Ziccif is enabled which requires this support.")))
                               false : Bool)
                           else
                             (do
-                              if ((check_opts.ssccptr && (not attributes.supports_pte_read)) : Bool)
+                              if ((check_opts.ziccrse && (bne attributes.reservability RsrvEventual)) : Bool)
                               then
                                 throw (let _ : Unit :=
                                     (print_endline
                                       (HAppend.hAppend "Memory region starting at "
                                         (HAppend.hAppend (BitVec.toFormatted region.base)
-                                          " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                                          (HAppend.hAppend " is coherent and cacheable with "
+                                            (HAppend.hAppend
+                                              (reservability_str_forwards attributes.reservability)
+                                              " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
                                   false : Bool)
-                              else (pure ())))))
+                              else
+                                (do
+                                  if ((check_opts.ssccptr && (not attributes.supports_pte_read)) : Bool)
+                                  then
+                                    throw (let _ : Unit :=
+                                        (print_endline
+                                          (HAppend.hAppend "Memory region starting at "
+                                            (HAppend.hAppend (BitVec.toFormatted region.base)
+                                              " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                                      false : Bool)
+                                  else (pure ()))))))
               else (pure ())
               let found_valid_svadu_pma :=
                 (found_valid_svadu_pma || (attributes.supports_pte_write && (attributes.reservability == RsrvEventual)))
               (pure (check_pma_regions rest region.base region.size check_opts found_valid_svadu_pma)))))
 
+def within_configured_pma_memory (component : String) (mem_type_opt : (Option MemoryRegionType)) (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
+  let valid : Bool := true
+  match ((matching_pma_region_bits_range (← readReg pma_regions) addr size), mem_type_opt) with
+  | (none, _) =>
+    (let valid : Bool := false
+    let _ : Unit :=
+      (print_endline
+        (HAppend.hAppend "The "
+          (HAppend.hAppend component " for the platform is not in a defined memory region.")))
+    (pure valid))
+  | (.some region, .some mem_type) =>
+    (if ((bne region.attributes.mem_type mem_type) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          (HAppend.hAppend "The "
+            (HAppend.hAppend component
+              (HAppend.hAppend " for the platform is in a memory region starting at "
+                (HAppend.hAppend (BitVec.toFormatted region.base)
+                  (HAppend.hAppend " which is not a "
+                    (HAppend.hAppend (memory_region_type_str_forwards mem_type) " region.")))))))
+      (pure valid))
+    else (pure valid))
+  | (.some _, _) => (pure valid)
+
 def dtb_within_configured_pma_memory (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
-  (pure (is_some (matching_pma_region_bits_range (← readReg pma_regions) addr size)))
+  (within_configured_pma_memory "DTB" none addr size)
 
 def check_mem_layout (_ : Unit) : SailM Bool := do
   if (((← readReg pma_regions) == []) : Bool)
@@ -668,11 +704,22 @@ def check_mem_layout (_ : Unit) : SailM Bool := do
       let check_opts : pma_check_opts :=
         { ziccamoa := true
           ziccamoc := true
+          ziccif := true
           ziccrse := true
           ssccptr := true
           svadu := true }
-      (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))
-          check_opts false)))
+      let pmas_ok ← do
+        (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))
+            check_opts false))
+      let clint_ok ← do
+        (within_configured_pma_memory "CLINT (platform.clint)" (some IOMemory)
+          (← (to_bits_checked (l := 64) (33554432 : Int)))
+          (← (to_bits_checked (l := 64) (786432 : Int))))
+      let sig_ok ← do
+        (within_configured_pma_memory
+          "simple interrupt generator (platform.simple_interrupt_generator)" (some IOMemory)
+          (← (to_bits_checked (l := 64) (201326592 : Int))) (zero_extend (m := 64) plat_sig_size))
+      (pure (pmas_ok && (clint_ok && sig_ok))))
 
 def check_pmp (_ : Unit) : Bool :=
   let valid : Bool := true
@@ -692,7 +739,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex776584_ : Bool -/
+/-- Type quantifiers: k_ex777000_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then

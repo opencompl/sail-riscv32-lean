@@ -198,7 +198,7 @@ inductive RV32ZdinxOddRegisterReservedBehavior where | Zdinx_Fatal | Zdinx_Illeg
   deriving BEq, Inhabited, Repr
   open RV32ZdinxOddRegisterReservedBehavior
 
-inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zibi | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicfiss | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Ziccamoa | Ext_Ziccamoc | Ext_Ziccrse | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvabd | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Ssccptr | Ext_Sscofpmf | Ext_Sscounterenw | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svade | Ext_Svadu | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Svvptc | Ext_Smcntrpmf | Ext_Smstateen | Ext_Ssqosid
+inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zibi | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicfiss | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Ziccamoa | Ext_Ziccamoc | Ext_Ziccif | Ext_Ziccrse | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvabd | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Ssccptr | Ext_Sscofpmf | Ext_Sscounterenw | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svade | Ext_Svadu | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Svvptc | Ext_Smcntrpmf | Ext_Smstateen | Ext_Ssqosid
   deriving BEq, Inhabited, Repr
   open extension
 
@@ -1181,6 +1181,10 @@ inductive InterruptType where | I_Reserved_0 | I_S_Software | I_VS_Software | I_
   deriving BEq, Inhabited, Repr
   open InterruptType
 
+inductive MemoryRegionType where | MainMemory | IOMemory
+  deriving BEq, Inhabited, Repr
+  open MemoryRegionType
+
 inductive misaligned_fault where | NoFault | AccessFault | AlignmentFault
   deriving BEq, Inhabited, Repr
   open misaligned_fault
@@ -1188,10 +1192,6 @@ inductive misaligned_fault where | NoFault | AccessFault | AlignmentFault
 inductive Reservability where | RsrvNone | RsrvNonEventual | RsrvEventual
   deriving BEq, Inhabited, Repr
   open Reservability
-
-inductive MemoryRegionType where | MainMemory | IOMemory
-  deriving BEq, Inhabited, Repr
-  open MemoryRegionType
 
 structure PMA where
   mem_type : MemoryRegionType
@@ -1416,13 +1416,6 @@ inductive CSRCheckResult where
   deriving Inhabited, BEq, Repr
   open CSRCheckResult
 
-inductive ctl_result where
-  | CTL_TRAP (_ : sync_exception)
-  | CTL_SRET (_ : Unit)
-  | CTL_MRET (_ : Unit)
-  deriving Inhabited, BEq, Repr
-  open ctl_result
-
 abbrev MemoryOpResult k_a := (Result k_a ExceptionType)
 
 abbrev htif_cmd := (BitVec 64)
@@ -1489,7 +1482,7 @@ inductive ExecutionResult where
   | Enter_Wait (_ : WaitReason)
   | Illegal_Instruction (_ : Unit)
   | Virtual_Instruction (_ : Unit)
-  | Trap (_ : (Privilege × ctl_result × xlenbits))
+  | Trap (_ : (Privilege × sync_exception × xlenbits))
   | Ext_CSR_Check_Failure (_ : Unit)
   | Ext_ControlAddr_Check_Failure (_ : ext_control_addr_error)
   | Ext_DataAddr_Check_Failure (_ : ext_data_addr_error)
@@ -1531,6 +1524,14 @@ inductive FetchResult where
   deriving Inhabited, BEq, Repr
   open FetchResult
 
+/-- Type quantifiers: k_width : Int, k_width ≥ 0 -/
+inductive FetchBytes_Result (k_width : Nat) where
+  | FetchBytes_Ext_Error (_ : ext_fetch_addr_error)
+  | FetchBytes_Exception (_ : ExceptionType)
+  | FetchBytes_Success (_ : (BitVec (k_width * 8)))
+  deriving Inhabited, BEq, Repr
+  open FetchBytes_Result
+
 inductive Step where
   | Step_Pending_Interrupt (_ : (InterruptType × Privilege))
   | Step_Ext_Fetch_Failure (_ : ext_fetch_addr_error)
@@ -1543,6 +1544,7 @@ inductive Step where
 structure pma_check_opts where
   ziccamoa : Bool
   ziccamoc : Bool
+  ziccif : Bool
   ziccrse : Bool
   ssccptr : Bool
   svadu : Bool

@@ -166,7 +166,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -212,6 +211,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -224,7 +224,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex775856_ : Bool, _step_no : Int -/
+/-- Type quantifiers: k_ex776235_ : Bool, _step_no : Int -/
 def run_hart_waiting (_step_no : Int) (wr : WaitReason) (instbits : (BitVec 32)) (exit_wait : Bool) : SailM Step := do
   if ((← (shouldWakeForInterrupt ())) : Bool)
   then
@@ -396,7 +396,7 @@ def wait_is_nop (wr : WaitReason) : Bool :=
   | .WAIT_WRS_STO => false
   | .WAIT_WRS_NTO => false
 
-/-- Type quantifiers: k_ex775906_ : Bool, step_no : Nat, 0 ≤ step_no -/
+/-- Type quantifiers: k_ex776285_ : Bool, step_no : Nat, 0 ≤ step_no -/
 def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   let _ : Unit := (ext_pre_step_hook ())
   writeReg minstret_increment (← (should_inc_minstret (← readReg cur_privilege)))
@@ -421,7 +421,7 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   | .Step_Execute (.ExecuteAs _, _) =>
     (internal_error "postlude/step.sail" 215
       "Multiple chained ExecuteAs (only one redirection is supported).")
-  | .Step_Execute (.Trap (priv, ctl, pc), _) => (set_next_pc (← (exception_handler priv ctl pc)))
+  | .Step_Execute (.Trap (priv, exc, pc), _) => (set_next_pc (← (exception_handler priv exc pc)))
   | .Step_Execute (.Illegal_Instruction (), instbits) =>
     (handle_exception (zero_extend (m := 32) instbits) (E_Illegal_Instr ()))
   | .Step_Execute (.Virtual_Instruction (), instbits) =>

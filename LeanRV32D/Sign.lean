@@ -142,7 +142,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -188,6 +187,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -200,11 +200,11 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex685017_ : Nat, k_ex685017_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex685017_)) : Bool :=
+/-- Type quantifiers: k_ex685386_ : Nat, k_ex685386_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex685386_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex685019_ : Nat, k_ex685019_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex685019_)) : Bool :=
+/-- Type quantifiers: k_ex685388_ : Nat, k_ex685388_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex685388_)) : Bool :=
   (is_highest_one op)
 

@@ -144,7 +144,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -190,6 +189,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -232,11 +232,11 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 32)
 def redirect_callback (x_0 : (BitVec 32)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex697477_ : Bool -/
+/-- Type quantifiers: k_ex697846_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex697478_ : Bool -/
+/-- Type quantifiers: k_ex697847_ : Bool -/
 def xret_callback (x_0 : Bool) : Unit :=
   ()
 

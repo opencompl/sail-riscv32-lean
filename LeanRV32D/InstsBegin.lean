@@ -145,7 +145,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -191,6 +190,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -206,7 +206,7 @@ open AmocasOddRegisterReservedBehavior
 def RETIRE_SUCCESS : ExecutionResult := (Retire_Success ())
 
 def trap (exc : sync_exception) : SailM ExecutionResult := do
-  (pure (Trap ((← readReg cur_privilege), (CTL_TRAP exc), (← readReg PC))))
+  (pure (Trap ((← readReg cur_privilege), exc, (← readReg PC))))
 
 def memory_exception (vaddr : virtaddr) (exc : ExceptionType) : SailM ExecutionResult := do
   (trap (make_sync_exception exc (bits_of_virtaddr vaddr)))

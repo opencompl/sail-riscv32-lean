@@ -146,7 +146,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -192,6 +191,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -285,7 +285,7 @@ def lookup_TLB (sv_width : Nat) (asid : (BitVec (if ( 32 = 32  : Bool) then 9 el
     then (pure (some (index, entry)))
     else (pure none))
 
-/-- Type quantifiers: k_ex706255_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
+/-- Type quantifiers: k_ex706616_ : Bool, level : Nat, sv_width : Nat, is_sv_mode(sv_width), 0 ≤
   level ∧
   level ≤
   (if ( sv_width = 32  : Bool) then 1 else (if ( sv_width = 39  : Bool) then 2 else (if ( sv_width =

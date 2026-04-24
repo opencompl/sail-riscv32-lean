@@ -147,7 +147,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -193,6 +192,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -339,7 +339,7 @@ def pmpWriteCfgReg (n : Nat) (v : (BitVec 32)) : SailM Unit := do
       else (pure ())
   (pure loop_vars)
 
-/-- Type quantifiers: k_ex697850_ : Bool, k_ex697849_ : Bool -/
+/-- Type quantifiers: k_ex698219_ : Bool, k_ex698218_ : Bool -/
 def pmpWriteAddr (locked : Bool) (tor_locked : Bool) (reg : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
   if ((locked || tor_locked) : Bool)
   then reg

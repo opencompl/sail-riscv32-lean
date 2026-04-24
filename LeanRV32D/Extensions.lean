@@ -146,7 +146,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -192,6 +191,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -257,9 +257,10 @@ def extensionName_forwards (arg_ : extension) : String :=
   | .Ext_Zbkc => "zbkc"
   | .Ext_Zbkx => "zbkx"
   | .Ext_Zbs => "zbs"
-  | .Ext_Ziccamoa => "Ziccamoa"
-  | .Ext_Ziccamoc => "Ziccamoc"
-  | .Ext_Ziccrse => "Ziccrse"
+  | .Ext_Ziccamoa => "ziccamoa"
+  | .Ext_Ziccamoc => "ziccamoc"
+  | .Ext_Ziccif => "ziccif"
+  | .Ext_Ziccrse => "ziccrse"
   | .Ext_Zknd => "zknd"
   | .Ext_Zkne => "zkne"
   | .Ext_Zknh => "zknh"
@@ -378,9 +379,10 @@ def extensionName_backwards (arg_ : String) : SailM extension := do
   | "zbkc" => (pure Ext_Zbkc)
   | "zbkx" => (pure Ext_Zbkx)
   | "zbs" => (pure Ext_Zbs)
-  | "Ziccamoa" => (pure Ext_Ziccamoa)
-  | "Ziccamoc" => (pure Ext_Ziccamoc)
-  | "Ziccrse" => (pure Ext_Ziccrse)
+  | "ziccamoa" => (pure Ext_Ziccamoa)
+  | "ziccamoc" => (pure Ext_Ziccamoc)
+  | "ziccif" => (pure Ext_Ziccif)
+  | "ziccrse" => (pure Ext_Ziccrse)
   | "zknd" => (pure Ext_Zknd)
   | "zkne" => (pure Ext_Zkne)
   | "zknh" => (pure Ext_Zknh)
@@ -505,6 +507,7 @@ def extensionName_forwards_matches (arg_ : extension) : Bool :=
   | .Ext_Zbs => true
   | .Ext_Ziccamoa => true
   | .Ext_Ziccamoc => true
+  | .Ext_Ziccif => true
   | .Ext_Ziccrse => true
   | .Ext_Zknd => true
   | .Ext_Zkne => true
@@ -624,9 +627,10 @@ def extensionName_backwards_matches (arg_ : String) : Bool :=
   | "zbkc" => true
   | "zbkx" => true
   | "zbs" => true
-  | "Ziccamoa" => true
-  | "Ziccamoc" => true
-  | "Ziccrse" => true
+  | "ziccamoa" => true
+  | "ziccamoc" => true
+  | "ziccif" => true
+  | "ziccrse" => true
   | "zknd" => true
   | "zkne" => true
   | "zknh" => true
@@ -764,6 +768,7 @@ def hartSupports (merge_var : extension) : Bool :=
   | .Ext_Zbs => false
   | .Ext_Ziccamoa => true
   | .Ext_Ziccamoc => true
+  | .Ext_Ziccif => true
   | .Ext_Ziccrse => true
   | .Ext_Zknd => true
   | .Ext_Zkne => true
@@ -891,5 +896,5 @@ def currentlyEnabled_measure (ext : extension) : Int :=
   | _ => 2
 
 def extensions_ordered_for_isa_string :=
-  #v[Ext_Smstateen, Ext_Smcntrpmf, Ext_Svvptc, Ext_Svrsw60t59b, Ext_Svpbmt, Ext_Svnapot, Ext_Svinval, Ext_Svadu, Ext_Svade, Ext_Ssu64xl, Ext_Sstvecd, Ext_Sstvala, Ext_Sstc, Ext_Ssqosid, Ext_Ssstateen, Ext_Sscounterenw, Ext_Sscofpmf, Ext_Ssccptr, Ext_Zvl1024b, Ext_Zvl512b, Ext_Zvl256b, Ext_Zvl128b, Ext_Zvl64b, Ext_Zvl32b, Ext_Zvkt, Ext_Zvksh, Ext_Zvksg, Ext_Zvksed, Ext_Zvksc, Ext_Zvks, Ext_Zvknhb, Ext_Zvknha, Ext_Zvkng, Ext_Zvkned, Ext_Zvknc, Ext_Zvkn, Ext_Zvkg, Ext_Zvkb, Ext_Zvfhmin, Ext_Zvfh, Ext_Zvfbfwma, Ext_Zvfbfmin, Ext_Zve64x, Ext_Zve64f, Ext_Zve64d, Ext_Zve32x, Ext_Zve32f, Ext_Zvbc, Ext_Zvbb, Ext_Zvabd, Ext_Zkt, Ext_Zksh, Ext_Zksed, Ext_Zkr, Ext_Zknh, Ext_Zkne, Ext_Zknd, Ext_Zbs, Ext_Zbkx, Ext_Zbkc, Ext_Zbkb, Ext_Zbc, Ext_Zbb, Ext_Zba, Ext_Zcmop, Ext_Zcf, Ext_Zcd, Ext_Zcb, Ext_Zca, Ext_Zhinxmin, Ext_Zhinx, Ext_Zdinx, Ext_Zfinx, Ext_Zfhmin, Ext_Zfh, Ext_Zfbfmin, Ext_Zfa, Ext_Zawrs, Ext_Zalrsc, Ext_Zacas, Ext_Zabha, Ext_Zaamo, Ext_Za64rs, Ext_Za128rs, Ext_Zmmul, Ext_Zimop, Ext_Zihpm, Ext_Zihintpause, Ext_Zihintntl, Ext_Zifencei, Ext_Zicsr, Ext_Zicond, Ext_Zicntr, Ext_Zicfiss, Ext_Zicfilp, Ext_Ziccrse, Ext_Ziccamoc, Ext_Ziccamoa, Ext_Zicboz, Ext_Zicbop, Ext_Zicbom, Ext_Zibi, Ext_H, Ext_V, Ext_B, Ext_C, Ext_D, Ext_F, Ext_A, Ext_M]
+  #v[Ext_Smstateen, Ext_Smcntrpmf, Ext_Svvptc, Ext_Svrsw60t59b, Ext_Svpbmt, Ext_Svnapot, Ext_Svinval, Ext_Svadu, Ext_Svade, Ext_Ssu64xl, Ext_Sstvecd, Ext_Sstvala, Ext_Sstc, Ext_Ssqosid, Ext_Ssstateen, Ext_Sscounterenw, Ext_Sscofpmf, Ext_Ssccptr, Ext_Zvl1024b, Ext_Zvl512b, Ext_Zvl256b, Ext_Zvl128b, Ext_Zvl64b, Ext_Zvl32b, Ext_Zvkt, Ext_Zvksh, Ext_Zvksg, Ext_Zvksed, Ext_Zvksc, Ext_Zvks, Ext_Zvknhb, Ext_Zvknha, Ext_Zvkng, Ext_Zvkned, Ext_Zvknc, Ext_Zvkn, Ext_Zvkg, Ext_Zvkb, Ext_Zvfhmin, Ext_Zvfh, Ext_Zvfbfwma, Ext_Zvfbfmin, Ext_Zve64x, Ext_Zve64f, Ext_Zve64d, Ext_Zve32x, Ext_Zve32f, Ext_Zvbc, Ext_Zvbb, Ext_Zvabd, Ext_Zkt, Ext_Zksh, Ext_Zksed, Ext_Zkr, Ext_Zknh, Ext_Zkne, Ext_Zknd, Ext_Zbs, Ext_Zbkx, Ext_Zbkc, Ext_Zbkb, Ext_Zbc, Ext_Zbb, Ext_Zba, Ext_Zcmop, Ext_Zcf, Ext_Zcd, Ext_Zcb, Ext_Zca, Ext_Zhinxmin, Ext_Zhinx, Ext_Zdinx, Ext_Zfinx, Ext_Zfhmin, Ext_Zfh, Ext_Zfbfmin, Ext_Zfa, Ext_Zawrs, Ext_Zalrsc, Ext_Zacas, Ext_Zabha, Ext_Zaamo, Ext_Za64rs, Ext_Za128rs, Ext_Zmmul, Ext_Zimop, Ext_Zihpm, Ext_Zihintpause, Ext_Zihintntl, Ext_Zifencei, Ext_Zicsr, Ext_Zicond, Ext_Zicntr, Ext_Zicfiss, Ext_Zicfilp, Ext_Ziccrse, Ext_Ziccif, Ext_Ziccamoc, Ext_Ziccamoa, Ext_Zicboz, Ext_Zicbop, Ext_Zicbom, Ext_Zibi, Ext_H, Ext_V, Ext_B, Ext_C, Ext_D, Ext_F, Ext_A, Ext_M]
 

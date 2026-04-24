@@ -142,7 +142,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -188,6 +187,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -200,13 +200,13 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex685028_ : Nat, k_ex685028_ ∈ {16, 32, 64, 128} -/
-def float_is_normal (op : (BitVec k_ex685028_)) : Bool :=
+/-- Type quantifiers: k_ex685397_ : Nat, k_ex685397_ ∈ {16, 32, 64, 128} -/
+def float_is_normal (op : (BitVec k_ex685397_)) : Bool :=
   let { exp := exp, sign := _, mantissa := _ } := (float_decompose op)
   ((! (is_all_ones exp)) && (! (is_all_zeros exp)))
 
-/-- Type quantifiers: k_ex685046_ : Nat, k_ex685046_ ∈ {16, 32, 64, 128} -/
-def float_is_subnormal (op : (BitVec k_ex685046_)) : Bool :=
+/-- Type quantifiers: k_ex685415_ : Nat, k_ex685415_ ∈ {16, 32, 64, 128} -/
+def float_is_subnormal (op : (BitVec k_ex685415_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (! (is_all_zeros mantissa)))
 

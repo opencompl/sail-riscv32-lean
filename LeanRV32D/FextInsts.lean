@@ -147,7 +147,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -193,6 +192,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -376,7 +376,7 @@ def feq_quiet_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) : (Bool × (BitVec 5)) :=
     else (zeros (n := 5))
   (result, fflags)
 
-/-- Type quantifiers: k_ex706924_ : Bool -/
+/-- Type quantifiers: k_ex707285_ : Bool -/
 def flt_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_S v1)
   let (s2, e2, m2) := (fsplit_S v2)
@@ -408,7 +408,7 @@ def flt_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) (is_quiet : Bool) : (Bool × (Bi
       else (zeros (n := 5)))
   (result, fflags)
 
-/-- Type quantifiers: k_ex707010_ : Bool -/
+/-- Type quantifiers: k_ex707371_ : Bool -/
 def fle_S (v1 : (BitVec 32)) (v2 : (BitVec 32)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_S v1)
   let (s2, e2, m2) := (fsplit_S v2)

@@ -144,7 +144,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -190,6 +189,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -261,7 +261,7 @@ def f_is_NaN_H (xf16 : (BitVec 16)) : Bool :=
   let (sign, exp, mant) := (fsplit_H xf16)
   ((exp == (ones (n := 5))) && (mant != (zeros (n := 10))))
 
-/-- Type quantifiers: k_ex707632_ : Bool -/
+/-- Type quantifiers: k_ex707993_ : Bool -/
 def fle_H (v1 : (BitVec 16)) (v2 : (BitVec 16)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_H v1)
   let (s2, e2, m2) := (fsplit_H v2)

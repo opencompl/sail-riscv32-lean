@@ -155,7 +155,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -201,6 +200,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -604,6 +604,7 @@ termination_by (let (_, _, _) := (priv, bit_idx, stateen_reg)
 def currentlyEnabled (merge_var : extension) : SailM Bool := do
   match merge_var with
   | .Ext_Zic64b => (pure (hartSupports Ext_Zic64b))
+  | .Ext_Ziccif => (pure (hartSupports Ext_Ziccif))
   | .Ext_Zkt => (pure (hartSupports Ext_Zkt))
   | .Ext_Zvkt => (pure (hartSupports Ext_Zvkt))
   | .Ext_Zvkn => (pure (hartSupports Ext_Zvkn))
@@ -1936,7 +1937,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex687953_ : Bool -/
+/-- Type quantifiers: k_ex688322_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6511,7 +6512,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex689118_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex689487_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -10769,6 +10770,20 @@ def interruptType_to_str (i : InterruptType) : String :=
   | .I_M_External => "machine-external-interrupt"
   | .I_SG_External => "supervisor guest-external-interrupt"
   | .I_COF => "counter-overflow interrupt"
+
+def memory_region_type_str_backwards (arg_ : String) : SailM MemoryRegionType := do
+  match arg_ with
+  | "main memory" => (pure MainMemory)
+  | "IO memory" => (pure IOMemory)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def memory_region_type_str_forwards (arg_ : MemoryRegionType) : String :=
+  match arg_ with
+  | .MainMemory => "main memory"
+  | .IOMemory => "IO memory"
 
 def misaligned_fault_str_backwards (arg_ : String) : SailM misaligned_fault := do
   match arg_ with

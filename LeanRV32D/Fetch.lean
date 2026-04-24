@@ -149,7 +149,6 @@ open f_bin_f_op_D
 open extop_zbb
 open extension
 open exception
-open ctl_result
 open csrop
 open cregidx
 open checked_cbop
@@ -195,6 +194,7 @@ open InterruptType
 open ISA_Format
 open HartState
 open FetchResult
+open FetchBytes_Result
 open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
@@ -210,6 +210,20 @@ open AmocasOddRegisterReservedBehavior
 def isRVC (h : (BitVec 16)) : Bool :=
   (not ((Sail.BitVec.extractLsb h 1 0) == 0b11#2))
 
+/-- Type quantifiers: width : Nat, width ∈ {2, 4} -/
+def fetch_bytes (fetch_start : (BitVec 32)) (granule_start : (BitVec 32)) (width : Nat) : SailM (FetchBytes_Result width) := SailME.run do
+  match (ext_fetch_check_pc fetch_start granule_start) with
+  | .some e => SailME.throw ((FetchBytes_Ext_Error e) : (FetchBytes_Result width))
+  | none => (pure ())
+  let (paddr, pbmt) ← (( do
+    match (← (translateAddr (Virtaddr granule_start) (InstructionFetch ()))) with
+    | .Err (e, _) => SailME.throw ((FetchBytes_Exception e) : (FetchBytes_Result width))
+    | .Ok (paddr, pbmt, _) => (pure (paddr, pbmt)) ) : SailME (FetchBytes_Result width)
+    (physaddr × page_based_mem_type) )
+  match (← (mem_read (InstructionFetch ()) pbmt paddr width false false false)) with
+  | .Err e => (pure (FetchBytes_Exception e))
+  | .Ok bytes => (pure (FetchBytes_Success bytes))
+
 def fetch (_ : Unit) : SailM FetchResult := SailME.run do
   if ((get_config_rvfi ()) : Bool)
   then (rvfi_fetch ())
@@ -223,27 +237,30 @@ def fetch (_ : Unit) : SailM FetchResult := SailME.run do
       then (pure (F_Error ((E_Fetch_Addr_Align ()), (← readReg PC))))
       else
         (do
-          match (← (translateAddr (Virtaddr (← readReg PC)) (InstructionFetch ()))) with
-          | .Err (e, _) => (pure (F_Error (e, (← readReg PC))))
-          | .Ok (ppclo, pbmt, _) =>
+          if (((is_aligned_vaddr (Virtaddr (← readReg PC)) 4) && (← (currentlyEnabled Ext_Ziccif))) : Bool)
+          then
             (do
-              match (← (mem_read (InstructionFetch ()) pbmt ppclo 2 false false false)) with
-              | .Err e => (pure (F_Error (e, (← readReg PC))))
-              | .Ok ilo =>
+              match (← (fetch_bytes (← readReg PC) (← readReg PC) 4)) with
+              | .FetchBytes_Ext_Error e => (pure (F_Ext_Error e))
+              | .FetchBytes_Exception e => (pure (F_Error (e, (← readReg PC))))
+              | .FetchBytes_Success bytes =>
+                (if ((isRVC (Sail.BitVec.extractLsb bytes 15 0)) : Bool)
+                then (pure (F_RVC (Sail.BitVec.extractLsb bytes 15 0)))
+                else (pure (F_Base bytes))))
+          else
+            (do
+              match (← (fetch_bytes (← readReg PC) (← readReg PC) 2)) with
+              | .FetchBytes_Ext_Error e => (pure (F_Ext_Error e))
+              | .FetchBytes_Exception e => (pure (F_Error (e, (← readReg PC))))
+              | .FetchBytes_Success ilo =>
                 (do
                   if ((isRVC ilo) : Bool)
                   then (pure (F_RVC ilo))
                   else
                     (do
-                      let PC_hi ← do (pure (BitVec.addInt (← readReg PC) 2))
-                      match (ext_fetch_check_pc (← readReg PC) PC_hi) with
-                      | .some e => SailME.throw ((F_Ext_Error e) : FetchResult)
-                      | none => (pure ())
-                      match (← (translateAddr (Virtaddr PC_hi) (InstructionFetch ()))) with
-                      | .Err (e, _) => (pure (F_Error (e, PC_hi)))
-                      | .Ok (ppchi, pbmt, _) =>
-                        (do
-                          match (← (mem_read (InstructionFetch ()) pbmt ppchi 2 false false false)) with
-                          | .Err e => (pure (F_Error (e, PC_hi)))
-                          | .Ok ihi => (pure (F_Base (ihi +++ ilo)))))))))
+                      match (← (fetch_bytes (← readReg PC) (BitVec.addInt (← readReg PC) 2) 2)) with
+                      | .FetchBytes_Ext_Error e => (pure (F_Ext_Error e))
+                      | .FetchBytes_Exception e =>
+                        (pure (F_Error (e, (BitVec.addInt (← readReg PC) 2))))
+                      | .FetchBytes_Success ihi => (pure (F_Base (ihi +++ ilo))))))))
 
