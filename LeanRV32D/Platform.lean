@@ -2,7 +2,6 @@ import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Errors
 import LeanRV32D.PlatformConfig
-import LeanRV32D.Types
 import LeanRV32D.MemTypeUtils
 import LeanRV32D.Callbacks
 import LeanRV32D.SysRegs
@@ -100,7 +99,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -368,7 +367,7 @@ def clint_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (wid
                                 else ()
                               (pure (Err (← (accessFaultFromAccessType access)))))))))))
 
-/-- Type quantifiers: k_ex701108_ : Bool -/
+/-- Type quantifiers: k_ex700439_ : Bool -/
 def clint_dispatch (mip_was_written : Bool) : SailM Unit := do
   let old_mip ← do readReg mip
   writeReg mip (Sail.BitVec.updateSubrange (← readReg mip) 7 7

@@ -1,7 +1,9 @@
 import LeanRV32D.Flow
 import LeanRV32D.Prelude
+import LeanRV32D.Errors
 import LeanRV32D.MemAddrtype
 import LeanRV32D.RangeUtil
+import LeanRV32D.VmemTypes
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -93,7 +95,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -278,35 +280,6 @@ def reservability_str_backwards_matches (arg_ : String) : Bool :=
   | "RsrvEventual" => true
   | _ => false
 
-def undefined_misaligned_fault (_ : Unit) : SailM misaligned_fault := do
-  (internal_pick [NoFault, AccessFault, AlignmentFault])
-
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
-def misaligned_fault_of_num (arg_ : Nat) : misaligned_fault :=
-  match arg_ with
-  | 0 => NoFault
-  | 1 => AccessFault
-  | _ => AlignmentFault
-
-def num_of_misaligned_fault (arg_ : misaligned_fault) : Int :=
-  match arg_ with
-  | .NoFault => 0
-  | .AccessFault => 1
-  | .AlignmentFault => 2
-
-def misaligned_fault_str_forwards_matches (arg_ : misaligned_fault) : Bool :=
-  match arg_ with
-  | .NoFault => true
-  | .AccessFault => true
-  | .AlignmentFault => true
-
-def misaligned_fault_str_backwards_matches (arg_ : String) : Bool :=
-  match arg_ with
-  | "NoFault" => true
-  | "AccessFault" => true
-  | "AlignmentFault" => true
-  | _ => false
-
 def undefined_MemoryRegionType (_ : Unit) : SailM MemoryRegionType := do
   (internal_pick [MainMemory, IOMemory])
 
@@ -332,22 +305,6 @@ def memory_region_type_str_backwards_matches (arg_ : String) : Bool :=
   | "IO memory" => true
   | _ => false
 
-def undefined_PMA (_ : Unit) : SailM PMA := do
-  (pure { mem_type := ← (undefined_MemoryRegionType ())
-          cacheable := ← (undefined_bool ())
-          coherent := ← (undefined_bool ())
-          executable := ← (undefined_bool ())
-          readable := ← (undefined_bool ())
-          writable := ← (undefined_bool ())
-          read_idempotent := ← (undefined_bool ())
-          write_idempotent := ← (undefined_bool ())
-          misaligned_fault := ← (undefined_misaligned_fault ())
-          atomic_support := ← (undefined_AtomicSupport ())
-          reservability := ← (undefined_Reservability ())
-          supports_cbo_zero := ← (undefined_bool ())
-          supports_pte_read := ← (undefined_bool ())
-          supports_pte_write := ← (undefined_bool ()) })
-
 def override_PMA (pma : PMA) (pbmt : page_based_mem_type) : PMA :=
   match pbmt with
   | .PBMT_PMA => pma
@@ -356,11 +313,29 @@ def override_PMA (pma : PMA) (pbmt : page_based_mem_type) : PMA :=
   | .PBMT_IO =>
     { pma with mem_type := IOMemory, cacheable := false, read_idempotent := false, write_idempotent := false }
 
-def undefined_PMA_Region (_ : Unit) : SailM PMA_Region := do
-  (pure { base := ← (undefined_bitvector 64)
-          size := ← (undefined_bitvector 64)
-          attributes := ← (undefined_PMA ())
-          include_in_device_tree := ← (undefined_bool ()) })
+def pma_misaligned_exception (pma : PMA) (access : (MemoryAccessType mem_payload)) : SailM (Option misaligned_exception) := do
+  let exceptions := pma.misaligned_exceptions
+  match access with
+  | .Load .Data => (pure exceptions.load_store)
+  | .Load .PageTableEntry => (pure exceptions.load_store)
+  | .Load .ShadowStack => (pure exceptions.load_store)
+  | .Store .Data => (pure exceptions.load_store)
+  | .Store .PageTableEntry => (pure exceptions.load_store)
+  | .Store .ShadowStack => (pure exceptions.load_store)
+  | .Load .Vector => (pure exceptions.vector)
+  | .Store .Vector => (pure exceptions.vector)
+  | .Atomic (_, _, _) => (pure (some exceptions.amo))
+  | .InstructionFetch () =>
+    (internal_error "sys/pma.sail" 153 "PMA: Invalid misaligned instruction fetch.")
+  | .LoadReserved p =>
+    (internal_error "sys/pma.sail" 154
+      (HAppend.hAppend "PMA: Invalid misaligned load-reserved ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ").")))
+  | .StoreConditional p =>
+    (internal_error "sys/pma.sail" 155
+      (HAppend.hAppend "PMA: Invalid misaligned store-conditional ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ").")))
+  | .CacheAccess _ => (internal_error "sys/pma.sail" 156 "PMA: Invalid misaligned cache-access.")
 
 def matching_pma_region_bits_range (regions : (List PMA_Region)) (base : (BitVec 64)) (size : (BitVec 64)) : (Option PMA_Region) :=
   match regions with

@@ -99,7 +99,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -593,7 +593,7 @@ def riscv_f32ToUi16 (rm : (BitVec 3)) (v : (BitVec 32)) : ((BitVec 5) × (BitVec
   then ((nvFlag ()), (ones (n := 16)))
   else (flag, (Sail.BitVec.extractLsb sig32 15 0))
 
-/-- Type quantifiers: k_ex709846_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex709015_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with
@@ -683,7 +683,7 @@ def riscv_f64Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 64)) : SailM ((BitVec 5) ×
   | .float_class_positive_normal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v false)) 63 0)))
 
-/-- Type quantifiers: k_ex710055_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex709224_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool × (BitVec 64)) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with

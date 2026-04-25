@@ -90,7 +90,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -200,8 +200,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex685390_ : Nat, k_ex685390_ ∈ {16, 32, 64, 128} -/
-def float_is_zero (op : (BitVec k_ex685390_)) : Bool :=
+/-- Type quantifiers: k_ex684721_ : Nat, k_ex684721_ ∈ {16, 32, 64, 128} -/
+def float_is_zero (op : (BitVec k_ex684721_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (is_all_zeros mantissa))
 

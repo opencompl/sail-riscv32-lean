@@ -93,7 +93,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -329,7 +329,7 @@ def write_ram_ea (_wk : write_kind) (app_1 : physaddr) (_width : Nat) : Unit :=
   let .Physaddr _addr := app_1
   ()
 
-/-- Type quantifiers: k_ex686310_ : Bool, width : Nat, width ≥ 0, 0 < width ∧
+/-- Type quantifiers: k_ex685641_ : Bool, width : Nat, width ≥ 0, 0 < width ∧
   width ≤ max_mem_access -/
 def read_ram (rk : read_kind) (app_1 : physaddr) (width : Nat) (read_meta : Bool) : SailM ((BitVec (8 * width)) × Unit) := do
   let .Physaddr addr := app_1

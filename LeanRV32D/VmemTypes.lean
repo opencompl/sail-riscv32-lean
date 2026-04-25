@@ -90,7 +90,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -305,23 +305,21 @@ def is_shadow_stack_access (access : (MemoryAccessType mem_payload)) : SailM Boo
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic.")))))
 
-def is_shadow_stack_amo (access : (MemoryAccessType mem_payload)) : SailM Bool := do
+def is_amo_access (access : (MemoryAccessType mem_payload)) : Bool :=
   match access with
-  | .Atomic (_, .ShadowStack, .ShadowStack) => (pure true)
-  | .LoadReserved p =>
-    (internal_error "core/vmem_types.sail" 95
-      (HAppend.hAppend "Invalid payload ("
-        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
-  | .StoreConditional p =>
-    (internal_error "core/vmem_types.sail" 96
-      (HAppend.hAppend "Invalid payload ("
-        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
-  | .Atomic (_, rp, wp) =>
-    (internal_error "core/vmem_types.sail" 97
-      (HAppend.hAppend "Invalid payloads ("
-        (HAppend.hAppend (mem_payload_name_forwards rp)
-          (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic.")))))
-  | _ => (pure false)
+  | .Atomic _ => true
+  | _ => false
+
+def is_shadow_stack_amo (access : (MemoryAccessType mem_payload)) : Bool :=
+  match access with
+  | .Atomic (_, .ShadowStack, .ShadowStack) => true
+  | _ => false
+
+def is_vector_access (access : (MemoryAccessType mem_payload)) : Bool :=
+  match access with
+  | .Load .Vector => true
+  | .Store .Vector => true
+  | _ => false
 
 def undefined_page_based_mem_type (_ : Unit) : SailM page_based_mem_type := do
   (internal_pick [PBMT_PMA, PBMT_NC, PBMT_IO])

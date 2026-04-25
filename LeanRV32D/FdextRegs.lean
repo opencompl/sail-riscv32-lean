@@ -2,7 +2,7 @@ import LeanRV32D.Flow
 import LeanRV32D.Arith
 import LeanRV32D.Prelude
 import LeanRV32D.Flen
-import LeanRV32D.Extensions
+import LeanRV32D.PlatformConfig
 import LeanRV32D.Types
 import LeanRV32D.Callbacks
 import LeanRV32D.Regs
@@ -98,7 +98,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation

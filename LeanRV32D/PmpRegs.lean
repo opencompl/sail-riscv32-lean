@@ -95,7 +95,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -339,7 +339,7 @@ def pmpWriteCfgReg (n : Nat) (v : (BitVec 32)) : SailM Unit := do
       else (pure ())
   (pure loop_vars)
 
-/-- Type quantifiers: k_ex698219_ : Bool, k_ex698218_ : Bool -/
+/-- Type quantifiers: k_ex697550_ : Bool, k_ex697549_ : Bool -/
 def pmpWriteAddr (locked : Bool) (tor_locked : Bool) (reg : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
   if ((locked || tor_locked) : Bool)
   then reg

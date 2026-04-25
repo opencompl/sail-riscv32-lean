@@ -1,6 +1,7 @@
 import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Errors
+import LeanRV32D.PlatformConfig
 import LeanRV32D.Types
 import LeanRV32D.VmemTypes
 import LeanRV32D.SysRegs
@@ -96,7 +97,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -272,7 +273,7 @@ def pte_is_invalid (pte_flags : (BitVec 8)) (pte_ext : (BitVec 10)) : SailM Bool
                       (← (currentlyEnabled Ext_Svrsw60t59b)))) || ((_get_PTE_Ext_reserved pte_ext) != (zeros
                       (n := 5)))))))))))
 
-/-- Type quantifiers: k_ex706435_ : Bool, k_ex706434_ : Bool -/
+/-- Type quantifiers: k_ex705597_ : Bool, k_ex705596_ : Bool -/
 def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := SailME.run do
   let pte_U := (bit_to_bool (_get_PTE_Flags_U pte_flags))
   let pte_R := (bit_to_bool (_get_PTE_Flags_R pte_flags))

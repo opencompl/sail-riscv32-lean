@@ -94,7 +94,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -229,7 +229,4 @@ def ext_exc_type_bits_backwards_matches (arg_ : (BitVec 6)) : Bool :=
   match arg_ with
   | 0b011000 => true
   | _ => false
-
-def ext_exc_type_to_str (_e : Unit) : String :=
-  "extension-exception"
 

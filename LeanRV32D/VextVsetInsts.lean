@@ -2,7 +2,7 @@ import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Xlen
 import LeanRV32D.Vlen
-import LeanRV32D.Types
+import LeanRV32D.PlatformConfig
 import LeanRV32D.Callbacks
 import LeanRV32D.Regs
 import LeanRV32D.VextRegs
@@ -99,7 +99,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -319,7 +319,7 @@ def calculate_new_vl (AVL : (BitVec 32)) (VLMAX : Nat) : Nat :=
       else VLMAX)
     else VLMAX)
 
-/-- Type quantifiers: k_ex710322_ : Bool -/
+/-- Type quantifiers: k_ex709491_ : Bool -/
 def execute_vsetvl_type (ma : (BitVec 1)) (ta : (BitVec 1)) (sew : (BitVec 3)) (lmul : (BitVec 3)) (avl : (BitVec 32)) (requires_fixed_vlmax : Bool) (rd : regidx) : SailM ExecutionResult := do
   if (((is_invalid_lmul_pow lmul) || (is_invalid_sew_pow sew)) : Bool)
   then

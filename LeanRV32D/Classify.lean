@@ -94,7 +94,7 @@ open mvxfunct6
 open mvvmafunct6
 open mvvfunct6
 open mmfunct6
-open misaligned_fault
+open misaligned_exception
 open mem_payload
 open maskfunct3
 open landing_pad_expectation
@@ -235,8 +235,8 @@ def num_of_float_class (arg_ : float_class) : Int :=
   | .float_class_snan => 8
   | .float_class_qnan => 9
 
-/-- Type quantifiers: k_ex685791_ : Nat, k_ex685791_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex685791_)) : SailM float_class := do
+/-- Type quantifiers: k_ex685122_ : Nat, k_ex685122_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex685122_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else
