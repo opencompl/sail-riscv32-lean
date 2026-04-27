@@ -1053,9 +1053,11 @@ def legalize_mstatus (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := 
                             if ((← (currentlyEnabled Ext_U)) : Bool)
                             then (pure (_get_Mstatus_MPRV v))
                             else (pure 0#1))) (extStatus_to_bits Off))
-                      (if ((hartSupports Ext_Zfinx) : Bool)
-                      then (extStatus_to_bits Off)
-                      else (_get_Mstatus_FS v)))
+                      (← do
+                        if (((hartSupports Ext_Zfinx) || ((not (hartSupports Ext_F)) && (not
+                                 (← (currentlyEnabled Ext_S))))) : Bool)
+                        then (pure 0b00#2)
+                        else (pure (_get_Mstatus_FS v))))
                     (← do
                       if ((← (have_nominal_privLevel (_get_Mstatus_MPP v))) : Bool)
                       then (pure (_get_Mstatus_MPP v))
@@ -1064,9 +1066,9 @@ def legalize_mstatus (o : (BitVec 64)) (v : (BitVec 64)) : SailM (BitVec 64) := 
                     if ((← (currentlyEnabled Ext_S)) : Bool)
                     then (pure (_get_Mstatus_SPP v))
                     else (pure 0#1)))
-                (if ((hartSupports Ext_Zve32x) : Bool)
-                then (_get_Mstatus_VS v)
-                else 0b00#2)) (_get_Mstatus_MPIE v))
+                (if ((not (hartSupports Ext_Zve32x)) : Bool)
+                then 0b00#2
+                else (_get_Mstatus_VS v))) (_get_Mstatus_MPIE v))
             (← do
               if ((← (currentlyEnabled Ext_S)) : Bool)
               then (pure (_get_Mstatus_SPIE v))
@@ -1167,9 +1169,9 @@ def is_fiom_active (_ : Unit) : SailM Bool := do
   | .Supervisor => (pure ((_get_MEnvcfg_FIOM (← readReg menvcfg)) == 1#1))
   | .User =>
     (pure (((_get_MEnvcfg_FIOM (← readReg menvcfg)) ||| (_get_SEnvcfg_FIOM (← readReg senvcfg))) == 1#1))
-  | .VirtualUser => (internal_error "core/sys_regs.sail" 473 "Hypervisor extension not supported")
+  | .VirtualUser => (internal_error "core/sys_regs.sail" 472 "Hypervisor extension not supported")
   | .VirtualSupervisor =>
-    (internal_error "core/sys_regs.sail" 474 "Hypervisor extension not supported")
+    (internal_error "core/sys_regs.sail" 473 "Hypervisor extension not supported")
 
 def undefined_Mtvec (_ : Unit) : SailM (BitVec 32) := do
   (undefined_bitvector 32)

@@ -1195,6 +1195,7 @@ def hartSupports (merge_var : extension) : Bool :=
   | .Ext_Ziccamoa => true
   | .Ext_Ziccamoc => true
   | .Ext_Ziccif => true
+  | .Ext_Zicclsm => true
   | .Ext_Ziccrse => true
   | .Ext_Zknd => true
   | .Ext_Zkne => true
@@ -1398,7 +1399,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex686445_ : Bool -/
+/-- Type quantifiers: k_ex686748_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -5561,6 +5562,7 @@ def currentlyEnabled (merge_var : extension) : SailM Bool := do
   match merge_var with
   | .Ext_Zic64b => (pure (hartSupports Ext_Zic64b))
   | .Ext_Ziccif => (pure (hartSupports Ext_Ziccif))
+  | .Ext_Zicclsm => (pure (hartSupports Ext_Zicclsm))
   | .Ext_Zkt => (pure (hartSupports Ext_Zkt))
   | .Ext_Zvkt => (pure (hartSupports Ext_Zvkt))
   | .Ext_Zvkn => (pure (hartSupports Ext_Zvkn))
@@ -6597,7 +6599,7 @@ def architecture (priv : Privilege) : SailM Architecture := SailME.run do
   SailME.throw (RV32 : Architecture)
   (architecture_bits_backwards
     (← do
-      assert false "Pattern match failure at core/sys_regs.sail:288.20-294.3"
+      assert false "Pattern match failure at core/sys_regs.sail:287.20-293.3"
       throw Error.Exit))
 
 def in32BitMode (_ : Unit) : SailM Bool := do
@@ -6641,7 +6643,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex688735_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex689038_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -11046,6 +11048,11 @@ def wait_name_forwards (arg_ : WaitReason) : String :=
   | .WAIT_WFI => "WAIT-WFI"
   | .WAIT_WRS_STO => "WAIT-WRS-STO"
   | .WAIT_WRS_NTO => "WAIT-WRS-NTO"
+
+def misaligned_exception_is_access_fault (e : (Option misaligned_exception)) : Bool :=
+  match e with
+  | .some .AccessFault => true
+  | _ => false
 
 def plat_misaligned_access : GlobalMisalignedExceptions :=
   { load_store := none

@@ -552,7 +552,9 @@ def check_pma_region (region : PMA_Region) : Bool := ExceptM.run do
                     (print_endline
                       (HAppend.hAppend "Memory region starting at "
                         (HAppend.hAppend (BitVec.toFormatted region.base)
-                          " is marked as MainMemory but is not readable, read-idempotent, writable, and write-idempotent.")))
+                          (HAppend.hAppend " is marked as "
+                            (HAppend.hAppend (memory_region_type_str_forwards pma.mem_type)
+                              " but is not readable, read-idempotent, writable, and write-idempotent.")))))
                   false : Bool)
               else (pure ()))
           | .IOMemory => (pure ())
@@ -562,11 +564,12 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
   (pure { ziccamoa := ← (undefined_bool ())
           ziccamoc := ← (undefined_bool ())
           ziccif := ← (undefined_bool ())
+          zicclsm := ← (undefined_bool ())
           ziccrse := ← (undefined_bool ())
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex776044_ : Bool -/
+/-- Type quantifiers: k_ex776381_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -605,7 +608,7 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                   then
                     throw (let _ : Unit :=
                         (print_endline
-                          (HAppend.hAppend "Memory region starting at "
+                          (HAppend.hAppend "Main memory region starting at "
                             (HAppend.hAppend (BitVec.toFormatted region.base)
                               (HAppend.hAppend " is coherent and cacheable with "
                                 (HAppend.hAppend
@@ -618,7 +621,7 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                       then
                         throw (let _ : Unit :=
                             (print_endline
-                              (HAppend.hAppend "Memory region starting at "
+                              (HAppend.hAppend "Main memory region starting at "
                                 (HAppend.hAppend (BitVec.toFormatted region.base)
                                   (HAppend.hAppend " is coherent and cacheable with "
                                     (HAppend.hAppend
@@ -637,11 +640,36 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                               false : Bool)
                           else
                             (do
+                              if (check_opts.zicclsm : Bool)
+                              then
+                                (do
+                                  if ((misaligned_exception_is_access_fault
+                                       attributes.misaligned_exceptions.load_store) : Bool)
+                                  then
+                                    throw (let _ : Unit :=
+                                        (print_endline
+                                          (HAppend.hAppend "Main memory region starting at "
+                                            (HAppend.hAppend (BitVec.toFormatted region.base)
+                                              " is coherent and cacheable with access faults for misaligned scalar loads/stores, but Zicclsm is enabled which requires no exceptions or only misaligned exceptions for such accesses.")))
+                                      false : Bool)
+                                  else
+                                    (do
+                                      if ((misaligned_exception_is_access_fault
+                                           attributes.misaligned_exceptions.vector) : Bool)
+                                      then
+                                        throw (let _ : Unit :=
+                                            (print_endline
+                                              (HAppend.hAppend "Main memory region starting at "
+                                                (HAppend.hAppend (BitVec.toFormatted region.base)
+                                                  " is coherent and cacheable with access faults for misaligned vector loads/stores, but Zicclsm is enabled which requires no exceptions or only misaligned exceptions for such accesses.")))
+                                          false : Bool)
+                                      else (pure ())))
+                              else (pure ())
                               if ((check_opts.ziccrse && (bne attributes.reservability RsrvEventual)) : Bool)
                               then
                                 throw (let _ : Unit :=
                                     (print_endline
-                                      (HAppend.hAppend "Memory region starting at "
+                                      (HAppend.hAppend "Main memory region starting at "
                                         (HAppend.hAppend (BitVec.toFormatted region.base)
                                           (HAppend.hAppend " is coherent and cacheable with "
                                             (HAppend.hAppend
@@ -654,7 +682,7 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                                   then
                                     throw (let _ : Unit :=
                                         (print_endline
-                                          (HAppend.hAppend "Memory region starting at "
+                                          (HAppend.hAppend "Main memory region starting at "
                                             (HAppend.hAppend (BitVec.toFormatted region.base)
                                               " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
                                       false : Bool)
@@ -704,6 +732,7 @@ def check_mem_layout (_ : Unit) : SailM Bool := do
         { ziccamoa := true
           ziccamoc := true
           ziccif := true
+          zicclsm := true
           ziccrse := true
           ssccptr := true
           svadu := true }
@@ -738,7 +767,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex776169_ : Bool -/
+/-- Type quantifiers: k_ex776511_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -934,17 +963,46 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
       valid)
     else valid
   let min_rss_exp := (log2_xlen -i 3)
-  if ((((true : Bool) || (false : Bool)) && (plat_reservation_set_size_exp <b min_rss_exp)) : Bool)
+  let valid : Bool :=
+    if ((((true : Bool) || (false : Bool)) && (plat_reservation_set_size_exp <b min_rss_exp)) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          (HAppend.hAppend
+            "The A or Zalrsc extensions are enabled, but the reservation set size of 2^"
+            (HAppend.hAppend (Int.repr plat_reservation_set_size_exp)
+              (HAppend.hAppend " is too small; it should be at least 2^"
+                (HAppend.hAppend (Int.repr min_rss_exp) " for the LR/SC operands on this platform.")))))
+      valid)
+    else valid
+  if ((true : Bool) : Bool)
   then
-    (let valid : Bool := false
-    let _ : Unit :=
-      (print_endline
-        (HAppend.hAppend
-          "The A or Zalrsc extensions are enabled, but the reservation set size of 2^"
-          (HAppend.hAppend (Int.repr plat_reservation_set_size_exp)
-            (HAppend.hAppend " is too small; it should be at least 2^"
-              (HAppend.hAppend (Int.repr min_rss_exp) " for the LR/SC operands on this platform.")))))
-    valid)
+    (let valid : Bool :=
+      if ((misaligned_exception_is_access_fault
+           ({ load_store := none
+              vector := none
+              lrsc := AccessFault
+              amo := AccessFault } : GlobalMisalignedExceptions).load_store) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "The Zicclsm extension is enabled, but misaligned scalar loads/stores raise access faults before address translation (as per `memory.misaligned.exceptions.load_store`); Zicclsm requires no exceptions or only misaligned exceptions for such accesses.")
+        valid)
+      else valid
+    if ((misaligned_exception_is_access_fault
+         ({ load_store := none
+            vector := none
+            lrsc := AccessFault
+            amo := AccessFault } : GlobalMisalignedExceptions).vector) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Zicclsm extension is enabled, but misaligned vector loads/stores raise access faults before address translation (as per `memory.misaligned.exceptions.vector`); Zicclsm requires no exceptions or only misaligned exceptions for such accesses.")
+      valid)
+    else valid)
   else valid
 
 def check_stateen_config (_ : Unit) : Bool :=
