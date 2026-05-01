@@ -228,8 +228,9 @@ def illegal_fp_vd_masked (vd : vregidx) (SEW : Nat) (rm_3b : (BitVec 3)) : SailM
 def illegal_fp_vd_unmasked (SEW : Nat) (rm_3b : (BitVec 3)) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || (not (valid_fp_op SEW rm_3b))))
 
-/-- Type quantifiers: LMUL_pow_new : Int, SEW_new : Int, SEW : Nat, SEW ∈ {8, 16, 32, 64} -/
-def illegal_fp_variable_width (vd : vregidx) (vm : (BitVec 1)) (SEW : Nat) (rm_3b : (BitVec 3)) (SEW_new : Int) (LMUL_pow_new : Int) : SailM Bool := do
+/-- Type quantifiers: LMUL_pow_new : Int, SEW_new : Nat, SEW : Nat, SEW ∈ {8, 16, 32, 64}, 0 ≤
+  SEW_new -/
+def illegal_fp_variable_width (vd : vregidx) (vm : (BitVec 1)) (SEW : Nat) (rm_3b : (BitVec 3)) (SEW_new : Nat) (LMUL_pow_new : Int) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (valid_rd_mask vd vm)) || ((not
             (valid_fp_op SEW rm_3b)) || (not (valid_eew_emul SEW_new LMUL_pow_new))))))
 
@@ -238,8 +239,8 @@ def illegal_fp_reduction (SEW : Nat) (rm_3b : (BitVec 3)) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (← (assert_vstart 0))) || (not
           (valid_fp_op SEW rm_3b)))))
 
-/-- Type quantifiers: EEW : Int, SEW : Nat, SEW ∈ {8, 16, 32, 64} -/
-def illegal_fp_widening_reduction (SEW : Nat) (rm_3b : (BitVec 3)) (EEW : Int) : SailM Bool := do
+/-- Type quantifiers: EEW : Nat, SEW : Nat, SEW ∈ {8, 16, 32, 64}, 0 ≤ EEW -/
+def illegal_fp_widening_reduction (SEW : Nat) (rm_3b : (BitVec 3)) (EEW : Nat) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (← (assert_vstart 0))) || ((not
             (valid_fp_op SEW rm_3b)) || (not ((EEW ≥b 8) && (EEW ≤b elen)))))))
 
@@ -593,7 +594,7 @@ def riscv_f32ToUi16 (rm : (BitVec 3)) (v : (BitVec 32)) : ((BitVec 5) × (BitVec
   then ((nvFlag ()), (ones (n := 16)))
   else (flag, (Sail.BitVec.extractLsb sig32 15 0))
 
-/-- Type quantifiers: k_ex709352_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex709565_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with
@@ -683,7 +684,7 @@ def riscv_f64Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 64)) : SailM ((BitVec 5) ×
   | .float_class_positive_normal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v false)) 63 0)))
 
-/-- Type quantifiers: k_ex709561_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex709774_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool × (BitVec 64)) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with

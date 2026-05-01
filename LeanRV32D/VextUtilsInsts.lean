@@ -225,8 +225,8 @@ def maybe_vmask_backwards_matches (arg_ : (BitVec 1)) : Bool :=
   | 0 => true
   | _ => false
 
-/-- Type quantifiers: EMUL_pow : Int, EEW : Int -/
-def valid_eew_emul (EEW : Int) (EMUL_pow : Int) : Bool :=
+/-- Type quantifiers: EMUL_pow : Int, EEW : Nat, 0 ≤ EEW -/
+def valid_eew_emul (EEW : Nat) (EMUL_pow : Int) : Bool :=
   ((EEW ≥b 8) && ((EEW ≤b elen) && ((EMUL_pow ≥b (Neg.neg 3)) && (EMUL_pow ≤b 3))))
 
 def valid_vtype (_ : Unit) : SailM Bool := do
@@ -289,38 +289,38 @@ def illegal_vd_masked (vd : vregidx) : SailM Bool := do
 def illegal_vd_unmasked (_ : Unit) : SailM Bool := do
   (pure (not (← (valid_vtype ()))))
 
-/-- Type quantifiers: LMUL_pow_new : Int, SEW_new : Int -/
-def illegal_variable_width (vd : vregidx) (vm : (BitVec 1)) (SEW_new : Int) (LMUL_pow_new : Int) : SailM Bool := do
+/-- Type quantifiers: LMUL_pow_new : Int, SEW_new : Nat, 0 ≤ SEW_new -/
+def illegal_variable_width (vd : vregidx) (vm : (BitVec 1)) (SEW_new : Nat) (LMUL_pow_new : Int) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (valid_rd_mask vd vm)) || (not
           (valid_eew_emul SEW_new LMUL_pow_new)))))
 
 def illegal_reduction (_ : Unit) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || (not (← (assert_vstart 0)))))
 
-/-- Type quantifiers: EEW : Int -/
-def illegal_widening_reduction (EEW : Int) : SailM Bool := do
+/-- Type quantifiers: EEW : Nat, 0 ≤ EEW -/
+def illegal_widening_reduction (EEW : Nat) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (← (assert_vstart 0))) || (not
           ((EEW ≥b 8) && (EEW ≤b elen))))))
 
-/-- Type quantifiers: EMUL_pow : Int, EEW : Int, nf : Nat, nf > 0 ∧ nf ≤ 8 -/
-def illegal_load (vd : vregidx) (vm : (BitVec 1)) (nf : Nat) (EEW : Int) (EMUL_pow : Int) : SailM Bool := do
+/-- Type quantifiers: EMUL_pow : Int, EEW : Nat, nf : Nat, nf > 0 ∧ nf ≤ 8, 0 ≤ EEW -/
+def illegal_load (vd : vregidx) (vm : (BitVec 1)) (nf : Nat) (EEW : Nat) (EMUL_pow : Int) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (valid_rd_mask vd vm)) || ((not
             (valid_eew_emul EEW EMUL_pow)) || (not (valid_segment nf EMUL_pow))))))
 
-/-- Type quantifiers: EMUL_pow : Int, EEW : Int, nf : Nat, nf > 0 ∧ nf ≤ 8 -/
-def illegal_store (nf : Nat) (EEW : Int) (EMUL_pow : Int) : SailM Bool := do
+/-- Type quantifiers: EMUL_pow : Int, EEW : Nat, nf : Nat, nf > 0 ∧ nf ≤ 8, 0 ≤ EEW -/
+def illegal_store (nf : Nat) (EEW : Nat) (EMUL_pow : Int) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (valid_eew_emul EEW EMUL_pow)) || (not
           (valid_segment nf EMUL_pow)))))
 
-/-- Type quantifiers: EMUL_pow_data : Int, EMUL_pow_index : Int, EEW_index : Int, nf : Nat, nf > 0
-  ∧ nf ≤ 8 -/
-def illegal_indexed_load (vd : vregidx) (vm : (BitVec 1)) (nf : Nat) (EEW_index : Int) (EMUL_pow_index : Int) (EMUL_pow_data : Int) : SailM Bool := do
+/-- Type quantifiers: EMUL_pow_data : Int, EMUL_pow_index : Int, EEW_index : Nat, nf : Nat, nf > 0
+  ∧ nf ≤ 8, 0 ≤ EEW_index -/
+def illegal_indexed_load (vd : vregidx) (vm : (BitVec 1)) (nf : Nat) (EEW_index : Nat) (EMUL_pow_index : Int) (EMUL_pow_data : Int) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (valid_rd_mask vd vm)) || ((not
             (valid_eew_emul EEW_index EMUL_pow_index)) || (not (valid_segment nf EMUL_pow_data))))))
 
-/-- Type quantifiers: EMUL_pow_data : Int, EMUL_pow_index : Int, EEW_index : Int, nf : Nat, nf > 0
-  ∧ nf ≤ 8 -/
-def illegal_indexed_store (nf : Nat) (EEW_index : Int) (EMUL_pow_index : Int) (EMUL_pow_data : Int) : SailM Bool := do
+/-- Type quantifiers: EMUL_pow_data : Int, EMUL_pow_index : Int, EEW_index : Nat, nf : Nat, nf > 0
+  ∧ nf ≤ 8, 0 ≤ EEW_index -/
+def illegal_indexed_store (nf : Nat) (EEW_index : Nat) (EMUL_pow_index : Int) (EMUL_pow_data : Int) : SailM Bool := do
   (pure ((not (← (valid_vtype ()))) || ((not (valid_eew_emul EEW_index EMUL_pow_index)) || (not
           (valid_segment nf EMUL_pow_data)))))
 

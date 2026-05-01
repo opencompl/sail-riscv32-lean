@@ -569,7 +569,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex776381_ : Bool -/
+/-- Type quantifiers: k_ex776594_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -739,14 +739,17 @@ def check_mem_layout (_ : Unit) : SailM Bool := do
       let pmas_ok ← do
         (pure (check_pma_regions (← readReg pma_regions) (zeros (n := 64)) (zeros (n := 64))
             check_opts false))
+      let clint_supported : Bool := true
       let clint_ok ← do
-        (within_configured_pma_memory "CLINT (platform.clint)" (some IOMemory)
-          (← (to_bits_checked (l := 64) (33554432 : Int)))
-          (← (to_bits_checked (l := 64) (786432 : Int))))
+        (pure ((not clint_supported) || (← (within_configured_pma_memory "CLINT (platform.clint)"
+                (some IOMemory) (← (to_bits_checked (l := 64) (33554432 : Int)))
+                (← (to_bits_checked (l := 64) (786432 : Int)))))))
+      let sig_supported : Bool := true
       let sig_ok ← do
-        (within_configured_pma_memory
-          "simple interrupt generator (platform.simple_interrupt_generator)" (some IOMemory)
-          (← (to_bits_checked (l := 64) (201326592 : Int))) (zero_extend (m := 64) plat_sig_size))
+        (pure ((not sig_supported) || (← (within_configured_pma_memory
+                "simple interrupt generator (platform.simple_interrupt_generator)" (some IOMemory)
+                (← (to_bits_checked (l := 64) (201326592 : Int)))
+                (zero_extend (m := 64) plat_sig_size)))))
       (pure (pmas_ok && (clint_ok && sig_ok))))
 
 def check_pmp (_ : Unit) : Bool :=
@@ -767,7 +770,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex776511_ : Bool -/
+/-- Type quantifiers: k_ex776736_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
