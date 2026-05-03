@@ -214,6 +214,10 @@ def plat_cache_block_size_exp : Nat := 6
 
 def plat_reservation_set_size_exp : Nat := 3
 
+def plat_reservation_require_exact_addr_match : Bool := false
+
+def plat_reservation_invalidate_on_same_hart_store : Bool := false
+
 def undefined_misaligned_exception (_ : Unit) : SailM misaligned_exception := do
   (internal_pick [AccessFault, AlignmentException])
 
@@ -1399,7 +1403,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex686947_ : Bool -/
+/-- Type quantifiers: k_ex686989_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6643,7 +6647,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex689237_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex689279_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
