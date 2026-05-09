@@ -741,7 +741,7 @@ def process_vsxseg (nf : Nat) (vm : (BitVec 1)) (vs3 : vregidx) (EEW_index_bytes
                   data (Store Vector) false false false)) with
               | .Ok true => (pure ())
               | .Ok false =>
-                (internal_error "extensions/V/vext_mem_insts.sail" 481
+                (internal_error "extensions/V/vext_mem_insts.sail" 480
                   "store got false from vmem_write")
               | .Err e => SailME.throw (e : ExecutionResult)
           (pure loop_vars_1))
@@ -850,7 +850,7 @@ def process_vsre (nf : Nat) (load_width_bytes : Nat) (rs1 : regidx) (vs3 : vregi
                       load_width_bytes data (Store Vector) false false false)) with
                   | .Ok true => (pure ())
                   | .Ok false =>
-                    (internal_error "extensions/V/vext_mem_insts.sail" 601
+                    (internal_error "extensions/V/vext_mem_insts.sail" 600
                       "store got false from vmem_write")
                   | .Err e => SailME.throw (e : ExecutionResult)
                   (pure (cur_elem +i 1))
@@ -880,7 +880,7 @@ def process_vsre (nf : Nat) (load_width_bytes : Nat) (rs1 : regidx) (vs3 : vregi
                     (GetElem?.getElem! vs3_val i) (Store Vector) false false false)) with
                 | .Ok true => (pure ())
                 | .Ok false =>
-                  (internal_error "extensions/V/vext_mem_insts.sail" 616
+                  (internal_error "extensions/V/vext_mem_insts.sail" 615
                     "store got false from vmem_write")
                 | .Err e => SailME.throw (e : ExecutionResult)
                 (pure (cur_elem +i 1))
@@ -945,7 +945,7 @@ def process_vm (vd_or_vs3 : vregidx) (rs1 : regidx) (num_elem : Nat) (evl : Nat)
                       (GetElem?.getElem! vd_or_vs3_val i) (Store Vector) false false false)) with
                   | .Ok true => (pure ())
                   | .Ok false =>
-                    (internal_error "extensions/V/vext_mem_insts.sail" 672
+                    (internal_error "extensions/V/vext_mem_insts.sail" 671
                       "store got false from vmem_write")
                   | .Err e => SailME.throw (e : ExecutionResult))
               else (pure ())))
