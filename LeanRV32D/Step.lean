@@ -224,7 +224,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex780457_ : Bool, _step_no : Int -/
+/-- Type quantifiers: k_ex780587_ : Bool, _step_no : Int -/
 def run_hart_waiting (_step_no : Int) (wr : WaitReason) (instbits : (BitVec 32)) (exit_wait : Bool) : SailM Step := do
   if ((← (shouldWakeForInterrupt ())) : Bool)
   then
@@ -396,7 +396,7 @@ def wait_is_nop (wr : WaitReason) : Bool :=
   | .WAIT_WRS_STO => false
   | .WAIT_WRS_NTO => false
 
-/-- Type quantifiers: k_ex780507_ : Bool, step_no : Nat, 0 ≤ step_no -/
+/-- Type quantifiers: k_ex780637_ : Bool, step_no : Nat, 0 ≤ step_no -/
 def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   let _ : Unit := (ext_pre_step_hook ())
   writeReg minstret_increment (← (should_inc_minstret (← readReg cur_privilege)))
@@ -498,10 +498,14 @@ def loop (_ : Unit) : SailM Unit := do
           then
             (do
               let exit_val ← do (pure (BitVec.toNatInt (← readReg htif_exit_code)))
-              let _ : Unit :=
-                if ((exit_val == 0) : Bool)
-                then (print "SUCCESS")
-                else (print_int "FAILURE: " exit_val)
+              if ((exit_val == 0) : Bool)
+              then (pure (print "SUCCESS"))
+              else
+                (pure (print_endline
+                    (HAppend.hAppend "FAILURE: "
+                      (HAppend.hAppend (Int.repr exit_val)
+                        (HAppend.hAppend " ("
+                          (HAppend.hAppend (BitVec.toFormatted (← readReg htif_exit_code)) ")"))))))
               (pure i))
           else
             (do

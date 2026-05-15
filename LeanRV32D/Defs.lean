@@ -174,6 +174,8 @@ abbrev RVFI_DII_Execution_Packet_V1 := (BitVec 704)
 
 abbrev RVFI_DII_Execution_PacketV2 := (BitVec 512)
 
+abbrev tvec_alignment := Nat
+
 inductive misaligned_exception where | AccessFault | AlignmentException
   deriving BEq, Inhabited, Repr
   open misaligned_exception
