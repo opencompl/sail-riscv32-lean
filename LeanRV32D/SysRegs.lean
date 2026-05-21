@@ -1376,8 +1376,7 @@ def _set_Counteren_TM (r_ref : (RegisterRef (BitVec 32))) (v : (BitVec 1)) : Sai
 def sys_scounteren_writable_bits : (BitVec 32) := 0b11111111111111111111111111111111#32
 
 def legalize_scounteren (_c : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
-  (Mk_Counteren
-    ((Sail.BitVec.extractLsb v 31 0) &&& ((Sail.BitVec.extractLsb sys_scounteren_writable_bits 31 3) +++ 0b111#3)))
+  (Mk_Counteren ((Sail.BitVec.extractLsb v 31 0) &&& sys_scounteren_writable_bits))
 
 def legalize_mcounteren (_c : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
   let supported_counters := ((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) +++ 0b111#3)
