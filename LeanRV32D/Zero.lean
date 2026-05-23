@@ -200,8 +200,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex689482_ : Nat, k_ex689482_ ∈ {16, 32, 64, 128} -/
-def float_is_zero (op : (BitVec k_ex689482_)) : Bool :=
+/-- Type quantifiers: k_ex689623_ : Nat, k_ex689623_ ∈ {16, 32, 64, 128} -/
+def float_is_zero (op : (BitVec k_ex689623_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (is_all_zeros mantissa))
 
