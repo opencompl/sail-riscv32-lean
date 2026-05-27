@@ -218,9 +218,9 @@ def internal_error (file : String) (line : Int) (s : String) : SailM k_a := do
 def reserved_behavior (message : String) : SailM k_a := do
   sailThrow ((Error_reserved_behavior message))
 
-def print_exception (e : exception) : Unit :=
+def string_of_exception (e : exception) : String :=
   match e with
-  | .Error_not_implemented s => (print_endline (HAppend.hAppend "Not implemented error: " s))
-  | .Error_internal_error s => (print_endline (HAppend.hAppend "Internal error: " s))
-  | .Error_reserved_behavior s => (print_endline (HAppend.hAppend "Fatal reserved behavior: " s))
+  | .Error_not_implemented s => (HAppend.hAppend "Not implemented error: " s)
+  | .Error_internal_error s => (HAppend.hAppend "Internal error: " s)
+  | .Error_reserved_behavior s => (HAppend.hAppend "Fatal reserved behavior: " s)
 
