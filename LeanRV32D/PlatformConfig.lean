@@ -1409,7 +1409,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex691357_ : Bool -/
+/-- Type quantifiers: k_ex689862_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6653,7 +6653,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex693647_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex692152_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -6818,6 +6818,8 @@ def zvknhab_check_encdec (vs2 : vregidx) (vs1 : vregidx) (vd : vregidx) : SailM 
   let LMUL_pow ← do (get_lmul_pow ())
   (pure ((← (zvk_check_encdec SEW 4)) && ((zvk_valid_reg_overlap vs1 vd LMUL_pow) && (zvk_valid_reg_overlap
           vs2 vd LMUL_pow))))
+
+def max_index_eew_exp : Nat := 5
 
 def ra : regidx := (Regidx (zero_extend (m := 5) 0b01#2))
 
@@ -9458,8 +9460,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
           throw Error.Exit))
   | .VLXSEGTYPE (nf, vm, vs2, rs1, width, vd, mop) =>
     (do
-      if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
-                 Ext_Zve64x)) && ((((vlewidth_pow_forwards width) ≤b 6) && (xlen == 64)) : Bool))) : Bool)
+      if (((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b max_index_eew_exp) : Bool)) : Bool)
       then
         (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ ((encdec_indexed_mop_forwards mop) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
                       vs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards
@@ -9470,8 +9471,7 @@ noncomputable def encdec_forwards (arg_ : instruction) : SailM (BitVec 32) := do
           throw Error.Exit))
   | .VSXSEGTYPE (nf, vm, vs2, rs1, width, vs3, mop) =>
     (do
-      if ((((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b 5) : Bool)) || ((← (currentlyEnabled
-                 Ext_Zve64x)) && ((((vlewidth_pow_forwards width) ≤b 6) && (xlen == 64)) : Bool))) : Bool)
+      if (((← (currentlyEnabled Ext_Zve32x)) && (((vlewidth_pow_forwards width) ≤b max_index_eew_exp) : Bool)) : Bool)
       then
         (pure ((encdec_nfields_backwards nf) +++ (0#1 +++ ((encdec_indexed_mop_forwards mop) +++ ((vm : (BitVec 1)) +++ ((encdec_vreg_forwards
                       vs2) +++ ((encdec_reg_forwards rs1) +++ ((encdec_vlewidth_forwards width) +++ ((encdec_vreg_forwards

@@ -349,6 +349,28 @@ def check_vext_config (_ : Unit) : Bool :=
             (HAppend.hAppend (Int.repr elen_exp) ": ELEN must be >= 2^5")))
       valid)
     else valid
+  let max_index_eew := (5 : Nat)
+  let valid : Bool :=
+    if ((max_index_eew >b elen_exp) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          (HAppend.hAppend "The maximum index EEW is 2^"
+            (HAppend.hAppend (Int.repr max_index_eew)
+              (HAppend.hAppend " but ELEN is 2^"
+                (HAppend.hAppend (Int.repr elen_exp) ": the index EEW must not exceed ELEN.")))))
+      valid)
+    else
+      (if ((max_index_eew <b 3) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            (HAppend.hAppend "The maximum index EEW is 2^"
+              (HAppend.hAppend (Int.repr max_index_eew) " but it should be at least 2^3.")))
+        valid)
+      else valid)
   let valid : Bool :=
     if (((vector_support_ge vector_support_level Float_single) && (not (true : Bool))) : Bool)
     then
@@ -569,7 +591,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex781369_ : Bool -/
+/-- Type quantifiers: k_ex779691_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -770,7 +792,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex781511_ : Bool -/
+/-- Type quantifiers: k_ex779833_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
