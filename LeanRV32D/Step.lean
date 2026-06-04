@@ -1,3 +1,4 @@
+import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Errors
 import LeanRV32D.MemAddrtype
@@ -224,7 +225,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex779043_ : Bool, _step_no : Nat, 0 ≤ _step_no -/
+/-- Type quantifiers: k_ex790319_ : Bool, _step_no : Nat, 0 ≤ _step_no -/
 def run_hart_waiting (_step_no : Nat) (wr : WaitReason) (instbits : (BitVec 32)) (exit_wait : Bool) : SailM Step := do
   if ((← (shouldWakeForInterrupt ())) : Bool)
   then
@@ -273,9 +274,13 @@ def run_hart_waiting (_step_no : Nat) (wr : WaitReason) (instbits : (BitVec 32))
                     (HAppend.hAppend " state at PC " (BitVec.toFormatted (← readReg PC)))))))
           else (pure ())
           writeReg hart_state (HART_ACTIVE ())
-          if ((((← readReg cur_privilege) == Machine) || ((_get_Mstatus_TW (← readReg mstatus)) == 0#1)) : Bool)
-          then (pure (Step_Execute ((Retire_Success ()), instbits)))
-          else (pure (Step_Execute ((Illegal_Instruction ()), instbits))))
+          let is_illegal ← do
+            (pure (((bne (← readReg cur_privilege) Machine) && ((_get_Mstatus_TW
+                      (← readReg mstatus)) == 1#1)) || (((← readReg cur_privilege) == User) && (← (currentlyEnabled
+                      Ext_S)))))
+          if (is_illegal : Bool)
+          then (pure (Step_Execute ((Illegal_Instruction ()), instbits)))
+          else (pure (Step_Execute ((Retire_Success ()), instbits))))
       | (.WAIT_WRS_STO, _, true) =>
         (do
           if ((get_config_print_instr ()) : Bool)
@@ -396,7 +401,7 @@ def wait_is_nop (wr : WaitReason) : Bool :=
   | .WAIT_WRS_STO => false
   | .WAIT_WRS_NTO => false
 
-/-- Type quantifiers: k_ex779093_ : Bool, step_no : Nat, 0 ≤ step_no -/
+/-- Type quantifiers: k_ex790374_ : Bool, step_no : Nat, 0 ≤ step_no -/
 def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   let _ : Unit := (ext_pre_step_hook ())
   writeReg minstret_increment (← (should_inc_minstret (← readReg cur_privilege)))
@@ -417,9 +422,9 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   | .Step_Waiting _ =>
     assert (hart_is_waiting (← readReg hart_state)) "cannot be Waiting in a non-Wait state"
   | .Step_Execute (.Retire_Success (), _) =>
-    assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:211.74-211.75"
+    assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:219.74-219.75"
   | .Step_Execute (.ExecuteAs _, _) =>
-    (internal_error "postlude/step.sail" 215
+    (internal_error "postlude/step.sail" 223
       "Multiple chained ExecuteAs (only one redirection is supported).")
   | .Step_Execute (.Trap (priv, exc, pc), _) => (set_next_pc (← (exception_handler priv exc pc)))
   | .Step_Execute (.Illegal_Instruction (), instbits) =>
@@ -429,7 +434,7 @@ def try_step (step_no : Nat) (exit_wait : Bool) : SailM Bool := do
   | .Step_Execute (.Enter_Wait wr, instbits) =>
     (do
       if ((wait_is_nop wr) : Bool)
-      then assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:224.41-224.42"
+      then assert (hart_is_active (← readReg hart_state)) "postlude/step.sail:232.41-232.42"
       else
         (do
           if ((get_config_print_instr ()) : Bool)

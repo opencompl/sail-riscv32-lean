@@ -718,11 +718,32 @@ def num_of_TrapVectorMode (arg_ : TrapVectorMode) : Int :=
   | .TV_Vector => 1
   | .TV_Reserved => 2
 
-def trapVectorMode_of_bits (m : (BitVec 2)) : TrapVectorMode :=
-  match m with
+def trapVectorMode_forwards (arg_ : (BitVec 2)) : TrapVectorMode :=
+  match arg_ with
   | 0b00 => TV_Direct
   | 0b01 => TV_Vector
+  | 0b10 => TV_Reserved
   | _ => TV_Reserved
+
+def trapVectorMode_backwards (arg_ : TrapVectorMode) : (BitVec 2) :=
+  match arg_ with
+  | .TV_Direct => 0b00#2
+  | .TV_Vector => 0b01#2
+  | .TV_Reserved => 0b10#2
+
+def trapVectorMode_forwards_matches (arg_ : (BitVec 2)) : Bool :=
+  match arg_ with
+  | 0b00 => true
+  | 0b01 => true
+  | 0b10 => true
+  | 0b11 => true
+  | _ => false
+
+def trapVectorMode_backwards_matches (arg_ : TrapVectorMode) : Bool :=
+  match arg_ with
+  | .TV_Direct => true
+  | .TV_Vector => true
+  | .TV_Reserved => true
 
 def undefined_xRET_type (_ : Unit) : SailM xRET_type := do
   (internal_pick [mRET, sRET])

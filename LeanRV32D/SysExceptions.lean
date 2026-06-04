@@ -1,5 +1,6 @@
 import LeanRV32D.Errors
 import LeanRV32D.PlatformConfig
+import LeanRV32D.Types
 import LeanRV32D.SysRegs
 
 set_option maxHeartbeats 1_000_000_000
@@ -258,12 +259,37 @@ def get_stvec (_ : Unit) : SailM (BitVec 32) := do
   readReg stvec
 
 def set_mtvec (value : (BitVec 32)) : SailM (BitVec 32) := do
-  writeReg mtvec (← (legalize_tvec (← readReg mtvec) value plat_mtvec_base_alignment_direct_exp
-      plat_mtvec_base_alignment_vectored_exp))
+  writeReg mtvec (← (legalize_tvec (← readReg mtvec) value plat_mtvec_direct_mode_supported
+      plat_mtvec_direct_base_alignment_exp plat_mtvec_vectored_mode_supported
+      plat_mtvec_vectored_base_alignment_exp))
   readReg mtvec
 
 def set_stvec (value : (BitVec 32)) : SailM (BitVec 32) := do
-  writeReg stvec (← (legalize_tvec (← readReg stvec) value 2
-      plat_stvec_base_alignment_vectored_exp))
+  writeReg stvec (← (legalize_tvec (← readReg stvec) value plat_stvec_direct_mode_supported 2
+      plat_stvec_vectored_mode_supported plat_stvec_vectored_base_alignment_exp))
   readReg stvec
+
+def reset_tvecs (_ : Unit) : SailM Unit := do
+  if (plat_mtvec_direct_mode_supported : Bool)
+  then
+    writeReg mtvec (Sail.BitVec.updateSubrange (← readReg mtvec) 1 0
+      (trapVectorMode_backwards TV_Direct))
+  else
+    (do
+      if (plat_mtvec_vectored_mode_supported : Bool)
+      then
+        writeReg mtvec (Sail.BitVec.updateSubrange (← readReg mtvec) 1 0
+          (trapVectorMode_backwards TV_Vector))
+      else (pure ()))
+  if (plat_stvec_direct_mode_supported : Bool)
+  then
+    writeReg stvec (Sail.BitVec.updateSubrange (← readReg stvec) 1 0
+      (trapVectorMode_backwards TV_Direct))
+  else
+    (do
+      if (plat_stvec_vectored_mode_supported : Bool)
+      then
+        writeReg stvec (Sail.BitVec.updateSubrange (← readReg stvec) 1 0
+          (trapVectorMode_backwards TV_Vector))
+      else (pure ()))
 
