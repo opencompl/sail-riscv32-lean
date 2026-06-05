@@ -43,6 +43,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -179,13 +180,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -194,6 +198,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -273,7 +278,7 @@ def feq_quiet_D (v1 : (BitVec 64)) (v2 : (BitVec 64)) : (Bool × (BitVec 5)) :=
     else (zeros (n := 5))
   (result, fflags)
 
-/-- Type quantifiers: k_ex721551_ : Bool -/
+/-- Type quantifiers: k_ex945323_ : Bool -/
 def flt_D (v1 : (BitVec 64)) (v2 : (BitVec 64)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_D v1)
   let (s2, e2, m2) := (fsplit_D v2)
@@ -305,7 +310,7 @@ def flt_D (v1 : (BitVec 64)) (v2 : (BitVec 64)) (is_quiet : Bool) : (Bool × (Bi
       else (zeros (n := 5)))
   (result, fflags)
 
-/-- Type quantifiers: k_ex721637_ : Bool -/
+/-- Type quantifiers: k_ex945409_ : Bool -/
 def fle_D (v1 : (BitVec 64)) (v2 : (BitVec 64)) (is_quiet : Bool) : (Bool × (BitVec 5)) :=
   let (s1, e1, m1) := (fsplit_D v1)
   let (s2, e2, m2) := (fsplit_D v2)

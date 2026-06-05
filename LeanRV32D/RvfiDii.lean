@@ -42,6 +42,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -178,13 +179,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -193,6 +197,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -300,8 +305,8 @@ def _update_RVFI_DII_Execution_Packet_PC_bits (v : (BitVec 128)) (x : (BitVec 12
 def _update_RVFI_DII_Execution_Packet_V1_bits (v : (BitVec 704)) (x : (BitVec 704)) : (BitVec 704) :=
   (Sail.BitVec.updateSubrange v (704 -i 1) 0 x)
 
-def _update_SEnvcfg_bits (v : (BitVec 32)) (x : (BitVec 32)) : (BitVec 32) :=
-  (Sail.BitVec.updateSubrange v (32 -i 1) 0 x)
+def _update_SEnvcfg_bits (v : (BitVec 64)) (x : (BitVec 64)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v (64 -i 1) 0 x)
 
 def _update_Satp32_bits (v : (BitVec 32)) (x : (BitVec 32)) : (BitVec 32) :=
   (Sail.BitVec.updateSubrange v (32 -i 1) 0 x)
@@ -433,8 +438,8 @@ def _get_RVFI_DII_Execution_Packet_PC_bits (v : (BitVec 128)) : (BitVec 128) :=
 def _get_RVFI_DII_Execution_Packet_V1_bits (v : (BitVec 704)) : (BitVec 704) :=
   (Sail.BitVec.extractLsb v (704 -i 1) 0)
 
-def _get_SEnvcfg_bits (v : (BitVec 32)) : (BitVec 32) :=
-  (Sail.BitVec.extractLsb v (32 -i 1) 0)
+def _get_SEnvcfg_bits (v : (BitVec 64)) : (BitVec 64) :=
+  (Sail.BitVec.extractLsb v (64 -i 1) 0)
 
 def _get_Satp32_bits (v : (BitVec 32)) : (BitVec 32) :=
   (Sail.BitVec.extractLsb v (32 -i 1) 0)
@@ -591,7 +596,7 @@ def _set_RVFI_DII_Execution_Packet_V1_bits (r_ref : (RegisterRef (BitVec 704))) 
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_RVFI_DII_Execution_Packet_V1_bits r v)
 
-def _set_SEnvcfg_bits (r_ref : (RegisterRef (BitVec 32))) (v : (BitVec 32)) : SailM Unit := do
+def _set_SEnvcfg_bits (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 64)) : SailM Unit := do
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_SEnvcfg_bits r v)
 

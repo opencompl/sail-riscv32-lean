@@ -49,6 +49,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -185,13 +186,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -200,6 +204,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -611,7 +616,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex791027_ : Bool -/
+/-- Type quantifiers: k_ex1033010_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -812,7 +817,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex791169_ : Bool -/
+/-- Type quantifiers: k_ex1033152_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -986,14 +991,22 @@ def check_misc_extension_dependencies (_ : Unit) : Bool :=
           "The Ssqosid extension is enabled but Zicsr is disabled: supporting Ssqosid requires Zicsr.")
       valid)
     else valid
-  if (((true : Bool) && (((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) &&& (Sail.BitVec.extractLsb
-             sys_scounteren_writable_bits 31 3)) != (Sail.BitVec.extractLsb
-           sys_writable_hpm_counters 31 3))) : Bool)
+  let valid : Bool :=
+    if (((true : Bool) && (((Sail.BitVec.extractLsb sys_writable_hpm_counters 31 3) &&& (Sail.BitVec.extractLsb
+               sys_scounteren_writable_bits 31 3)) != (Sail.BitVec.extractLsb
+             sys_writable_hpm_counters 31 3))) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The Sscounterenw extension is enabled but `scounteren` is not writable (via `base.scounteren_writable_bits`) for some supported HPM counters (specified in `base.writable_hpm_counters`).")
+      valid)
+    else valid
+  if (((xlen == 32) && ((false : Bool) || ((false : Bool) || (false : Bool)))) : Bool)
   then
     (let valid : Bool := false
     let _ : Unit :=
-      (print_endline
-        "The Sscounterenw extension is enabled but `scounteren` is not writable (via `base.scounteren_writable_bits`) for some supported HPM counters (specified in `base.writable_hpm_counters`).")
+      (print_endline "The Ssnpm, Smmpm and Smnpm extensions are not supported on RV32.")
     valid)
   else valid
 
@@ -1077,14 +1090,76 @@ def check_mmio_devices (_ : Unit) : SailM Bool := do
   let valid : Bool := true
   if (((Sail.BitVec.extractLsb plat_sig_base 1 0) != (zeros (n := ((1 -i 0) +i 1)))) : Bool)
   then
-    (let _ : Unit :=
+    (let valid : Bool := false
+    let _ : Unit :=
       (print_endline "platform.simple_interrupt_generator.base is not 4-byte aligned.")
-    (pure false))
+    (pure valid))
   else (pure valid)
 
+def check_mstatus_fields (_ : Unit) : Bool :=
+  let valid : Bool := true
+  let legal_fs : ExtContextPolicy := ExtContext_FourState
+  let valid : Bool :=
+    if ((false : Bool) : Bool)
+    then
+      (if ((bne legal_fs ExtContext_Off) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "The Zfinx extension is enabled but `base.mstatus.fs_legal_states` is not set to `ExtContext_Off`: `mstatus.FS` needs to be read-only zero (i.e. `base.mstatus.fs_legal_states` should be set to `ExtContext_Off`).")
+        valid)
+      else valid)
+    else
+      (if ((true : Bool) : Bool)
+      then
+        (if ((legal_fs == ExtContext_Off) : Bool)
+        then
+          (let valid : Bool := false
+          let _ : Unit :=
+            (print_endline
+              "The F extension is enabled but `base.mstatus.fs_legal_states` is set to `ExtContext_Off`, which makes `mstatus.FS` read-only zero: it cannot be read-only zero.")
+          valid)
+        else valid)
+      else
+        (if ((not (true : Bool)) : Bool)
+        then
+          (if ((bne legal_fs ExtContext_Off) : Bool)
+          then
+            (let valid : Bool := false
+            let _ : Unit :=
+              (print_endline
+                "Both supervisor mode (S) and the F extension are not enabled, but `base.mstatus.fs_legal_states` is not set to `ExtContext_Off`; i.e. `mstatus.FS` is not read-only zero: it should be read-only zero.")
+            valid)
+          else valid)
+        else valid))
+  let legal_vs : ExtContextPolicy := ExtContext_FourState
+  if ((vector_support_ge vector_support_level Integer) : Bool)
+  then
+    (if ((legal_vs == ExtContext_Off) : Bool)
+    then
+      (let valid : Bool := false
+      let _ : Unit :=
+        (print_endline
+          "The vector registers are enabled but `base.mstatus.vs_legal_states` is set to `ExtContext_Off`, which makes `mstatus.VS` read-only zero: it cannot be read-only zero.")
+      valid)
+    else valid)
+  else
+    (if ((not (true : Bool)) : Bool)
+    then
+      (if ((bne legal_vs ExtContext_Off) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "Both supervisor mode (S) and the vector registers are not enabled, but `base.mstatus.vs_legal_states` is not set to `ExtContext_Off`; i.e. `mstatus.VS` is not read-only zero: it should be read-only zero.")
+        valid)
+      else valid)
+    else valid)
+
 def config_is_valid (_ : Unit) : SailM Bool := do
-  (pure ((check_privs ()) && ((check_tvecs ()) && ((← (check_mmu_config ())) && ((← (check_mem_layout
-                ())) && ((← (check_mmio_devices ())) && ((check_vlen_elen ()) && ((check_vext_config
-                    ()) && ((check_pmp ()) && ((check_misc_extension_dependencies ()) && ((check_extension_param_constraints
-                          ()) && (check_stateen_config ()))))))))))))
+  (pure ((check_privs ()) && ((check_tvecs ()) && ((check_mstatus_fields ()) && ((← (check_mmu_config
+                ())) && ((← (check_mem_layout ())) && ((← (check_mmio_devices ())) && ((check_vlen_elen
+                    ()) && ((check_vext_config ()) && ((check_pmp ()) && ((check_misc_extension_dependencies
+                          ()) && ((check_extension_param_constraints ()) && (check_stateen_config ())))))))))))))
 

@@ -1,5 +1,6 @@
 import LeanRV32D.Flow
 import LeanRV32D.Prelude
+import LeanRV32D.Errors
 import LeanRV32D.Xlen
 import LeanRV32D.Vlen
 import LeanRV32D.PlatformConfig
@@ -50,6 +51,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -186,13 +188,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -201,6 +206,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -283,26 +289,34 @@ def ma_flag_backwards_matches (arg_ : (BitVec 1)) : Bool :=
   | 0 => true
   | _ => false
 
-def vtype_assembly_forwards (arg_ : String) : SailM ((BitVec 1) × (BitVec 1) × (BitVec 3) × (BitVec 3)) := do
+def vtr_mnemonic_forwards_matches (_vtr : (BitVec 3)) : Bool :=
+  true
+
+def vtype_assembly_backwards (arg_ : String) : SailM ((BitVec 3) × (BitVec 1) × (BitVec 1) × (BitVec 3) × (BitVec 3)) := do
   throw Error.Exit
 
-def vtype_assembly_forwards_matches (arg_ : String) : SailM Bool := do
-  throw Error.Exit
-
-def vtype_assembly_backwards_matches (arg_ : ((BitVec 1) × (BitVec 1) × (BitVec 3) × (BitVec 3))) : Bool :=
+def vtype_assembly_forwards_matches (arg_ : ((BitVec 3) × (BitVec 1) × (BitVec 1) × (BitVec 3) × (BitVec 3))) : Bool :=
   match arg_ with
-  | (ma, ta, sew, lmul) =>
-    (if ((((BitVec.access sew 2) != 1#1) && (lmul != 0b100#3)) : Bool)
+  | (vtr, ma, ta, sew, lmul) =>
+    (if ((((BitVec.access sew 2) != 1#1) && ((lmul != 0b100#3) && (vtr == 0b000#3))) : Bool)
     then true
     else true)
 
-def handle_illegal_vtype (rd : regidx) : SailM Unit := do
+def vtype_assembly_backwards_matches (arg_ : String) : SailM Bool := do
+  throw Error.Exit
+
+def handle_illegal_vtype (rd : regidx) : SailM ExecutionResult := SailME.run do
+  match illegal_vtype_reserved_behavior with
+  | .IllegalVtype_Illegal => SailME.throw ((Illegal_Instruction ()) : ExecutionResult)
+  | .IllegalVtype_Fatal => (reserved_behavior "unsupported or reserved vtype")
+  | .IllegalVtype_SetVill => (pure ())
   writeReg vtype (1#1 +++ (zeros (n := (xlen -i 1))))
   writeReg vl (zeros (n := 32))
   (csr_name_write_callback "vtype" (← readReg vtype))
   (csr_name_write_callback "vl" (← readReg vl))
   (set_vstart (zeros (n := 16)))
   (wX_bits rd (← readReg vl))
+  (pure RETIRE_SUCCESS)
 
 def vl_use_ceil : Bool := false
 
@@ -319,13 +333,10 @@ def calculate_new_vl (AVL : (BitVec 32)) (VLMAX : Nat) : Nat :=
       else VLMAX)
     else VLMAX)
 
-/-- Type quantifiers: k_ex724217_ : Bool -/
+/-- Type quantifiers: k_ex947967_ : Bool -/
 def execute_vsetvl_type (ma : (BitVec 1)) (ta : (BitVec 1)) (sew : (BitVec 3)) (lmul : (BitVec 3)) (avl : (BitVec 32)) (requires_fixed_vlmax : Bool) (rd : regidx) : SailM ExecutionResult := do
   if (((is_invalid_lmul_pow lmul) || (is_invalid_sew_pow sew)) : Bool)
-  then
-    (do
-      (handle_illegal_vtype rd)
-      (pure RETIRE_SUCCESS))
+  then (handle_illegal_vtype rd)
   else
     (do
       let LMUL_pow_new := (BitVec.toInt lmul)
@@ -334,10 +345,7 @@ def execute_vsetvl_type (ma : (BitVec 1)) (ta : (BitVec 1)) (sew : (BitVec 3)) (
       let lmul_sew_ratio_new := (LMUL_pow_new -i SEW_pow_new)
       if (((SEW_pow_new >b (LMUL_pow_new +i elen_exp)) || (requires_fixed_vlmax && ((lmul_sew_ratio != lmul_sew_ratio_new) || (not
                  (← (valid_vtype ())))))) : Bool)
-      then
-        (do
-          (handle_illegal_vtype rd)
-          (pure RETIRE_SUCCESS))
+      then (handle_illegal_vtype rd)
       else
         (do
           let VLMAX := (2 ^i ((LMUL_pow_new +i vlen_exp) -i SEW_pow_new))

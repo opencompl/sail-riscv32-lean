@@ -45,6 +45,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -181,13 +182,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -196,6 +200,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -235,8 +240,8 @@ def num_of_float_class (arg_ : float_class) : Int :=
   | .float_class_snan => 8
   | .float_class_qnan => 9
 
-/-- Type quantifiers: k_ex699791_ : Nat, k_ex699791_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex699791_)) : SailM float_class := do
+/-- Type quantifiers: k_ex923402_ : Nat, k_ex923402_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex923402_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else

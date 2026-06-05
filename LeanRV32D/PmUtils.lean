@@ -1,8 +1,10 @@
-import Sail
-import LeanRV32D.Defs
-import LeanRV32D.Specialization
-import LeanRV32D.FakeReal
-import LeanRV32D.RiscvExtras
+import LeanRV32D.Flow
+import LeanRV32D.Prelude
+import LeanRV32D.Errors
+import LeanRV32D.PmTypes
+import LeanRV32D.Xlen
+import LeanRV32D.PlatformConfig
+import LeanRV32D.SysRegs
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -209,74 +211,51 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def undefined_Access_variety (_ : Unit) : SailM Access_variety := do
-  (internal_pick [AV_plain, AV_exclusive, AV_atomic_rmw])
+def get_pmm (eff_privilege : Privilege) : SailM PointerMaskingMode := do
+  match eff_privilege with
+  | .Machine => (pure (pmm_mode_backwards (_get_Seccfg_PMM (← readReg mseccfg))))
+  | .Supervisor => (pure (pmm_mode_backwards (_get_MEnvcfg_PMM (← readReg menvcfg))))
+  | .User =>
+    (do
+      if ((← (currentlyEnabled Ext_S)) : Bool)
+      then (pure (pmm_mode_backwards (_get_SEnvcfg_PMM (← (read_senvcfg ())))))
+      else (pure (pmm_mode_backwards (_get_MEnvcfg_PMM (← readReg menvcfg)))))
+  | .VirtualUser =>
+    (internal_error "extensions/pointer_masking/pm_utils.sail" 15
+      "Hypervisor extension not supported")
+  | .VirtualSupervisor =>
+    (internal_error "extensions/pointer_masking/pm_utils.sail" 16
+      "Hypervisor extension not supported")
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
-def Access_variety_of_num (arg_ : Nat) : Access_variety :=
-  match arg_ with
-  | 0 => AV_plain
-  | 1 => AV_exclusive
-  | _ => AV_atomic_rmw
+def is_pmm_applicable (access : (MemoryAccessType mem_payload)) (eff_privilege : Privilege) : SailM Bool := do
+  (pure ((bne access (InstructionFetch ())) && ((bne access (Load PageTableEntry)) && ((bne access
+            (Store PageTableEntry)) && (((eff_privilege == Machine) || ((_get_Mstatus_MXR
+                  (← readReg mstatus)) == 0#1)) && (xlen == 64))))))
 
-def num_of_Access_variety (arg_ : Access_variety) : Int :=
-  match arg_ with
-  | .AV_plain => 0
-  | .AV_exclusive => 1
-  | .AV_atomic_rmw => 2
+def get_pmlen (access : (MemoryAccessType mem_payload)) (eff_privilege : Privilege) : SailM Int := do
+  if ((← (is_pmm_applicable access eff_privilege)) : Bool)
+  then
+    (do
+      match (← (get_pmm eff_privilege)) with
+      | .PMM_Disabled => (pure 0)
+      | .PMM_PMLEN_7 => (pure 7)
+      | .PMM_PMLEN_16 => (pure 16)
+      | .PMM_Reserved =>
+        (do
+          (internal_error "extensions/pointer_masking/pm_utils.sail" 32
+            "Invalid pointer masking mode")
+          (pure 0)))
+  else (pure 0)
 
-def undefined_Access_strength (_ : Unit) : SailM Access_strength := do
-  (internal_pick [AS_normal, AS_rel_or_acq, AS_acq_rcpc])
+/-- Type quantifiers: pmlen : Nat, pmlen ∈ {0, 7, 16} -/
+def pm_transform_VA (typ_0 : virtaddr) (pmlen : Nat) : virtaddr :=
+  let .Virtaddr effective_address : virtaddr := typ_0
+  (Virtaddr
+    (sign_extend (m := 32) (Sail.BitVec.extractLsb effective_address ((xlen -i pmlen) -i 1) 0)))
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
-def Access_strength_of_num (arg_ : Nat) : Access_strength :=
-  match arg_ with
-  | 0 => AS_normal
-  | 1 => AS_rel_or_acq
-  | _ => AS_acq_rcpc
-
-def num_of_Access_strength (arg_ : Access_strength) : Int :=
-  match arg_ with
-  | .AS_normal => 0
-  | .AS_rel_or_acq => 1
-  | .AS_acq_rcpc => 2
-
-def undefined_Explicit_access_kind (_ : Unit) : SailM Explicit_access_kind := do
-  (pure { variety := ← (undefined_Access_variety ())
-          strength := ← (undefined_Access_strength ()) })
-
-/-- Type quantifiers: k_n : Nat, k_vasize : Nat, k_pa : Type, k_translation_summary : Type, k_arch_ak
-  : Type, k_n > 0 ∧ k_vasize > 0 -/
-def mem_read_request_is_exclusive (request : (Mem_read_request k_n k_vasize k_pa k_translation_summary k_arch_ak)) : Bool :=
-  match request.access_kind with
-  | .AK_explicit eak =>
-    (match eak.variety with
-    | .AV_exclusive => true
-    | _ => false)
-  | _ => false
-
-/-- Type quantifiers: k_n : Nat, k_vasize : Nat, k_pa : Type, k_translation_summary : Type, k_arch_ak
-  : Type, k_n > 0 ∧ k_vasize > 0 -/
-def mem_read_request_is_ifetch (request : (Mem_read_request k_n k_vasize k_pa k_translation_summary k_arch_ak)) : Bool :=
-  match request.access_kind with
-  | .AK_ifetch () => true
-  | _ => false
-
-def __monomorphize_reads : Bool := false
-
-def __monomorphize_writes : Bool := false
-
-/-- Type quantifiers: k_n : Nat, k_vasize : Nat, k_pa : Type, k_translation_summary : Type, k_arch_ak
-  : Type, k_n > 0 ∧ k_vasize > 0 -/
-def mem_write_request_is_exclusive (request : (Mem_write_request k_n k_vasize k_pa k_translation_summary k_arch_ak)) : Bool :=
-  match request.access_kind with
-  | .AK_explicit eak =>
-    (match eak.variety with
-    | .AV_exclusive => true
-    | _ => false)
-  | _ => false
-
-/-- Type quantifiers: x_0 : Nat, x_0 ≥ 0, x_0 ∈ {32, 64} -/
-def sail_address_announce (x_0 : Nat) (x_1 : (BitVec x_0)) : Unit :=
-  ()
+/-- Type quantifiers: pmlen : Nat, pmlen ∈ {0, 7, 16} -/
+def pm_transform_PA (typ_0 : virtaddr) (pmlen : Nat) : virtaddr :=
+  let .Virtaddr effective_address : virtaddr := typ_0
+  (Virtaddr
+    (zero_extend (m := 32) (Sail.BitVec.extractLsb effective_address ((xlen -i pmlen) -i 1) 0)))
 

@@ -61,6 +61,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -197,13 +198,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -212,6 +216,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -243,7 +248,7 @@ def encdec_csrop_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_ex724331_ : Bool, k_ex724330_ : Bool -/
+/-- Type quantifiers: k_ex948081_ : Bool, k_ex948080_ : Bool -/
 def csr_access_type (op : csrop) (rd_is_x0 : Bool) (rs1_imm_is_zero : Bool) : CSRAccessType :=
   match (op, rd_is_x0, rs1_imm_is_zero) with
   | (.CSRRW, true, _) => CSRWrite
@@ -332,7 +337,7 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 32) := do
   | 0x757 => (pure (Sail.BitVec.extractLsb (← readReg mseccfg) 63 32))
   | 0x30A => (pure (Sail.BitVec.extractLsb (← readReg menvcfg) (xlen -i 1) 0))
   | 0x31A => (pure (Sail.BitVec.extractLsb (← readReg menvcfg) 63 32))
-  | 0x10A => (read_senvcfg ())
+  | 0x10A => (pure (Sail.BitVec.extractLsb (← (read_senvcfg ())) (xlen -i 1) 0))
   | 0x342 => readReg mcause
   | 0x343 => readReg mtval
   | 0x340 => readReg mscratch
@@ -360,46 +365,46 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 32) := do
   | 0x141 => (get_xepc Supervisor)
   | 0x305 => (get_mtvec ())
   | 0x341 => (get_xepc Machine)
-  | v__3862 =>
+  | v__3866 =>
     (do
-      if ((((Sail.BitVec.extractLsb v__3862 11 4) == (0x3A#8 : (BitVec 8))) && (let idx : (BitVec 4) :=
-             (Sail.BitVec.extractLsb v__3862 3 0)
+      if ((((Sail.BitVec.extractLsb v__3866 11 4) == (0x3A#8 : (BitVec 8))) && (let idx : (BitVec 4) :=
+             (Sail.BitVec.extractLsb v__3866 3 0)
            (((BitVec.access idx 0) == 0#1) || (xlen == 32)))) : Bool)
       then
         (do
-          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3862 3 0)
+          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3866 3 0)
           (pmpReadCfgReg (BitVec.toNatInt idx)))
       else
         (do
-          if (((Sail.BitVec.extractLsb v__3862 11 4) == (0x3B#8 : (BitVec 8))) : Bool)
+          if (((Sail.BitVec.extractLsb v__3866 11 4) == (0x3B#8 : (BitVec 8))) : Bool)
           then
             (do
-              let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3862 3 0)
+              let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3866 3 0)
               (pmpReadAddrReg (BitVec.toNatInt (0b00#2 +++ idx))))
           else
             (do
-              if (((Sail.BitVec.extractLsb v__3862 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
+              if (((Sail.BitVec.extractLsb v__3866 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
               then
                 (do
-                  let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3862 3 0)
+                  let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3866 3 0)
                   (pmpReadAddrReg (BitVec.toNatInt (0b01#2 +++ idx))))
               else
                 (do
-                  if (((Sail.BitVec.extractLsb v__3862 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
+                  if (((Sail.BitVec.extractLsb v__3866 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                   then
                     (do
-                      let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3862 3 0)
+                      let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3866 3 0)
                       (pmpReadAddrReg (BitVec.toNatInt (0b10#2 +++ idx))))
                   else
                     (do
-                      if (((Sail.BitVec.extractLsb v__3862 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
+                      if (((Sail.BitVec.extractLsb v__3866 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                       then
                         (do
-                          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3862 3 0)
+                          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3866 3 0)
                           (pmpReadAddrReg (BitVec.toNatInt (0b11#2 +++ idx))))
                       else
                         (do
-                          match v__3862 with
+                          match v__3866 with
                           | 0x001 =>
                             (pure (zero_extend (m := 32) (_get_Fcsr_FFLAGS (← readReg fcsr))))
                           | 0x002 =>
@@ -482,68 +487,68 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 32) := do
                                   ((← readReg sstateen3) &&& (Sail.BitVec.extractLsb mask 31 0)))))
                           | 0x180 => readReg satp
                           | 0x015 => (read_seed_csr ())
-                          | v__3862 =>
+                          | v__3866 =>
                             (do
-                              if ((((Sail.BitVec.extractLsb v__3862 11 5) == (0b0011001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                     (Sail.BitVec.extractLsb v__3862 4 0)
+                              if ((((Sail.BitVec.extractLsb v__3866 11 5) == (0b0011001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                     (Sail.BitVec.extractLsb v__3866 4 0)
                                    ((BitVec.toNatInt index) ≥b 3) : Bool)) : Bool)
                               then
                                 (do
-                                  let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3862 4 0)
+                                  let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3866 4 0)
                                   (read_mhpmevent (← (hpmidx_from_bits index))))
                               else
                                 (do
-                                  if ((((Sail.BitVec.extractLsb v__3862 11 5) == (0b1011000#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                         (Sail.BitVec.extractLsb v__3862 4 0)
+                                  if ((((Sail.BitVec.extractLsb v__3866 11 5) == (0b1011000#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                         (Sail.BitVec.extractLsb v__3866 4 0)
                                        ((BitVec.toNatInt index) ≥b 3) : Bool)) : Bool)
                                   then
                                     (do
-                                      let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3862 4 0)
+                                      let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3866 4 0)
                                       (read_mhpmcounter (← (hpmidx_from_bits index))))
                                   else
                                     (do
-                                      if ((((Sail.BitVec.extractLsb v__3862 11 5) == (0b1011100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                             (Sail.BitVec.extractLsb v__3862 4 0)
+                                      if ((((Sail.BitVec.extractLsb v__3866 11 5) == (0b1011100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                             (Sail.BitVec.extractLsb v__3866 4 0)
                                            ((xlen == 32) && (((BitVec.toNatInt index) ≥b 3) : Bool)))) : Bool)
                                       then
                                         (do
                                           let index : (BitVec 5) :=
-                                            (Sail.BitVec.extractLsb v__3862 4 0)
+                                            (Sail.BitVec.extractLsb v__3866 4 0)
                                           (read_mhpmcounterh (← (hpmidx_from_bits index))))
                                       else
                                         (do
-                                          if ((((Sail.BitVec.extractLsb v__3862 11 5) == (0b1100000#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                                 (Sail.BitVec.extractLsb v__3862 4 0)
+                                          if ((((Sail.BitVec.extractLsb v__3866 11 5) == (0b1100000#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                                 (Sail.BitVec.extractLsb v__3866 4 0)
                                                ((BitVec.toNatInt index) ≥b 3) : Bool)) : Bool)
                                           then
                                             (do
                                               let index : (BitVec 5) :=
-                                                (Sail.BitVec.extractLsb v__3862 4 0)
+                                                (Sail.BitVec.extractLsb v__3866 4 0)
                                               (read_mhpmcounter (← (hpmidx_from_bits index))))
                                           else
                                             (do
-                                              if ((((Sail.BitVec.extractLsb v__3862 11 5) == (0b1100100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                                     (Sail.BitVec.extractLsb v__3862 4 0)
+                                              if ((((Sail.BitVec.extractLsb v__3866 11 5) == (0b1100100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                                     (Sail.BitVec.extractLsb v__3866 4 0)
                                                    ((xlen == 32) && (((BitVec.toNatInt index) ≥b 3) : Bool)))) : Bool)
                                               then
                                                 (do
                                                   let index : (BitVec 5) :=
-                                                    (Sail.BitVec.extractLsb v__3862 4 0)
+                                                    (Sail.BitVec.extractLsb v__3866 4 0)
                                                   (read_mhpmcounterh (← (hpmidx_from_bits index))))
                                               else
                                                 (do
-                                                  if ((((Sail.BitVec.extractLsb v__3862 11 5) == (0b0111001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                                         (Sail.BitVec.extractLsb v__3862 4 0)
+                                                  if ((((Sail.BitVec.extractLsb v__3866 11 5) == (0b0111001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                                         (Sail.BitVec.extractLsb v__3866 4 0)
                                                        ((xlen == 32) && (((BitVec.toNatInt index) ≥b 3) : Bool)))) : Bool)
                                                   then
                                                     (do
                                                       let index : (BitVec 5) :=
-                                                        (Sail.BitVec.extractLsb v__3862 4 0)
+                                                        (Sail.BitVec.extractLsb v__3866 4 0)
                                                       (read_mhpmeventh
                                                         (← (hpmidx_from_bits index))))
                                                   else
                                                     (do
-                                                      match v__3862 with
+                                                      match v__3866 with
                                                       | 0xDA0 =>
                                                         (pure (zero_extend (m := 32)
                                                             (← (get_scountovf
@@ -586,11 +591,11 @@ def read_CSR (merge_var : (BitVec 12)) : SailM (BitVec 32) := do
                                                         (pure (Sail.BitVec.extractLsb
                                                             (← readReg minstret) 63 32))
                                                       | 0x181 => readReg srmcfg
-                                                      | v__3862 =>
+                                                      | v__3866 =>
                                                         (internal_error "postlude/csr_end.sail" 17
                                                           (HAppend.hAppend
                                                             "Read from CSR that does not exist: "
-                                                            (BitVec.toFormatted v__3862))))))))))))))))
+                                                            (BitVec.toFormatted v__3866))))))))))))))))
 
 def Mk_Srmcfg (v : (BitVec 32)) : (BitVec 32) :=
   v
@@ -758,8 +763,8 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
       (pure (Ok (Sail.BitVec.extractLsb (← readReg menvcfg) 63 32))))
   | (0x10A, value) =>
     (do
-      writeReg senvcfg (← (legalize_senvcfg (← readReg senvcfg) (zero_extend (m := 32) value)))
-      (pure (Ok (← (read_senvcfg ())))))
+      writeReg senvcfg (← (legalize_senvcfg (← readReg senvcfg) (zero_extend (m := 64) value)))
+      (pure (Ok (Sail.BitVec.extractLsb (← (read_senvcfg ())) (xlen -i 1) 0))))
   | (0x342, value) =>
     (do
       writeReg mcause value
@@ -845,56 +850,56 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
   | (0x141, value) => (pure (Ok (← (set_xepc Supervisor value))))
   | (0x305, value) => (pure (Ok (← (set_mtvec value))))
   | (0x341, value) => (pure (Ok (← (set_xepc Machine value))))
-  | (v__3884, value) =>
+  | (v__3888, value) =>
     (do
-      if ((((Sail.BitVec.extractLsb v__3884 11 4) == (0x3A#8 : (BitVec 8))) && (let idx : (BitVec 4) :=
-             (Sail.BitVec.extractLsb v__3884 3 0)
+      if ((((Sail.BitVec.extractLsb v__3888 11 4) == (0x3A#8 : (BitVec 8))) && (let idx : (BitVec 4) :=
+             (Sail.BitVec.extractLsb v__3888 3 0)
            (((BitVec.access idx 0) == 0#1) || (xlen == 32)))) : Bool)
       then
         (do
-          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3884 3 0)
+          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3888 3 0)
           let idx := (BitVec.toNatInt idx)
           (pmpWriteCfgReg idx value)
           (pure (Ok (← (pmpReadCfgReg idx)))))
       else
         (do
-          if (((Sail.BitVec.extractLsb v__3884 11 4) == (0x3B#8 : (BitVec 8))) : Bool)
+          if (((Sail.BitVec.extractLsb v__3888 11 4) == (0x3B#8 : (BitVec 8))) : Bool)
           then
             (do
-              let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3884 3 0)
+              let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3888 3 0)
               let idx := (BitVec.toNatInt (0b00#2 +++ idx))
               (pmpWriteAddrReg idx value)
               (pure (Ok (← (pmpReadAddrReg idx)))))
           else
             (do
-              if (((Sail.BitVec.extractLsb v__3884 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
+              if (((Sail.BitVec.extractLsb v__3888 11 4) == (0x3C#8 : (BitVec 8))) : Bool)
               then
                 (do
-                  let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3884 3 0)
+                  let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3888 3 0)
                   let idx := (BitVec.toNatInt (0b01#2 +++ idx))
                   (pmpWriteAddrReg idx value)
                   (pure (Ok (← (pmpReadAddrReg idx)))))
               else
                 (do
-                  if (((Sail.BitVec.extractLsb v__3884 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
+                  if (((Sail.BitVec.extractLsb v__3888 11 4) == (0x3D#8 : (BitVec 8))) : Bool)
                   then
                     (do
-                      let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3884 3 0)
+                      let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3888 3 0)
                       let idx := (BitVec.toNatInt (0b10#2 +++ idx))
                       (pmpWriteAddrReg idx value)
                       (pure (Ok (← (pmpReadAddrReg idx)))))
                   else
                     (do
-                      if (((Sail.BitVec.extractLsb v__3884 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
+                      if (((Sail.BitVec.extractLsb v__3888 11 4) == (0x3E#8 : (BitVec 8))) : Bool)
                       then
                         (do
-                          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3884 3 0)
+                          let idx : (BitVec 4) := (Sail.BitVec.extractLsb v__3888 3 0)
                           let idx := (BitVec.toNatInt (0b11#2 +++ idx))
                           (pmpWriteAddrReg idx value)
                           (pure (Ok (← (pmpReadAddrReg idx)))))
                       else
                         (do
-                          match (v__3884, value) with
+                          match (v__3888, value) with
                           | (0x001, value) =>
                             (do
                               (write_fcsr (_get_Fcsr_FRM (← readReg fcsr))
@@ -1149,55 +1154,55 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
                                   (← readReg satp) value))
                               (pure (Ok (← readReg satp))))
                           | (0x015, value) => (pure (Ok (write_seed_csr ())))
-                          | (v__3884, value) =>
+                          | (v__3888, value) =>
                             (do
-                              if ((((Sail.BitVec.extractLsb v__3884 11 5) == (0b0011001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                     (Sail.BitVec.extractLsb v__3884 4 0)
+                              if ((((Sail.BitVec.extractLsb v__3888 11 5) == (0b0011001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                     (Sail.BitVec.extractLsb v__3888 4 0)
                                    ((BitVec.toNatInt index) ≥b 3) : Bool)) : Bool)
                               then
                                 (do
-                                  let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3884 4 0)
+                                  let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3888 4 0)
                                   let index ← do (hpmidx_from_bits index)
                                   (write_mhpmevent index value)
                                   (pure (Ok (← (read_mhpmevent index)))))
                               else
                                 (do
-                                  if ((((Sail.BitVec.extractLsb v__3884 11 5) == (0b1011000#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                         (Sail.BitVec.extractLsb v__3884 4 0)
+                                  if ((((Sail.BitVec.extractLsb v__3888 11 5) == (0b1011000#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                         (Sail.BitVec.extractLsb v__3888 4 0)
                                        ((BitVec.toNatInt index) ≥b 3) : Bool)) : Bool)
                                   then
                                     (do
-                                      let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3884 4 0)
+                                      let index : (BitVec 5) := (Sail.BitVec.extractLsb v__3888 4 0)
                                       let index ← do (hpmidx_from_bits index)
                                       (write_mhpmcounter index value)
                                       (pure (Ok (← (read_mhpmcounter index)))))
                                   else
                                     (do
-                                      if ((((Sail.BitVec.extractLsb v__3884 11 5) == (0b1011100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                             (Sail.BitVec.extractLsb v__3884 4 0)
+                                      if ((((Sail.BitVec.extractLsb v__3888 11 5) == (0b1011100#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                             (Sail.BitVec.extractLsb v__3888 4 0)
                                            ((xlen == 32) && (((BitVec.toNatInt index) ≥b 3) : Bool)))) : Bool)
                                       then
                                         (do
                                           let index : (BitVec 5) :=
-                                            (Sail.BitVec.extractLsb v__3884 4 0)
+                                            (Sail.BitVec.extractLsb v__3888 4 0)
                                           let index ← do (hpmidx_from_bits index)
                                           (write_mhpmcounterh index value)
                                           (pure (Ok (← (read_mhpmcounterh index)))))
                                       else
                                         (do
-                                          if ((((Sail.BitVec.extractLsb v__3884 11 5) == (0b0111001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
-                                                 (Sail.BitVec.extractLsb v__3884 4 0)
+                                          if ((((Sail.BitVec.extractLsb v__3888 11 5) == (0b0111001#7 : (BitVec 7))) && (let index : (BitVec 5) :=
+                                                 (Sail.BitVec.extractLsb v__3888 4 0)
                                                ((xlen == 32) && (((BitVec.toNatInt index) ≥b 3) : Bool)))) : Bool)
                                           then
                                             (do
                                               let index : (BitVec 5) :=
-                                                (Sail.BitVec.extractLsb v__3884 4 0)
+                                                (Sail.BitVec.extractLsb v__3888 4 0)
                                               let index ← do (hpmidx_from_bits index)
                                               (write_mhpmeventh index value)
                                               (pure (Ok (← (read_mhpmeventh index)))))
                                           else
                                             (do
-                                              match (v__3884, value) with
+                                              match (v__3888, value) with
                                               | (0x14D, value) =>
                                                 (do
                                                   writeReg stimecmp (Sail.BitVec.updateSubrange
@@ -1244,11 +1249,11 @@ def write_CSR (arg0 : (BitVec 12)) (arg1 : (BitVec 32)) : SailM (Result (BitVec 
                                                   writeReg srmcfg (legalize_srmcfg
                                                     (← readReg srmcfg) value)
                                                   (pure (Ok (← readReg srmcfg))))
-                                              | (v__3884, _) =>
+                                              | (v__3888, _) =>
                                                 (internal_error "postlude/csr_end.sail" 23
                                                   (HAppend.hAppend
                                                     "Write to CSR that does not exist: "
-                                                    (BitVec.toFormatted v__3884))))))))))))))
+                                                    (BitVec.toFormatted v__3888))))))))))))))
 
 def doCSR (csr : (BitVec 12)) (rs1_val : (BitVec 32)) (rd : regidx) (op : csrop) (access_type : CSRAccessType) : SailM ExecutionResult := do
   match (← (check_CSR_result csr (← readReg cur_privilege) access_type)) with

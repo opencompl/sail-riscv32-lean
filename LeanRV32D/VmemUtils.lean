@@ -4,6 +4,7 @@ import LeanRV32D.PlatformConfig
 import LeanRV32D.Types
 import LeanRV32D.VmemTypes
 import LeanRV32D.AddrChecks
+import LeanRV32D.PmUtils
 import LeanRV32D.SysControl
 import LeanRV32D.MemUtils
 import LeanRV32D.Mem
@@ -51,6 +52,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -187,13 +189,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -202,6 +207,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -239,7 +245,7 @@ def misaligned_order (n : Int) : (Int × Int × Int) :=
   then ((n -i 1), 0, (Neg.neg 1))
   else (0, (n -i 1), 1)
 
-/-- Type quantifiers: k_ex720842_ : Bool -/
+/-- Type quantifiers: k_ex944611_ : Bool -/
 def plat_misaligned_exception (access : (MemoryAccessType mem_payload)) (res : Bool) : SailM (Option misaligned_exception) := do
   assert (not (is_amo_access access)) "sys/vmem_utils.sail:85.35-85.36"
   if (res : Bool)
@@ -249,7 +255,16 @@ def plat_misaligned_exception (access : (MemoryAccessType mem_payload)) (res : B
     then (pure plat_misaligned_access.vector)
     else (pure plat_misaligned_access.load_store))
 
-/-- Type quantifiers: k_ex720854_ : Bool, k_ex720853_ : Bool, k_ex720852_ : Bool, width : Nat, width
+def transform_effective_address (vaddr : virtaddr) (access : (MemoryAccessType mem_payload)) : SailM virtaddr := do
+  let eff_privilege ← do
+    (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
+  let pmlen ← do (get_pmlen access eff_privilege)
+  let mode ← do (translationMode eff_privilege)
+  if ((mode == Bare) : Bool)
+  then (pure (pm_transform_PA vaddr pmlen))
+  else (pure (pm_transform_VA vaddr pmlen))
+
+/-- Type quantifiers: k_ex944624_ : Bool, k_ex944623_ : Bool, k_ex944622_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_read_addr (vaddr : virtaddr) (width : Nat) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result (BitVec (8 * width)) ExecutionResult) := SailME.run do
   if ((not (is_aligned_vaddr vaddr width)) : Bool)
@@ -308,7 +323,7 @@ def vmem_read_addr (vaddr : virtaddr) (width : Nat) (access : (MemoryAccessType 
     ((BitVec (8 * n * bytes)) × Bool × Nat) )
   (pure (Ok data))
 
-/-- Type quantifiers: k_ex720890_ : Bool, k_ex720889_ : Bool, k_ex720888_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex944660_ : Bool, k_ex944659_ : Bool, k_ex944658_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_write_addr (vaddr : virtaddr) (width : Nat) (data : (BitVec (8 * width))) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result Bool ExecutionResult) := SailME.run do
   if ((not (is_aligned_vaddr vaddr width)) : Bool)
@@ -342,7 +357,7 @@ def vmem_write_addr (vaddr : virtaddr) (width : Nat) (data : (BitVec (8 * width)
                 (pure (Err (← (memory_exception (Virtaddr vaddr) e)))))
           | .Ok (paddr, pbmt, _) =>
             (do
-              assert (res == (is_store_conditional access)) "sys/vmem_utils.sail:189.50-189.51"
+              assert (res == (is_store_conditional access)) "sys/vmem_utils.sail:197.50-197.51"
               if ((res && (not (match_reservation (bits_of_physaddr paddr)))) : Bool)
               then
                 (do
@@ -382,22 +397,31 @@ def vmem_write_addr (vaddr : virtaddr) (width : Nat) (data : (BitVec (8 * width)
     (pure loop_vars) ) : SailME (Result Bool ExecutionResult) (Bool × Nat × Bool) )
   (pure (Ok write_success))
 
-/-- Type quantifiers: k_ex720941_ : Bool, k_ex720940_ : Bool, k_ex720939_ : Bool, width : Nat, width
+/-- Type quantifiers: width : Nat, 1 ≤ width ∧ width ≤ 4096 -/
+def get_transformed_data_addr (base : regidx) (offset : (BitVec 32)) (acc : (MemoryAccessType mem_payload)) (width : Nat) : SailM (Ext_DataAddr_Check Unit) := do
+  match (← (ext_data_get_addr base offset acc width)) with
+  | .Ext_DataAddr_Error e => (pure (Ext_DataAddr_Error e))
+  | .Ext_DataAddr_OK vaddr =>
+    (do
+      let vaddr ← do (transform_effective_address vaddr acc)
+      (pure (Ext_DataAddr_OK vaddr)))
+
+/-- Type quantifiers: k_ex944713_ : Bool, k_ex944712_ : Bool, k_ex944711_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_read (rs : regidx) (offset : (BitVec 32)) (width : Nat) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result (BitVec (8 * width)) ExecutionResult) := SailME.run do
   let vaddr ← (( do
-    match (← (ext_data_get_addr rs offset access width)) with
+    match (← (get_transformed_data_addr rs offset access width)) with
     | .Ext_DataAddr_OK vaddr => (pure vaddr)
     | .Ext_DataAddr_Error e =>
       SailME.throw ((Err (Ext_DataAddr_Check_Failure e)) : (Result (BitVec (8 * width)) ExecutionResult))
     ) : SailME (Result (BitVec (8 * width)) ExecutionResult) virtaddr )
   (vmem_read_addr vaddr width access aq rl res)
 
-/-- Type quantifiers: k_ex720951_ : Bool, k_ex720950_ : Bool, k_ex720949_ : Bool, width : Nat, width
+/-- Type quantifiers: k_ex944723_ : Bool, k_ex944722_ : Bool, k_ex944721_ : Bool, width : Nat, width
   ≥ 0, is_mem_width(width) -/
 def vmem_write (rs_addr : regidx) (offset : (BitVec 32)) (width : Nat) (data : (BitVec (8 * width))) (access : (MemoryAccessType mem_payload)) (aq : Bool) (rl : Bool) (res : Bool) : SailM (Result Bool ExecutionResult) := SailME.run do
   let vaddr ← (( do
-    match (← (ext_data_get_addr rs_addr offset access width)) with
+    match (← (get_transformed_data_addr rs_addr offset access width)) with
     | .Ext_DataAddr_OK vaddr => (pure vaddr)
     | .Ext_DataAddr_Error e =>
       SailME.throw ((Err (Ext_DataAddr_Check_Failure e)) : (Result Bool ExecutionResult)) ) : SailME

@@ -50,6 +50,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -186,13 +187,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -201,6 +205,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -373,7 +378,7 @@ def clint_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (wid
                                 else ()
                               (pure (Err (← (accessFaultFromAccessType access)))))))))))
 
-/-- Type quantifiers: k_ex715155_ : Bool -/
+/-- Type quantifiers: k_ex938924_ : Bool -/
 def clint_dispatch (mip_was_written : Bool) : SailM Unit := do
   let old_mip ← do readReg mip
   writeReg mip (Sail.BitVec.updateSubrange (← readReg mip) 7 7

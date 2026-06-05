@@ -3,11 +3,11 @@ import LeanRV32D.Prelude
 import LeanRV32D.Errors
 import LeanRV32D.PlatformConfig
 import LeanRV32D.Regs
-import LeanRV32D.AddrChecks
 import LeanRV32D.SysControl
 import LeanRV32D.Mem
 import LeanRV32D.Vmem
 import LeanRV32D.InstsBegin
+import LeanRV32D.VmemUtils
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -50,6 +50,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -186,13 +187,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -201,6 +205,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -342,7 +347,7 @@ def process_clean_inval (rs1 : regidx) (cbop : cbop_zicbom) : SailM ExecutionRes
   let negative_offset :=
     ((rs1_val &&& (Complement.complement
           (zero_extend (m := 32) (ones (n := plat_cache_block_size_exp))))) - rs1_val)
-  match (← (ext_data_get_addr rs1 negative_offset access cache_block_size)) with
+  match (← (get_transformed_data_addr rs1 negative_offset access cache_block_size)) with
   | .Ext_DataAddr_Error e => (pure (Ext_DataAddr_Check_Failure e))
   | .Ext_DataAddr_OK vaddr =>
     (do

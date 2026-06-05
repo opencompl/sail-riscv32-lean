@@ -45,6 +45,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -181,13 +182,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -196,6 +200,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -306,6 +311,7 @@ def extensionName_forwards (arg_ : extension) : String :=
   | .Ext_Ssccptr => "ssccptr"
   | .Ext_Sscofpmf => "sscofpmf"
   | .Ext_Sscounterenw => "sscounterenw"
+  | .Ext_Ssnpm => "ssnpm"
   | .Ext_Ssstateen => "ssstateen"
   | .Ext_Sstc => "sstc"
   | .Ext_Sstvala => "sstvala"
@@ -324,8 +330,12 @@ def extensionName_forwards (arg_ : extension) : String :=
   | .Ext_Svrsw60t59b => "svrsw60t59b"
   | .Ext_Svvptc => "svvptc"
   | .Ext_Smcntrpmf => "smcntrpmf"
+  | .Ext_Smmpm => "smmpm"
+  | .Ext_Smnpm => "smnpm"
   | .Ext_Smstateen => "smstateen"
   | .Ext_Ssqosid => "ssqosid"
+  | .Ext_Sspm => "sspm"
+  | .Ext_Supm => "supm"
 
 def extensionName_backwards (arg_ : String) : SailM extension := do
   match arg_ with
@@ -429,6 +439,7 @@ def extensionName_backwards (arg_ : String) : SailM extension := do
   | "ssccptr" => (pure Ext_Ssccptr)
   | "sscofpmf" => (pure Ext_Sscofpmf)
   | "sscounterenw" => (pure Ext_Sscounterenw)
+  | "ssnpm" => (pure Ext_Ssnpm)
   | "ssstateen" => (pure Ext_Ssstateen)
   | "sstc" => (pure Ext_Sstc)
   | "sstvala" => (pure Ext_Sstvala)
@@ -447,8 +458,12 @@ def extensionName_backwards (arg_ : String) : SailM extension := do
   | "svrsw60t59b" => (pure Ext_Svrsw60t59b)
   | "svvptc" => (pure Ext_Svvptc)
   | "smcntrpmf" => (pure Ext_Smcntrpmf)
+  | "smmpm" => (pure Ext_Smmpm)
+  | "smnpm" => (pure Ext_Smnpm)
   | "smstateen" => (pure Ext_Smstateen)
   | "ssqosid" => (pure Ext_Ssqosid)
+  | "sspm" => (pure Ext_Sspm)
+  | "supm" => (pure Ext_Supm)
   | _ =>
     (do
       assert false "Pattern match failure at unknown location"
@@ -556,6 +571,7 @@ def extensionName_forwards_matches (arg_ : extension) : Bool :=
   | .Ext_Ssccptr => true
   | .Ext_Sscofpmf => true
   | .Ext_Sscounterenw => true
+  | .Ext_Ssnpm => true
   | .Ext_Ssstateen => true
   | .Ext_Sstc => true
   | .Ext_Sstvala => true
@@ -574,8 +590,12 @@ def extensionName_forwards_matches (arg_ : extension) : Bool :=
   | .Ext_Svrsw60t59b => true
   | .Ext_Svvptc => true
   | .Ext_Smcntrpmf => true
+  | .Ext_Smmpm => true
+  | .Ext_Smnpm => true
   | .Ext_Smstateen => true
   | .Ext_Ssqosid => true
+  | .Ext_Sspm => true
+  | .Ext_Supm => true
 
 def extensionName_backwards_matches (arg_ : String) : Bool :=
   match arg_ with
@@ -679,6 +699,7 @@ def extensionName_backwards_matches (arg_ : String) : Bool :=
   | "ssccptr" => true
   | "sscofpmf" => true
   | "sscounterenw" => true
+  | "ssnpm" => true
   | "ssstateen" => true
   | "sstc" => true
   | "sstvala" => true
@@ -697,10 +718,14 @@ def extensionName_backwards_matches (arg_ : String) : Bool :=
   | "svrsw60t59b" => true
   | "svvptc" => true
   | "smcntrpmf" => true
+  | "smmpm" => true
+  | "smnpm" => true
   | "smstateen" => true
   | "ssqosid" => true
+  | "sspm" => true
+  | "supm" => true
   | _ => false
 
 def extensions_ordered_for_isa_string :=
-  #v[Ext_Smstateen, Ext_Smcntrpmf, Ext_Svvptc, Ext_Svrsw60t59b, Ext_Svpbmt, Ext_Svnapot, Ext_Svinval, Ext_Svadu, Ext_Svade, Ext_Ssu64xl, Ext_Sstvecd, Ext_Sstvala, Ext_Sstc, Ext_Ssqosid, Ext_Ssstateen, Ext_Sscounterenw, Ext_Sscofpmf, Ext_Ssccptr, Ext_Zvl1024b, Ext_Zvl512b, Ext_Zvl256b, Ext_Zvl128b, Ext_Zvl64b, Ext_Zvl32b, Ext_Zvkt, Ext_Zvksh, Ext_Zvksg, Ext_Zvksed, Ext_Zvksc, Ext_Zvks, Ext_Zvknhb, Ext_Zvknha, Ext_Zvkng, Ext_Zvkned, Ext_Zvknc, Ext_Zvkn, Ext_Zvkg, Ext_Zvkb, Ext_Zvfhmin, Ext_Zvfh, Ext_Zvfbfwma, Ext_Zvfbfmin, Ext_Zve64x, Ext_Zve64f, Ext_Zve64d, Ext_Zve32x, Ext_Zve32f, Ext_Zvbc, Ext_Zvbb, Ext_Zvabd, Ext_Zkt, Ext_Zksh, Ext_Zksed, Ext_Zkr, Ext_Zknh, Ext_Zkne, Ext_Zknd, Ext_Zbs, Ext_Zbkx, Ext_Zbkc, Ext_Zbkb, Ext_Zbc, Ext_Zbb, Ext_Zba, Ext_Zcmop, Ext_Zcf, Ext_Zcd, Ext_Zcb, Ext_Zca, Ext_Zhinxmin, Ext_Zhinx, Ext_Zdinx, Ext_Zfinx, Ext_Zfhmin, Ext_Zfh, Ext_Zfbfmin, Ext_Zfa, Ext_Zawrs, Ext_Zalrsc, Ext_Zacas, Ext_Zabha, Ext_Zaamo, Ext_Za64rs, Ext_Za128rs, Ext_Zmmul, Ext_Zimop, Ext_Zihpm, Ext_Zihintpause, Ext_Zihintntl, Ext_Zifencei, Ext_Zicsr, Ext_Zicond, Ext_Zicntr, Ext_Zicfiss, Ext_Zicfilp, Ext_Ziccrse, Ext_Zicclsm, Ext_Ziccif, Ext_Ziccamoc, Ext_Ziccamoa, Ext_Zicboz, Ext_Zicbop, Ext_Zicbom, Ext_Zibi, Ext_Zic64b, Ext_H, Ext_V, Ext_B, Ext_C, Ext_D, Ext_F, Ext_A, Ext_M]
+  #v[Ext_Smstateen, Ext_Smnpm, Ext_Smmpm, Ext_Smcntrpmf, Ext_Svvptc, Ext_Svrsw60t59b, Ext_Svpbmt, Ext_Svnapot, Ext_Svinval, Ext_Svadu, Ext_Svade, Ext_Supm, Ext_Ssu64xl, Ext_Sstvecd, Ext_Sstvala, Ext_Sstc, Ext_Ssstateen, Ext_Ssqosid, Ext_Sspm, Ext_Ssnpm, Ext_Sscounterenw, Ext_Sscofpmf, Ext_Ssccptr, Ext_Zvl1024b, Ext_Zvl512b, Ext_Zvl256b, Ext_Zvl128b, Ext_Zvl64b, Ext_Zvl32b, Ext_Zvkt, Ext_Zvksh, Ext_Zvksg, Ext_Zvksed, Ext_Zvksc, Ext_Zvks, Ext_Zvknhb, Ext_Zvknha, Ext_Zvkng, Ext_Zvkned, Ext_Zvknc, Ext_Zvkn, Ext_Zvkg, Ext_Zvkb, Ext_Zvfhmin, Ext_Zvfh, Ext_Zvfbfwma, Ext_Zvfbfmin, Ext_Zve64x, Ext_Zve64f, Ext_Zve64d, Ext_Zve32x, Ext_Zve32f, Ext_Zvbc, Ext_Zvbb, Ext_Zvabd, Ext_Zkt, Ext_Zksh, Ext_Zksed, Ext_Zkr, Ext_Zknh, Ext_Zkne, Ext_Zknd, Ext_Zbs, Ext_Zbkx, Ext_Zbkc, Ext_Zbkb, Ext_Zbc, Ext_Zbb, Ext_Zba, Ext_Zcmop, Ext_Zcf, Ext_Zcd, Ext_Zcb, Ext_Zca, Ext_Zhinxmin, Ext_Zhinx, Ext_Zdinx, Ext_Zfinx, Ext_Zfhmin, Ext_Zfh, Ext_Zfbfmin, Ext_Zfa, Ext_Zawrs, Ext_Zalrsc, Ext_Zacas, Ext_Zabha, Ext_Zaamo, Ext_Za64rs, Ext_Za128rs, Ext_Zmmul, Ext_Zimop, Ext_Zihpm, Ext_Zihintpause, Ext_Zihintntl, Ext_Zifencei, Ext_Zicsr, Ext_Zicond, Ext_Zicntr, Ext_Zicfiss, Ext_Zicfilp, Ext_Ziccrse, Ext_Zicclsm, Ext_Ziccif, Ext_Ziccamoc, Ext_Ziccamoa, Ext_Zicboz, Ext_Zicbop, Ext_Zicbom, Ext_Zibi, Ext_Zic64b, Ext_H, Ext_V, Ext_B, Ext_C, Ext_D, Ext_F, Ext_A, Ext_M]
 

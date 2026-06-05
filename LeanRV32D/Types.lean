@@ -43,6 +43,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -179,13 +180,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -194,6 +198,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -777,28 +782,28 @@ def num_of_ExtStatus (arg_ : ExtStatus) : Int :=
   | .Clean => 2
   | .Dirty => 3
 
-def extStatus_bits_forwards (arg_ : ExtStatus) : (BitVec 2) :=
+def extStatus_map_forwards (arg_ : ExtStatus) : (BitVec 2) :=
   match arg_ with
   | .Off => 0b00#2
   | .Initial => 0b01#2
   | .Clean => 0b10#2
   | .Dirty => 0b11#2
 
-def extStatus_bits_backwards (arg_ : (BitVec 2)) : ExtStatus :=
+def extStatus_map_backwards (arg_ : (BitVec 2)) : ExtStatus :=
   match arg_ with
   | 0b00 => Off
   | 0b01 => Initial
   | 0b10 => Clean
   | _ => Dirty
 
-def extStatus_bits_forwards_matches (arg_ : ExtStatus) : Bool :=
+def extStatus_map_forwards_matches (arg_ : ExtStatus) : Bool :=
   match arg_ with
   | .Off => true
   | .Initial => true
   | .Clean => true
   | .Dirty => true
 
-def extStatus_bits_backwards_matches (arg_ : (BitVec 2)) : Bool :=
+def extStatus_map_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   match arg_ with
   | 0b00 => true
   | 0b01 => true
@@ -806,11 +811,14 @@ def extStatus_bits_backwards_matches (arg_ : (BitVec 2)) : Bool :=
   | 0b11 => true
   | _ => false
 
-def extStatus_to_bits (e : ExtStatus) : (BitVec 2) :=
-  (extStatus_bits_forwards e)
-
-def extStatus_of_bits (b : (BitVec 2)) : ExtStatus :=
-  (extStatus_bits_backwards b)
+def legalize_extStatus (policy : ExtContextPolicy) (status : (BitVec 2)) : (BitVec 2) :=
+  match policy with
+  | .ExtContext_Off => (extStatus_map_forwards Off)
+  | .ExtContext_TwoState =>
+    (if (((extStatus_map_backwards status) == Off) : Bool)
+    then status
+    else (extStatus_map_forwards Dirty))
+  | .ExtContext_FourState => status
 
 def undefined_SATPMode (_ : Unit) : SailM SATPMode := do
   (internal_pick [Bare, Sv32, Sv39, Sv48, Sv57])

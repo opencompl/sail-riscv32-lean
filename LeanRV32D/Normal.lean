@@ -41,6 +41,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -177,13 +178,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -192,6 +196,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -200,13 +205,13 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex699397_ : Nat, k_ex699397_ ∈ {16, 32, 64, 128} -/
-def float_is_normal (op : (BitVec k_ex699397_)) : Bool :=
+/-- Type quantifiers: k_ex923008_ : Nat, k_ex923008_ ∈ {16, 32, 64, 128} -/
+def float_is_normal (op : (BitVec k_ex923008_)) : Bool :=
   let { exp := exp, sign := _, mantissa := _ } := (float_decompose op)
   ((! (is_all_ones exp)) && (! (is_all_zeros exp)))
 
-/-- Type quantifiers: k_ex699415_ : Nat, k_ex699415_ ∈ {16, 32, 64, 128} -/
-def float_is_subnormal (op : (BitVec k_ex699415_)) : Bool :=
+/-- Type quantifiers: k_ex923026_ : Nat, k_ex923026_ ∈ {16, 32, 64, 128} -/
+def float_is_subnormal (op : (BitVec k_ex923026_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (! (is_all_zeros mantissa)))
 

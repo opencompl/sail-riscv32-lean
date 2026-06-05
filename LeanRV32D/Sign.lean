@@ -41,6 +41,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -177,13 +178,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -192,6 +196,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -200,11 +205,11 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex699386_ : Nat, k_ex699386_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex699386_)) : Bool :=
+/-- Type quantifiers: k_ex922997_ : Nat, k_ex922997_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex922997_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex699388_ : Nat, k_ex699388_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex699388_)) : Bool :=
+/-- Type quantifiers: k_ex922999_ : Nat, k_ex922999_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex922999_)) : Bool :=
   (is_highest_one op)
 

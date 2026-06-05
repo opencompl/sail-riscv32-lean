@@ -41,6 +41,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -177,13 +178,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -192,6 +196,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -200,18 +205,18 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex699348_ : Nat, k_ex699348_ ∈ {16, 32, 64, 128} -/
-def float_is_nan (op : (BitVec k_ex699348_)) : Bool :=
+/-- Type quantifiers: k_ex922959_ : Nat, k_ex922959_ ∈ {16, 32, 64, 128} -/
+def float_is_nan (op : (BitVec k_ex922959_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (! (is_all_zeros mantissa)))
 
-/-- Type quantifiers: k_ex699365_ : Nat, k_ex699365_ ∈ {16, 32, 64, 128} -/
-def float_is_snan (op : (BitVec k_ex699365_)) : Bool :=
+/-- Type quantifiers: k_ex922976_ : Nat, k_ex922976_ ∈ {16, 32, 64, 128} -/
+def float_is_snan (op : (BitVec k_ex922976_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_zero mantissa))
 
-/-- Type quantifiers: k_ex699372_ : Nat, k_ex699372_ ∈ {16, 32, 64, 128} -/
-def float_is_qnan (op : (BitVec k_ex699372_)) : Bool :=
+/-- Type quantifiers: k_ex922983_ : Nat, k_ex922983_ ∈ {16, 32, 64, 128} -/
+def float_is_qnan (op : (BitVec k_ex922983_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_one mantissa))
 

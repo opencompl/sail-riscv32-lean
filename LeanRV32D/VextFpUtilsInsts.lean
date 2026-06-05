@@ -50,6 +50,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -186,13 +187,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -201,6 +205,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -236,13 +241,11 @@ def illegal_fp_variable_width (vd : vregidx) (vm : (BitVec 1)) (SEW : Nat) (rm_3
 
 /-- Type quantifiers: SEW : Nat, SEW ∈ {8, 16, 32, 64} -/
 def illegal_fp_reduction (SEW : Nat) (rm_3b : (BitVec 3)) : SailM Bool := do
-  (pure ((not (← (valid_vtype ()))) || ((not (← (assert_vstart 0))) || (not
-          (valid_fp_op SEW rm_3b)))))
+  (pure ((not (← (valid_vtype ()))) || (not (valid_fp_op SEW rm_3b))))
 
 /-- Type quantifiers: EEW : Nat, SEW : Nat, SEW ∈ {8, 16, 32, 64}, 0 ≤ EEW -/
 def illegal_fp_widening_reduction (SEW : Nat) (rm_3b : (BitVec 3)) (EEW : Nat) : SailM Bool := do
-  (pure ((not (← (valid_vtype ()))) || ((not (← (assert_vstart 0))) || ((not
-            (valid_fp_op SEW rm_3b)) || (not ((EEW ≥b 8) && (EEW ≤b elen)))))))
+  (pure ((← (illegal_fp_reduction SEW rm_3b)) || (not ((EEW ≥b 8) && (EEW ≤b elen)))))
 
 /-- Type quantifiers: k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def f_is_neg_inf (xf : (BitVec k_m)) : Bool :=
@@ -594,7 +597,7 @@ def riscv_f32ToUi16 (rm : (BitVec 3)) (v : (BitVec 32)) : ((BitVec 5) × (BitVec
   then ((nvFlag ()), (ones (n := 16)))
   else (flag, (Sail.BitVec.extractLsb sig32 15 0))
 
-/-- Type quantifiers: k_ex723741_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex947485_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with
@@ -614,7 +617,7 @@ def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
     then
       (do
         let nr_leadingzeros := (BitVec.countLeadingZeros (Sail.BitVec.extractLsb sig (s -i 1) 0))
-        assert (nr_leadingzeros ≥b 0) "extensions/V/vext_fp_utils_insts.sail:446.35-446.36"
+        assert (nr_leadingzeros ≥b 0) "extensions/V/vext_fp_utils_insts.sail:445.35-445.36"
         (pure ((to_bits_unsafe (l := 64) (0 -i nr_leadingzeros)), (zero_extend (m := 64)
             ((Sail.BitVec.extractLsb sig (s -i 1) 0) <<< (1 +i nr_leadingzeros))))))
     else (pure (exp, sig))
@@ -632,7 +635,7 @@ def rsqrt7 (v : (BitVec k_m)) (sub : Bool) : SailM (BitVec 64) := do
       (BitVec.toNatInt
         ((BitVec.join1 [(BitVec.access normalized_exp 0)]) +++ (Sail.BitVec.extractLsb
             normalized_sig 51 46)))
-  assert ((idx ≥b 0) && (idx <b 128)) "extensions/V/vext_fp_utils_insts.sail:457.29-457.30"
+  assert ((idx ≥b 0) && (idx <b 128)) "extensions/V/vext_fp_utils_insts.sail:456.29-456.30"
   let out_sig := ((to_bits_unsafe (l := s) (GetElem?.getElem! table (127 -i idx))) <<< (s -i 7))
   let out_exp :=
     (to_bits_unsafe (l := e)
@@ -684,7 +687,7 @@ def riscv_f64Rsqrte7 (_rm : (BitVec 3)) (v : (BitVec 64)) : SailM ((BitVec 5) ×
   | .float_class_positive_normal =>
     (pure ((zeros (n := 5)), (Sail.BitVec.extractLsb (← (rsqrt7 v false)) 63 0)))
 
-/-- Type quantifiers: k_ex723950_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
+/-- Type quantifiers: k_ex947694_ : Bool, k_m : Nat, k_m ≥ 0, k_m ∈ {16, 32, 64} -/
 def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool × (BitVec 64)) := do
   let (sig, exp, sign, e, s) : ((BitVec 64) × (BitVec 64) × (BitVec 1) × Int × Int) :=
     match (Sail.BitVec.length v) with
@@ -700,7 +703,7 @@ def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool ×
   let table : (Vector Int 128) :=
     #v[0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 11, 11, 12, 12, 13, 14, 14, 15, 15, 16, 17, 17, 18, 19, 19, 20, 21, 21, 22, 23, 23, 24, 25, 25, 26, 27, 28, 28, 29, 30, 31, 31, 32, 33, 34, 35, 35, 36, 37, 38, 39, 40, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 68, 69, 70, 71, 72, 74, 75, 76, 77, 79, 80, 81, 83, 84, 85, 87, 88, 90, 91, 93, 94, 96, 97, 99, 100, 102, 104, 105, 107, 109, 110, 112, 114, 116, 117, 119, 121, 123, 125, 127]
   let nr_leadingzeros := (BitVec.countLeadingZeros (Sail.BitVec.extractLsb sig (s -i 1) 0))
-  assert (nr_leadingzeros ≥b 0) "extensions/V/vext_fp_utils_insts.sail:535.29-535.30"
+  assert (nr_leadingzeros ≥b 0) "extensions/V/vext_fp_utils_insts.sail:534.29-534.30"
   let (normalized_exp, normalized_sig) :=
     if (sub : Bool)
     then
@@ -712,7 +715,7 @@ def recip7 (v : (BitVec k_m)) (rm_3b : (BitVec 3)) (sub : Bool) : SailM (Bool ×
     | 16 => (BitVec.toNatInt (Sail.BitVec.extractLsb normalized_sig 9 3))
     | 32 => (BitVec.toNatInt (Sail.BitVec.extractLsb normalized_sig 22 16))
     | _ => (BitVec.toNatInt (Sail.BitVec.extractLsb normalized_sig 51 45))
-  assert ((idx ≥b 0) && (idx <b 128)) "extensions/V/vext_fp_utils_insts.sail:548.29-548.30"
+  assert ((idx ≥b 0) && (idx <b 128)) "extensions/V/vext_fp_utils_insts.sail:547.29-547.30"
   let mid_exp :=
     (to_bits_unsafe (l := e) (((2 *i ((2 ^i (e -i 1)) -i 1)) -i 1) -i (BitVec.toInt normalized_exp)))
   let mid_sig := ((to_bits_unsafe (l := s) (GetElem?.getElem! table (127 -i idx))) <<< (s -i 7))

@@ -45,6 +45,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -181,13 +182,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -196,6 +200,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -1408,4 +1413,22 @@ def num_of_indexed_mop (arg_ : indexed_mop) : Int :=
   match arg_ with
   | .INDEXED_UNORDERED => 0
   | .INDEXED_ORDERED => 1
+
+def undefined_vstart_class (_ : Unit) : SailM vstart_class := do
+  (internal_pick [VSTART_ARITH, VSTART_LOAD_STORE, VSTART_SCALAR_MOVE, VSTART_MANDATORY])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 3 -/
+def vstart_class_of_num (arg_ : Nat) : vstart_class :=
+  match arg_ with
+  | 0 => VSTART_ARITH
+  | 1 => VSTART_LOAD_STORE
+  | 2 => VSTART_SCALAR_MOVE
+  | _ => VSTART_MANDATORY
+
+def num_of_vstart_class (arg_ : vstart_class) : Int :=
+  match arg_ with
+  | .VSTART_ARITH => 0
+  | .VSTART_LOAD_STORE => 1
+  | .VSTART_SCALAR_MOVE => 2
+  | .VSTART_MANDATORY => 3
 

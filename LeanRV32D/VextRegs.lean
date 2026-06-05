@@ -45,6 +45,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -181,13 +182,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -196,6 +200,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -413,7 +418,8 @@ def rV (app_0 : vregno) : SailM (BitVec (2 ^ 8)) := do
 
 def dirty_v_context (_ : Unit) : SailM Unit := do
   assert (hartSupports Ext_Zve32x) "extensions/V/vext_regs.sail:138.33-138.34"
-  writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 10 9 (extStatus_to_bits Dirty))
+  writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 10 9
+    (extStatus_map_forwards Dirty))
   writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) (32 -i 1) (32 -i 1) 1#1)
   (long_csr_write_callback "mstatus" "mstatush" (← readReg mstatus))
 

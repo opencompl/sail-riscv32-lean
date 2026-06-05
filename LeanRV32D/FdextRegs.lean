@@ -49,6 +49,7 @@ open vvmfunct6
 open vvmcfunct6
 open vvfunct6
 open vvcmpfunct6
+open vstart_class
 open vregno
 open vregidx
 open vmlsop
@@ -185,13 +186,16 @@ open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
 open Privilege
+open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
 open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
+open PM_Ext
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
+open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
 open FetchResult
@@ -200,6 +204,7 @@ open FeatureEnabledResult
 open FcsrRmReservedBehavior
 open Ext_DataAddr_Check
 open ExtStatus
+open ExtContextPolicy
 open ExecutionResult
 open ExceptionType
 open CSRCheckResult
@@ -281,7 +286,8 @@ def freg_write_callback (x_0 : fregidx) (x_1 : (BitVec (if ( true  : Bool) then 
 
 def dirty_fd_context (_ : Unit) : SailM Unit := do
   assert (hartSupports Ext_F) "extensions/FD/fdext_regs.sail:111.28-111.29"
-  writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 14 13 (extStatus_to_bits Dirty))
+  writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) 14 13
+    (extStatus_map_forwards Dirty))
   writeReg mstatus (Sail.BitVec.updateSubrange (← readReg mstatus) (32 -i 1) (32 -i 1) 1#1)
   (long_csr_write_callback "mstatus" "mstatush" (← readReg mstatus))
 

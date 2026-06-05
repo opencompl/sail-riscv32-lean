@@ -209,74 +209,77 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def undefined_Access_variety (_ : Unit) : SailM Access_variety := do
-  (internal_pick [AV_plain, AV_exclusive, AV_atomic_rmw])
+def undefined_PM_Ext (_ : Unit) : SailM PM_Ext := do
+  (internal_pick [PM_SSNPM, PM_SMNPM, PM_SMMPM])
 
 /-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
-def Access_variety_of_num (arg_ : Nat) : Access_variety :=
+def PM_Ext_of_num (arg_ : Nat) : PM_Ext :=
   match arg_ with
-  | 0 => AV_plain
-  | 1 => AV_exclusive
-  | _ => AV_atomic_rmw
+  | 0 => PM_SSNPM
+  | 1 => PM_SMNPM
+  | _ => PM_SMMPM
 
-def num_of_Access_variety (arg_ : Access_variety) : Int :=
+def num_of_PM_Ext (arg_ : PM_Ext) : Int :=
   match arg_ with
-  | .AV_plain => 0
-  | .AV_exclusive => 1
-  | .AV_atomic_rmw => 2
+  | .PM_SSNPM => 0
+  | .PM_SMNPM => 1
+  | .PM_SMMPM => 2
 
-def undefined_Access_strength (_ : Unit) : SailM Access_strength := do
-  (internal_pick [AS_normal, AS_rel_or_acq, AS_acq_rcpc])
+def undefined_PointerMaskingMode (_ : Unit) : SailM PointerMaskingMode := do
+  (internal_pick [PMM_Disabled, PMM_Reserved, PMM_PMLEN_7, PMM_PMLEN_16])
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
-def Access_strength_of_num (arg_ : Nat) : Access_strength :=
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 3 -/
+def PointerMaskingMode_of_num (arg_ : Nat) : PointerMaskingMode :=
   match arg_ with
-  | 0 => AS_normal
-  | 1 => AS_rel_or_acq
-  | _ => AS_acq_rcpc
+  | 0 => PMM_Disabled
+  | 1 => PMM_Reserved
+  | 2 => PMM_PMLEN_7
+  | _ => PMM_PMLEN_16
 
-def num_of_Access_strength (arg_ : Access_strength) : Int :=
+def num_of_PointerMaskingMode (arg_ : PointerMaskingMode) : Int :=
   match arg_ with
-  | .AS_normal => 0
-  | .AS_rel_or_acq => 1
-  | .AS_acq_rcpc => 2
+  | .PMM_Disabled => 0
+  | .PMM_Reserved => 1
+  | .PMM_PMLEN_7 => 2
+  | .PMM_PMLEN_16 => 3
 
-def undefined_Explicit_access_kind (_ : Unit) : SailM Explicit_access_kind := do
-  (pure { variety := ← (undefined_Access_variety ())
-          strength := ← (undefined_Access_strength ()) })
+def pmm_mode_forwards (arg_ : PointerMaskingMode) : (BitVec 2) :=
+  match arg_ with
+  | .PMM_Disabled => 0b00#2
+  | .PMM_Reserved => 0b01#2
+  | .PMM_PMLEN_7 => 0b10#2
+  | .PMM_PMLEN_16 => 0b11#2
 
-/-- Type quantifiers: k_n : Nat, k_vasize : Nat, k_pa : Type, k_translation_summary : Type, k_arch_ak
-  : Type, k_n > 0 ∧ k_vasize > 0 -/
-def mem_read_request_is_exclusive (request : (Mem_read_request k_n k_vasize k_pa k_translation_summary k_arch_ak)) : Bool :=
-  match request.access_kind with
-  | .AK_explicit eak =>
-    (match eak.variety with
-    | .AV_exclusive => true
-    | _ => false)
+def pmm_mode_backwards (arg_ : (BitVec 2)) : PointerMaskingMode :=
+  match arg_ with
+  | 0b00 => PMM_Disabled
+  | 0b01 => PMM_Reserved
+  | 0b10 => PMM_PMLEN_7
+  | _ => PMM_PMLEN_16
+
+def pmm_mode_forwards_matches (arg_ : PointerMaskingMode) : Bool :=
+  match arg_ with
+  | .PMM_Disabled => true
+  | .PMM_Reserved => true
+  | .PMM_PMLEN_7 => true
+  | .PMM_PMLEN_16 => true
+
+def pmm_mode_backwards_matches (arg_ : (BitVec 2)) : Bool :=
+  match arg_ with
+  | 0b00 => true
+  | 0b01 => true
+  | 0b10 => true
+  | 0b11 => true
   | _ => false
 
-/-- Type quantifiers: k_n : Nat, k_vasize : Nat, k_pa : Type, k_translation_summary : Type, k_arch_ak
-  : Type, k_n > 0 ∧ k_vasize > 0 -/
-def mem_read_request_is_ifetch (request : (Mem_read_request k_n k_vasize k_pa k_translation_summary k_arch_ak)) : Bool :=
-  match request.access_kind with
-  | .AK_ifetch () => true
-  | _ => false
-
-def __monomorphize_reads : Bool := false
-
-def __monomorphize_writes : Bool := false
-
-/-- Type quantifiers: k_n : Nat, k_vasize : Nat, k_pa : Type, k_translation_summary : Type, k_arch_ak
-  : Type, k_n > 0 ∧ k_vasize > 0 -/
-def mem_write_request_is_exclusive (request : (Mem_write_request k_n k_vasize k_pa k_translation_summary k_arch_ak)) : Bool :=
-  match request.access_kind with
-  | .AK_explicit eak =>
-    (match eak.variety with
-    | .AV_exclusive => true
-    | _ => false)
-  | _ => false
-
-/-- Type quantifiers: x_0 : Nat, x_0 ≥ 0, x_0 ∈ {32, 64} -/
-def sail_address_announce (x_0 : Nat) (x_1 : (BitVec x_0)) : Unit :=
-  ()
+def is_supported_pmm (ext : PM_Ext) (pmm : PointerMaskingMode) : Bool :=
+  match (ext, pmm) with
+  | (_, .PMM_Disabled) => true
+  | (_, .PMM_Reserved) => false
+  | (.PM_SSNPM, .PMM_PMLEN_7) => true
+  | (.PM_SSNPM, .PMM_PMLEN_16) => true
+  | (.PM_SMMPM, .PMM_PMLEN_7) => true
+  | (.PM_SMMPM, .PMM_PMLEN_16) => true
+  | (.PM_SMNPM, .PMM_PMLEN_7) => true
+  | (.PM_SMNPM, .PMM_PMLEN_16) => true
 
