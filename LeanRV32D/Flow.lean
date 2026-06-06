@@ -188,6 +188,7 @@ open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
 open PM_Ext
+open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
@@ -209,7 +210,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex922033_ : Bool, k_ex922032_ : Bool -/
+/-- Type quantifiers: k_ex921931_ : Bool, k_ex921930_ : Bool -/
 def neq_bool (x : Bool) (y : Bool) : Bool :=
   (! (x == y))
 

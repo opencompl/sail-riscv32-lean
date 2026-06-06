@@ -193,6 +193,7 @@ open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
 open PM_Ext
+open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
@@ -230,21 +231,26 @@ def maybe_vmask_backwards_matches (arg_ : (BitVec 1)) : Bool :=
   | 0 => true
   | _ => false
 
-/-- Type quantifiers: i : Int -/
-def assert_vstart (i : Int) : SailM Bool := do
-  (pure ((BitVec.toNatInt (← readReg vstart)) == i))
-
 def vstart_arith_zero_required : Bool := true
 
 def vstart_scalar_move_zero_required : Bool := true
 
-def illegal_vstart (cls : vstart_class) : SailM Bool := do
+/-- Type quantifiers: EMUL_pow : Int, num_elem : Nat, 0 ≤ num_elem -/
+def illegal_vstart (cls : vstart_class) (num_elem : Nat) (EMUL_pow : Int) : SailM Bool := do
+  let vs ← do (pure (BitVec.toNatInt (← readReg vstart)))
+  let VLMAX :=
+    if ((EMUL_pow ≥b 0) : Bool)
+    then num_elem
+    else (Int.tdiv num_elem (2 ^i (0 -i EMUL_pow)))
+  let out_of_bounds : Bool :=
+    match vstart_reserved_behavior with
+    | .Vstart_Illegal => (vs ≥b VLMAX)
+    | .Vstart_Ignore => false
   match cls with
-  | .VSTART_ARITH => (pure (vstart_arith_zero_required && (not (← (assert_vstart 0)))))
-  | .VSTART_LOAD_STORE => (pure false)
-  | .VSTART_SCALAR_MOVE =>
-    (pure (vstart_scalar_move_zero_required && (not (← (assert_vstart 0)))))
-  | .VSTART_MANDATORY => (pure (not (← (assert_vstart 0))))
+  | .VSTART_ARITH => (pure (out_of_bounds || (vstart_arith_zero_required && (vs != 0))))
+  | .VSTART_LOAD_STORE => (pure out_of_bounds)
+  | .VSTART_SCALAR_MOVE => (pure (out_of_bounds || (vstart_scalar_move_zero_required && (vs != 0))))
+  | .VSTART_MANDATORY => (pure (vs != 0))
 
 /-- Type quantifiers: EMUL_pow : Int, EEW : Nat, 0 ≤ EEW -/
 def valid_eew_emul (EEW : Nat) (EMUL_pow : Int) : Bool :=
@@ -307,7 +313,7 @@ def valid_src_overlap (rs1 : vregidx) (EEW_rs1 : Nat) (EMUL_pow_rs1 : Int) (rs2 
 
 /-- Type quantifiers: EEW_rs : Nat, 0 ≤ EEW_rs -/
 def valid_vm_src_overlap (vm : (BitVec 1)) (rs : vregidx) (EEW_rs : Nat) : SailM Bool := do
-  assert (EEW_rs != 1) "extensions/V/vext_utils_insts.sail:159.20-159.21"
+  assert (EEW_rs != 1) "extensions/V/vext_utils_insts.sail:171.20-171.21"
   (pure ((vm != 0#1) || (bne rs zvreg)))
 
 /-- Type quantifiers: EMUL_pow : Int, nf : Nat, nf > 0 ∧ nf ≤ 8 -/
@@ -380,7 +386,7 @@ def write_velem_quad (vd : vregidx) (SEW : Nat) (input : (BitVec k_n)) (i : Nat)
   for j in [loop_j_lower:loop_j_upper:1]i do
     let () := loop_vars
     loop_vars ← do
-      assert (((j +i 1) *i SEW) ≤b (Sail.BitVec.length input)) "extensions/V/vext_utils_insts.sail:317.30-317.31"
+      assert (((j +i 1) *i SEW) ≤b (Sail.BitVec.length input)) "extensions/V/vext_utils_insts.sail:329.30-329.31"
       (write_single_element SEW ((4 *i i) +i j) vd
         (Sail.BitVec.extractLsb input (((j +i 1) *i SEW) -i 1) (j *i SEW)))
   (pure loop_vars)
@@ -419,35 +425,22 @@ def write_velem_quad_vec (vd : vregidx) (SEW : Nat) (input : (Vector (BitVec SEW
     loop_vars ← do (write_single_element SEW ((4 *i i) +i j) vd (GetElem?.getElem! input j))
   (pure loop_vars)
 
-def get_start_element (_ : Unit) : SailM (Result Nat Unit) := do
-  let start_element ← do (pure (BitVec.toNatInt (← readReg vstart)))
-  let SEW_pow ← do (get_sew_pow ())
-  if ((start_element >b ((2 ^i ((3 +i vlen_exp) -i SEW_pow)) -i 1)) : Bool)
-  then (pure (Err ()))
-  else (pure (Ok start_element))
+def get_start_element (_ : Unit) : SailM Nat := do
+  (pure (BitVec.toNatInt (← readReg vstart)))
 
 def get_end_element (_ : Unit) : SailM Int := do
   (pure ((BitVec.toNatInt (← readReg vl)) -i 1))
 
 /-- Type quantifiers: num_elem : Nat, num_elem ≥ 0, _EEW : Nat, _EEW ≥ 0, LMUL_pow : Int, num_elem
   ≥ 0 -/
-def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : (Vector (BitVec _EEW) num_elem)) (vm_val : (BitVec num_elem)) : SailM (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit) := SailME.run do
-  let start_element ← (( do
-    match (← (get_start_element ())) with
-    | .Ok v => (pure v)
-    | .Err () =>
-      SailME.throw ((Err ()) : (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit))
-    ) : SailME (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit) Nat )
+def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : (Vector (BitVec _EEW) num_elem)) (vm_val : (BitVec num_elem)) : SailM ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) := do
+  let start_element ← do (get_start_element ())
   let end_element ← do (get_end_element ())
-  let tail_ag ← (( do (get_vtype_vta ()) ) : SailME
-    (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit) agtype )
-  let mask_ag ← (( do (get_vtype_vma ()) ) : SailME
-    (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit) agtype )
-  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailME
-    (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit) (BitVec num_elem) )
+  let tail_ag ← (( do (get_vtype_vta ()) ) : SailM agtype )
+  let mask_ag ← (( do (get_vtype_vma ()) ) : SailM agtype )
+  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailM (BitVec num_elem) )
   let result ← (( do
-    (undefined_vector (Sail.BitVec.length vm_val) (← (undefined_bitvector _EEW))) ) : SailME
-    (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit)
+    (undefined_vector (Sail.BitVec.length vm_val) (← (undefined_bitvector _EEW))) ) : SailM
     (Vector (BitVec _EEW) num_elem) )
   let real_num_elem :=
     if ((LMUL_pow ≥b 0) : Bool)
@@ -508,65 +501,52 @@ def init_masked_result (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : 
                 (mask, result))
             (mask, result))
         (mask, result)
-    (pure loop_vars) ) : SailME (Result ((Vector (BitVec _EEW) num_elem) × (BitVec num_elem)) Unit)
-    ((BitVec num_elem) × (Vector (BitVec _EEW) num_elem)) )
-  (pure (Ok (result, mask)))
+    (pure loop_vars) ) : SailM ((BitVec num_elem) × (Vector (BitVec _EEW) num_elem)) )
+  (pure (result, mask))
 
 /-- Type quantifiers: num_elem : Nat, num_elem ≥ 0, LMUL_pow : Int, num_elem > 0 -/
-def init_masked_source (num_elem : Nat) (LMUL_pow : Int) (vm_val : (BitVec num_elem)) : SailM (Result (BitVec num_elem) Unit) := SailME.run do
-  let start_element ← (( do
-    match (← (get_start_element ())) with
-    | .Ok v => (pure v)
-    | .Err () => SailME.throw ((Err ()) : (Result (BitVec num_elem) Unit)) ) : SailME
-    (Result (BitVec num_elem) Unit) Nat )
+def init_masked_source (num_elem : Nat) (LMUL_pow : Int) (vm_val : (BitVec num_elem)) : SailM (BitVec num_elem) := do
+  let start_element ← do (get_start_element ())
   let end_element ← do (get_end_element ())
-  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailME
-    (Result (BitVec num_elem) Unit) (BitVec num_elem) )
+  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailM (BitVec num_elem) )
   let real_num_elem :=
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:436.34-436.35"
-  let mask ← (( do
-    let loop_i_lower := 0
-    let loop_i_upper := (num_elem -i 1)
-    let mut loop_vars := mask
-    for i in [loop_i_lower:loop_i_upper:1]i do
-      let mask := loop_vars
-      loop_vars :=
-        if ((i <b start_element) : Bool)
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:433.34-433.35"
+  let loop_i_lower := 0
+  let loop_i_upper := (num_elem -i 1)
+  let mut loop_vars := mask
+  for i in [loop_i_lower:loop_i_upper:1]i do
+    let mask := loop_vars
+    loop_vars :=
+      if ((i <b start_element) : Bool)
+      then (BitVec.update mask i 0#1)
+      else
+        (if ((i >b end_element) : Bool)
         then (BitVec.update mask i 0#1)
         else
-          (if ((i >b end_element) : Bool)
+          (if ((i ≥b real_num_elem) : Bool)
           then (BitVec.update mask i 0#1)
           else
-            (if ((i ≥b real_num_elem) : Bool)
+            (if (((BitVec.access vm_val i) == 0#1) : Bool)
             then (BitVec.update mask i 0#1)
-            else
-              (if (((BitVec.access vm_val i) == 0#1) : Bool)
-              then (BitVec.update mask i 0#1)
-              else (BitVec.update mask i 1#1))))
-    (pure loop_vars) ) : SailME (Result (BitVec num_elem) Unit) (BitVec num_elem) )
-  (pure (Ok mask))
+            else (BitVec.update mask i 1#1))))
+  (pure loop_vars)
 
 /-- Type quantifiers: LMUL_pow : Int, _EEW : Nat, num_elem : Nat, num_elem ≥ 0, num_elem ≥ 0, _EEW
   ∈ {8, 16, 32, 64} -/
-def init_masked_result_carry (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : (BitVec num_elem)) : SailM (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) := SailME.run do
-  let start_element ← (( do
-    match (← (get_start_element ())) with
-    | .Ok v => (pure v)
-    | .Err () => SailME.throw ((Err ()) : (Result ((BitVec num_elem) × (BitVec num_elem)) Unit)) )
-    : SailME (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) Nat )
+def init_masked_result_carry (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : (BitVec num_elem)) : SailM ((BitVec num_elem) × (BitVec num_elem)) := do
+  let start_element ← do (get_start_element ())
   let end_element ← do (get_end_element ())
-  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vd_val)) ) : SailME
-    (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) (BitVec num_elem) )
-  let result ← (( do (undefined_bitvector (Sail.BitVec.length vd_val)) ) : SailME
-    (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) (BitVec num_elem) )
+  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vd_val)) ) : SailM (BitVec num_elem) )
+  let result ← (( do (undefined_bitvector (Sail.BitVec.length vd_val)) ) : SailM (BitVec num_elem)
+    )
   let real_num_elem :=
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:474.34-474.35"
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:468.34-468.35"
   let (mask, result) ← (( do
     let loop_i_lower := 0
     let loop_i_upper := (num_elem -i 1)
@@ -601,30 +581,23 @@ def init_masked_result_carry (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_
                 (mask, result))
             (mask, result))
         (mask, result)
-    (pure loop_vars) ) : SailME (Result ((BitVec num_elem) × (BitVec num_elem)) Unit)
-    ((BitVec num_elem) × (BitVec num_elem)) )
-  (pure (Ok (result, mask)))
+    (pure loop_vars) ) : SailM ((BitVec num_elem) × (BitVec num_elem)) )
+  (pure (result, mask))
 
 /-- Type quantifiers: LMUL_pow : Int, _EEW : Nat, num_elem : Nat, num_elem ≥ 0, num_elem ≥ 0, _EEW
   ∈ {8, 16, 32, 64} -/
-def init_masked_result_cmp (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : (BitVec num_elem)) (vm_val : (BitVec num_elem)) : SailM (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) := SailME.run do
-  let start_element ← (( do
-    match (← (get_start_element ())) with
-    | .Ok v => (pure v)
-    | .Err () => SailME.throw ((Err ()) : (Result ((BitVec num_elem) × (BitVec num_elem)) Unit)) )
-    : SailME (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) Nat )
+def init_masked_result_cmp (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_val : (BitVec num_elem)) (vm_val : (BitVec num_elem)) : SailM ((BitVec num_elem) × (BitVec num_elem)) := do
+  let start_element ← do (get_start_element ())
   let end_element ← do (get_end_element ())
-  let mask_ag ← (( do (get_vtype_vma ()) ) : SailME
-    (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) agtype )
-  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailME
-    (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) (BitVec num_elem) )
-  let result ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailME
-    (Result ((BitVec num_elem) × (BitVec num_elem)) Unit) (BitVec num_elem) )
+  let mask_ag ← (( do (get_vtype_vma ()) ) : SailM agtype )
+  let mask ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailM (BitVec num_elem) )
+  let result ← (( do (undefined_bitvector (Sail.BitVec.length vm_val)) ) : SailM (BitVec num_elem)
+    )
   let real_num_elem :=
     if ((LMUL_pow ≥b 0) : Bool)
     then num_elem
     else (Int.tdiv num_elem (2 ^i (0 -i LMUL_pow)))
-  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:514.34-514.35"
+  assert (num_elem ≥b real_num_elem) "extensions/V/vext_utils_insts.sail:505.34-505.35"
   let (mask, result) ← (( do
     let loop_i_lower := 0
     let loop_i_upper := (num_elem -i 1)
@@ -671,9 +644,8 @@ def init_masked_result_cmp (num_elem : Nat) (_EEW : Nat) (LMUL_pow : Int) (vd_va
                 (mask, result))
             (mask, result))
         (mask, result)
-    (pure loop_vars) ) : SailME (Result ((BitVec num_elem) × (BitVec num_elem)) Unit)
-    ((BitVec num_elem) × (BitVec num_elem)) )
-  (pure (Ok (result, mask)))
+    (pure loop_vars) ) : SailM ((BitVec num_elem) × (BitVec num_elem)) )
+  (pure (result, mask))
 
 /-- Type quantifiers: num_elem : Nat, num_elem ≥ 0, SEW : Nat, LMUL_pow : Int, nf : Nat, num_elem
   ≥ 0 ∧ is_sew_bitsize(SEW) ∧ nfields_range(nf) -/
@@ -726,7 +698,7 @@ def get_shift_amount (bit_val : (BitVec k_n)) (SEW : Nat) : SailM Nat := do
     | 16 => 4
     | 32 => 5
     | _ => 6
-  assert ((0 <b lowlog2bits) && (lowlog2bits <b (Sail.BitVec.length bit_val))) "extensions/V/vext_utils_insts.sail:576.43-576.44"
+  assert ((0 <b lowlog2bits) && (lowlog2bits <b (Sail.BitVec.length bit_val))) "extensions/V/vext_utils_insts.sail:567.43-567.44"
   (pure (BitVec.toNatInt (Sail.BitVec.extractLsb bit_val (lowlog2bits -i 1) 0)))
 
 /-- Type quantifiers: k_m : Nat, shift_amount : Nat, k_m > 0 ∧ shift_amount ≥ 0 -/
@@ -736,7 +708,7 @@ def get_fixed_rounding_incr (vec_elem : (BitVec k_m)) (shift_amount : Nat) : Sai
   else
     (do
       let rounding_mode ← do (pure (_get_Vcsr_vxrm (← readReg vcsr)))
-      assert (shift_amount <b (Sail.BitVec.length vec_elem)) "extensions/V/vext_utils_insts.sail:587.28-587.29"
+      assert (shift_amount <b (Sail.BitVec.length vec_elem)) "extensions/V/vext_utils_insts.sail:578.28-578.29"
       match rounding_mode with
       | 0b00 => (pure (BitVec.access vec_elem (shift_amount -i 1)))
       | 0b01 =>

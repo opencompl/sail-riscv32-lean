@@ -195,6 +195,7 @@ open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
 open PM_Ext
+open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
@@ -1433,7 +1434,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex924764_ : Bool -/
+/-- Type quantifiers: k_ex924662_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6723,7 +6724,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex927094_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex926992_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -6859,6 +6860,8 @@ def zicfiss_xSSE (priv : Privilege) : SailM Bool := do
         | .User => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ())))))
         | .VirtualUser => (pure (bool_bit_backwards (_get_SEnvcfg_SSE (← (read_senvcfg ()))))))))
 
+def vstart_reserved_behavior : OOBVstartReservedBehavior := Vstart_Illegal
+
 /-- Type quantifiers: EGS : Nat, EGW : Nat, 0 ≤ EGW, EGS > 0 -/
 def zvk_check_encdec (EGW : Nat) (EGS : Nat) : SailM Bool := do
   let LMUL_pow ← do (get_lmul_pow ())
@@ -6866,8 +6869,13 @@ def zvk_check_encdec (EGW : Nat) (EGS : Nat) : SailM Bool := do
     if ((LMUL_pow <b 0) : Bool)
     then (Int.tdiv vlen (2 ^i (Int.natAbs LMUL_pow)))
     else ((2 ^i LMUL_pow) *i vlen)
+  let VLMAX ← do (pure (Int.tdiv LMUL_times_VLEN (← (get_sew ()))))
+  let vstart_in_bounds ← (( do
+    match vstart_reserved_behavior with
+    | .Vstart_Illegal => (pure ((BitVec.toNatInt (← readReg vstart)) <b VLMAX))
+    | .Vstart_Ignore => (pure true) ) : SailM Bool )
   (pure (((Int.tmod (BitVec.toNatInt (← readReg vl)) EGS) == 0) && (← do
-        (pure (((Int.tmod (BitVec.toNatInt (← readReg vstart)) EGS) == 0) && (LMUL_times_VLEN ≥b EGW))))))
+        (pure (((Int.tmod (BitVec.toNatInt (← readReg vstart)) EGS) == 0) && ((LMUL_times_VLEN ≥b EGW) && vstart_in_bounds))))))
 
 def vregidx_bits (app_0 : vregidx) : (BitVec 5) :=
   let .Vregidx b := app_0
@@ -11314,6 +11322,20 @@ def num_of_IllegalVtypeReservedBehavior (arg_ : IllegalVtypeReservedBehavior) : 
   | .IllegalVtype_SetVill => 0
   | .IllegalVtype_Illegal => 1
   | .IllegalVtype_Fatal => 2
+
+def undefined_OOBVstartReservedBehavior (_ : Unit) : SailM OOBVstartReservedBehavior := do
+  (internal_pick [Vstart_Illegal, Vstart_Ignore])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def OOBVstartReservedBehavior_of_num (arg_ : Nat) : OOBVstartReservedBehavior :=
+  match arg_ with
+  | 0 => Vstart_Illegal
+  | _ => Vstart_Ignore
+
+def num_of_OOBVstartReservedBehavior (arg_ : OOBVstartReservedBehavior) : Int :=
+  match arg_ with
+  | .Vstart_Illegal => 0
+  | .Vstart_Ignore => 1
 
 def fcsr_rm_reserved_behavior : FcsrRmReservedBehavior := Fcsr_RM_Illegal
 

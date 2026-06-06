@@ -184,6 +184,7 @@ open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
 open PM_Ext
+open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
@@ -205,8 +206,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex923001_ : Nat, k_ex923001_ ∈ {16, 32, 64, 128} -/
-def float_is_zero (op : (BitVec k_ex923001_)) : Bool :=
+/-- Type quantifiers: k_ex922899_ : Nat, k_ex922899_ ∈ {16, 32, 64, 128} -/
+def float_is_zero (op : (BitVec k_ex922899_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (is_all_zeros mantissa))
 

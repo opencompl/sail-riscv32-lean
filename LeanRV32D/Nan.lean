@@ -184,6 +184,7 @@ open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
 open PM_Ext
+open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
@@ -205,18 +206,18 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex922959_ : Nat, k_ex922959_ ∈ {16, 32, 64, 128} -/
-def float_is_nan (op : (BitVec k_ex922959_)) : Bool :=
+/-- Type quantifiers: k_ex922857_ : Nat, k_ex922857_ ∈ {16, 32, 64, 128} -/
+def float_is_nan (op : (BitVec k_ex922857_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (! (is_all_zeros mantissa)))
 
-/-- Type quantifiers: k_ex922976_ : Nat, k_ex922976_ ∈ {16, 32, 64, 128} -/
-def float_is_snan (op : (BitVec k_ex922976_)) : Bool :=
+/-- Type quantifiers: k_ex922874_ : Nat, k_ex922874_ ∈ {16, 32, 64, 128} -/
+def float_is_snan (op : (BitVec k_ex922874_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_zero mantissa))
 
-/-- Type quantifiers: k_ex922983_ : Nat, k_ex922983_ ∈ {16, 32, 64, 128} -/
-def float_is_qnan (op : (BitVec k_ex922983_)) : Bool :=
+/-- Type quantifiers: k_ex922881_ : Nat, k_ex922881_ ∈ {16, 32, 64, 128} -/
+def float_is_qnan (op : (BitVec k_ex922881_)) : Bool :=
   let { mantissa := mantissa, sign := _, exp := _ } := (float_decompose op)
   ((float_is_nan op) && (is_highest_one mantissa))
 

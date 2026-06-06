@@ -186,6 +186,7 @@ open PmpAddrMatchType
 open PTW_Error
 open PTE_Check
 open PM_Ext
+open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
 open InterruptType
@@ -237,11 +238,11 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 32)
 def redirect_callback (x_0 : (BitVec 32)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex935524_ : Bool -/
+/-- Type quantifiers: k_ex935431_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex935525_ : Bool -/
+/-- Type quantifiers: k_ex935432_ : Bool -/
 def xret_callback (x_0 : Bool) : Unit :=
   ()
 
