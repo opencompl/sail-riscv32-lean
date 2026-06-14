@@ -190,6 +190,7 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
+open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format

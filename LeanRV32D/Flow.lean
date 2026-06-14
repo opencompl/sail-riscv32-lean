@@ -191,6 +191,7 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
+open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
@@ -210,9 +211,20 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex923276_ : Bool, k_ex923275_ : Bool -/
+/-- Type quantifiers: k_ex923514_ : Bool, k_ex923513_ : Bool -/
 def neq_bool (x : Bool) (y : Bool) : Bool :=
   (! (x == y))
+
+def num_of_IsaVersion (arg_ : IsaVersion) : Int :=
+  match arg_ with
+  | .Isa_20191213 => 0
+  | .Isa_Draft_20211102 => 1
+  | .Isa_20211203 => 2
+  | .Isa_20240411 => 3
+  | .Isa_Latest => 4
+
+def isa_version_le (x : IsaVersion) (y : IsaVersion) : Bool :=
+  ((num_of_IsaVersion x) ≤b (num_of_IsaVersion y))
 
 def num_of_AtomicSupport (arg_ : AtomicSupport) : Int :=
   match arg_ with
@@ -238,17 +250,26 @@ def num_of_vector_support (arg_ : vector_support) : Int :=
 def vector_support_le (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) ≤b (num_of_vector_support y))
 
+def isa_version_lt (x : IsaVersion) (y : IsaVersion) : Bool :=
+  ((num_of_IsaVersion x) <b (num_of_IsaVersion y))
+
 def pma_atomicity_support_lt (x : AtomicSupport) (y : AtomicSupport) : Bool :=
   ((num_of_AtomicSupport x) <b (num_of_AtomicSupport y))
 
 def vector_support_lt (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) <b (num_of_vector_support y))
 
+def isa_version_ge (x : IsaVersion) (y : IsaVersion) : Bool :=
+  ((num_of_IsaVersion x) ≥b (num_of_IsaVersion y))
+
 def pma_atomicity_support_ge (x : AtomicSupport) (y : AtomicSupport) : Bool :=
   ((num_of_AtomicSupport x) ≥b (num_of_AtomicSupport y))
 
 def vector_support_ge (x : vector_support) (y : vector_support) : Bool :=
   ((num_of_vector_support x) ≥b (num_of_vector_support y))
+
+def isa_version_gt (x : IsaVersion) (y : IsaVersion) : Bool :=
+  ((num_of_IsaVersion x) >b (num_of_IsaVersion y))
 
 def pma_atomicity_support_gt (x : AtomicSupport) (y : AtomicSupport) : Bool :=
   ((num_of_AtomicSupport x) >b (num_of_AtomicSupport y))

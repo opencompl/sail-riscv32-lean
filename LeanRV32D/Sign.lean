@@ -187,6 +187,7 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
+open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
@@ -206,11 +207,11 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex924240_ : Nat, k_ex924240_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex924240_)) : Bool :=
+/-- Type quantifiers: k_ex924511_ : Nat, k_ex924511_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex924511_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex924242_ : Nat, k_ex924242_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex924242_)) : Bool :=
+/-- Type quantifiers: k_ex924513_ : Nat, k_ex924513_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex924513_)) : Bool :=
   (is_highest_one op)
 

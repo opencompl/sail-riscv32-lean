@@ -191,6 +191,7 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
+open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
@@ -241,8 +242,8 @@ def num_of_float_class (arg_ : float_class) : Int :=
   | .float_class_snan => 8
   | .float_class_qnan => 9
 
-/-- Type quantifiers: k_ex924645_ : Nat, k_ex924645_ ∈ {16, 32, 64, 128} -/
-def float_classify (f : (BitVec k_ex924645_)) : SailM float_class := do
+/-- Type quantifiers: k_ex924916_ : Nat, k_ex924916_ ∈ {16, 32, 64, 128} -/
+def float_classify (f : (BitVec k_ex924916_)) : SailM float_class := do
   if ((float_is_snan f) : Bool)
   then (pure float_class_snan)
   else

@@ -187,6 +187,7 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
+open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
@@ -206,13 +207,13 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex924251_ : Nat, k_ex924251_ ∈ {16, 32, 64, 128} -/
-def float_is_normal (op : (BitVec k_ex924251_)) : Bool :=
+/-- Type quantifiers: k_ex924522_ : Nat, k_ex924522_ ∈ {16, 32, 64, 128} -/
+def float_is_normal (op : (BitVec k_ex924522_)) : Bool :=
   let { exp := exp, sign := _, mantissa := _ } := (float_decompose op)
   ((! (is_all_ones exp)) && (! (is_all_zeros exp)))
 
-/-- Type quantifiers: k_ex924269_ : Nat, k_ex924269_ ∈ {16, 32, 64, 128} -/
-def float_is_subnormal (op : (BitVec k_ex924269_)) : Bool :=
+/-- Type quantifiers: k_ex924540_ : Nat, k_ex924540_ ∈ {16, 32, 64, 128} -/
+def float_is_subnormal (op : (BitVec k_ex924540_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_zeros exp) && (! (is_all_zeros mantissa)))
 

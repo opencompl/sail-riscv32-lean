@@ -18,6 +18,10 @@ inductive option (k_a : Type) where
 
 abbrev bit := (BitVec 1)
 
+inductive IsaVersion where | Isa_20191213 | Isa_Draft_20211102 | Isa_20211203 | Isa_20240411 | Isa_Latest
+  deriving BEq, Inhabited, Repr
+  open IsaVersion
+
 inductive AtomicSupport where | AMONone | AMOSwap | AMOLogical | AMOArithmetic | AMOCASW | AMOCASD | AMOCASQ
   deriving BEq, Inhabited, Repr
   open AtomicSupport
