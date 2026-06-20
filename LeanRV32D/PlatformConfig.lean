@@ -1435,7 +1435,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex926279_ : Bool -/
+/-- Type quantifiers: k_ex926331_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6725,7 +6725,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex928609_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex928661_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 

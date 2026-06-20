@@ -741,25 +741,31 @@ def unsigned_saturation (len : Nat) (elem : (BitVec k_n)) : SailM (BitVec len) :
   if (((BitVec.toNatInt elem) >b (BitVec.toNatInt (ones (n := len)))) : Bool)
   then
     (do
-      writeReg vcsr (Sail.BitVec.updateSubrange (← readReg vcsr) 0 0 1#1)
+      (write_vxsat 1#1)
       (pure (ones (n := len))))
-  else (pure (Sail.BitVec.extractLsb elem (len -i 1) 0))
+  else
+    (do
+      (write_vxsat (_get_Vcsr_vxsat (← readReg vcsr)))
+      (pure (Sail.BitVec.extractLsb elem (len -i 1) 0)))
 
 /-- Type quantifiers: len : Nat, k_n : Nat, k_n ≥ len ∧ len > 1 -/
 def signed_saturation (len : Nat) (elem : (BitVec k_n)) : SailM (BitVec len) := do
   if (((BitVec.toInt elem) >b (BitVec.toInt (0#1 +++ (ones (n := (len -i 1)))))) : Bool)
   then
     (do
-      writeReg vcsr (Sail.BitVec.updateSubrange (← readReg vcsr) 0 0 1#1)
+      (write_vxsat 1#1)
       (pure (0#1 +++ (ones (n := (len -i 1))))))
   else
     (do
       if (((BitVec.toInt elem) <b (BitVec.toInt (1#1 +++ (zeros (n := (len -i 1)))))) : Bool)
       then
         (do
-          writeReg vcsr (Sail.BitVec.updateSubrange (← readReg vcsr) 0 0 1#1)
+          (write_vxsat 1#1)
           (pure (1#1 +++ (zeros (n := (len -i 1))))))
-      else (pure (Sail.BitVec.extractLsb elem (len -i 1) 0)))
+      else
+        (do
+          (write_vxsat (_get_Vcsr_vxsat (← readReg vcsr)))
+          (pure (Sail.BitVec.extractLsb elem (len -i 1) 0))))
 
 /-- Type quantifiers: k_n : Nat, k_n ≥ 0, _m : Nat, _m ≥ 0, k_n ≥ 0 ∧ _m ≥ 0 -/
 def vrev8 {_m : _} (input : (Vector (BitVec (_m * 8)) k_n)) : (Vector (BitVec (_m * 8)) k_n) := Id.run do
