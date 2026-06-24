@@ -286,28 +286,28 @@ def is_shadow_stack_access (access : (MemoryAccessType mem_payload)) : SailM Boo
   match access with
   | .Load .ShadowStack => (pure true)
   | .Store .ShadowStack => (pure true)
-  | .Atomic (_, .ShadowStack, .ShadowStack) => (pure true)
+  | .Atomic (_, _, _, .ShadowStack, .ShadowStack) => (pure true)
   | .InstructionFetch () => (pure false)
   | .Load .Data => (pure false)
   | .Load .Vector => (pure false)
   | .Load .PageTableEntry => (pure false)
-  | .LoadReserved .Data => (pure false)
+  | .LoadReserved (_, _, .Data) => (pure false)
   | .Store .Data => (pure false)
   | .Store .Vector => (pure false)
   | .Store .PageTableEntry => (pure false)
-  | .StoreConditional .Data => (pure false)
-  | .Atomic (_, .Data, .Data) => (pure false)
+  | .StoreConditional (_, _, .Data) => (pure false)
+  | .Atomic (_, _, _, .Data, .Data) => (pure false)
   | .CacheAccess _ => (pure false)
-  | .LoadReserved p =>
-    (internal_error "core/vmem_types.sail" 86
-      (HAppend.hAppend "Invalid payload ("
-        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
-  | .StoreConditional p =>
+  | .LoadReserved (_, _, p) =>
     (internal_error "core/vmem_types.sail" 87
       (HAppend.hAppend "Invalid payload ("
-        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
-  | .Atomic (_, rp, wp) =>
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+  | .StoreConditional (_, _, p) =>
     (internal_error "core/vmem_types.sail" 88
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+  | .Atomic (_, _, _, rp, wp) =>
+    (internal_error "core/vmem_types.sail" 89
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_name_forwards wp) ") for Atomic.")))))
@@ -319,7 +319,7 @@ def is_amo_access (access : (MemoryAccessType mem_payload)) : Bool :=
 
 def is_shadow_stack_amo (access : (MemoryAccessType mem_payload)) : Bool :=
   match access with
-  | .Atomic (_, .ShadowStack, .ShadowStack) => true
+  | .Atomic (_, _, _, .ShadowStack, .ShadowStack) => true
   | _ => false
 
 def is_vector_access (access : (MemoryAccessType mem_payload)) : Bool :=

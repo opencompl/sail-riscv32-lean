@@ -280,7 +280,7 @@ def pte_is_invalid (pte_flags : (BitVec 8)) (pte_ext : (BitVec 10)) : SailM Bool
                       (← (currentlyEnabled Ext_Svrsw60t59b)))) || ((_get_PTE_Ext_reserved pte_ext) != (zeros
                       (n := 5)))))))))))
 
-/-- Type quantifiers: k_ex945695_ : Bool, k_ex945694_ : Bool -/
+/-- Type quantifiers: k_ex946739_ : Bool, k_ex946738_ : Bool -/
 def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privilege) (mxr : Bool) (do_sum : Bool) (pte_flags : (BitVec 8)) (_ext : (BitVec 10)) (_ext_ptw : Unit) : SailM PTE_Check := SailME.run do
   let pte_U := (bit_to_bool (_get_PTE_Flags_U pte_flags))
   let pte_R := (bit_to_bool (_get_PTE_Flags_R pte_flags))
@@ -312,23 +312,23 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
             | .Load .Data => (pure true)
             | .Load .Vector => (pure true)
             | .Load .ShadowStack => (pure true)
-            | .LoadReserved .Data => (pure true)
+            | .LoadReserved (_, _, .Data) => (pure true)
             | .Store .Data => (pure false)
             | .Store .Vector => (pure false)
-            | .StoreConditional .Data => (pure false)
-            | .Atomic (_, .Data, .Data) => (pure false)
+            | .StoreConditional (_, _, .Data) => (pure false)
+            | .Atomic (_, _, _, .Data, .Data) => (pure false)
             | .Store .ShadowStack => (pure true)
-            | .Atomic (_, .ShadowStack, .ShadowStack) => (pure true)
+            | .Atomic (_, _, _, .ShadowStack, .ShadowStack) => (pure true)
             | .CacheAccess _ => (pure false)
-            | .LoadReserved p =>
+            | .LoadReserved (_, _, p) =>
               (internal_error "sys/vmem_pte.sail" 191
                 (HAppend.hAppend "Invalid payload ("
                   (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
-            | .StoreConditional p =>
+            | .StoreConditional (_, _, p) =>
               (internal_error "sys/vmem_pte.sail" 192
                 (HAppend.hAppend "Invalid payload ("
                   (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
-            | .Atomic (_, rp, wp) =>
+            | .Atomic (_, _, _, rp, wp) =>
               (internal_error "sys/vmem_pte.sail" 193
                 (HAppend.hAppend "Invalid payloads ("
                   (HAppend.hAppend (mem_payload_name_forwards rp)
@@ -355,7 +355,7 @@ def check_PTE_permission (access : (MemoryAccessType mem_payload)) (priv : Privi
         | .LoadReserved _ => pte_R
         | .Store _ => pte_W
         | .StoreConditional _ => pte_W
-        | .Atomic (_, _, _) => (pte_W && pte_R)
+        | .Atomic _ => (pte_W && pte_R)
         | .InstructionFetch _ => pte_X
         | .CacheAccess (.CB_zero ()) => pte_W
         | .CacheAccess (.CB_prefetch p) =>
@@ -378,7 +378,7 @@ def update_PTE_Bits (pte : (BitVec k_pte_size)) (access : (MemoryAccessType mem_
       | .LoadReserved _ => false
       | .Store _ => true
       | .StoreConditional _ => true
-      | .Atomic (_, _, _) => true
+      | .Atomic _ => true
       | .CacheAccess (.CB_manage _) => false
       | .CacheAccess (.CB_zero ()) => true
       | .CacheAccess (.CB_prefetch _) => false : Bool))

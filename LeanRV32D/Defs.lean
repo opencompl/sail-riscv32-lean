@@ -209,9 +209,9 @@ inductive cacheop where
 inductive MemoryAccessType (k_a : Type) where
   | Load (_ : k_a)
   | Store (_ : k_a)
-  | LoadReserved (_ : k_a)
-  | StoreConditional (_ : k_a)
-  | Atomic (_ : (amoop × k_a × k_a))
+  | LoadReserved (_ : (Bool × Bool × k_a))
+  | StoreConditional (_ : (Bool × Bool × k_a))
+  | Atomic (_ : (amoop × Bool × Bool × k_a × k_a))
   | InstructionFetch (_ : Unit)
   | CacheAccess (_ : cacheop)
   deriving Inhabited, BEq, Repr

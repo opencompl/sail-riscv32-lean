@@ -215,25 +215,25 @@ def accessFaultFromAccessType (access : (MemoryAccessType mem_payload)) : SailM 
   | .Load .Data => (pure (E_Load_Access_Fault ()))
   | .Load .Vector => (pure (E_Load_Access_Fault ()))
   | .Load .PageTableEntry => (pure (E_Load_Access_Fault ()))
-  | .LoadReserved .Data => (pure (E_Load_Access_Fault ()))
+  | .LoadReserved (_, _, .Data) => (pure (E_Load_Access_Fault ()))
   | .Store .Data => (pure (E_SAMO_Access_Fault ()))
   | .Store .Vector => (pure (E_SAMO_Access_Fault ()))
   | .Store .PageTableEntry => (pure (E_SAMO_Access_Fault ()))
-  | .StoreConditional .Data => (pure (E_SAMO_Access_Fault ()))
-  | .Atomic (_, .Data, .Data) => (pure (E_SAMO_Access_Fault ()))
+  | .StoreConditional (_, _, .Data) => (pure (E_SAMO_Access_Fault ()))
+  | .Atomic (_, _, _, .Data, .Data) => (pure (E_SAMO_Access_Fault ()))
   | .Load .ShadowStack => (pure (E_SAMO_Access_Fault ()))
   | .Store .ShadowStack => (pure (E_SAMO_Access_Fault ()))
-  | .Atomic (_, .ShadowStack, .ShadowStack) => (pure (E_SAMO_Access_Fault ()))
-  | .LoadReserved p =>
-    (internal_error "core/mem_type_utils.sail" 30
-      (HAppend.hAppend "Invalid payload ("
-        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
-  | .StoreConditional p =>
+  | .Atomic (_, _, _, .ShadowStack, .ShadowStack) => (pure (E_SAMO_Access_Fault ()))
+  | .LoadReserved (_, _, p) =>
     (internal_error "core/mem_type_utils.sail" 31
       (HAppend.hAppend "Invalid payload ("
-        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
-  | .Atomic (_, rp, wp) =>
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
+  | .StoreConditional (_, _, p) =>
     (internal_error "core/mem_type_utils.sail" 32
+      (HAppend.hAppend "Invalid payload ("
+        (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
+  | .Atomic (_, _, _, rp, wp) =>
+    (internal_error "core/mem_type_utils.sail" 33
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))
@@ -251,25 +251,25 @@ def alignmentFaultFromAccessType (access : (MemoryAccessType mem_payload)) : Sai
   | .Load .Data => (pure (E_Load_Addr_Align ()))
   | .Load .Vector => (pure (E_Load_Addr_Align ()))
   | .Load .PageTableEntry => (pure (E_Load_Addr_Align ()))
-  | .LoadReserved .Data => (pure (E_Load_Addr_Align ()))
+  | .LoadReserved (_, _, .Data) => (pure (E_Load_Addr_Align ()))
   | .Store .Data => (pure (E_SAMO_Addr_Align ()))
   | .Store .Vector => (pure (E_SAMO_Addr_Align ()))
   | .Store .PageTableEntry => (pure (E_SAMO_Addr_Align ()))
-  | .StoreConditional .Data => (pure (E_SAMO_Addr_Align ()))
-  | .Atomic (_, .Data, .Data) => (pure (E_SAMO_Addr_Align ()))
+  | .StoreConditional (_, _, .Data) => (pure (E_SAMO_Addr_Align ()))
+  | .Atomic (_, _, _, .Data, .Data) => (pure (E_SAMO_Addr_Align ()))
   | .Load .ShadowStack => (pure (E_SAMO_Addr_Align ()))
   | .Store .ShadowStack => (pure (E_SAMO_Addr_Align ()))
-  | .Atomic (_, .ShadowStack, .ShadowStack) => (pure (E_SAMO_Addr_Align ()))
-  | .LoadReserved p =>
-    (internal_error "core/mem_type_utils.sail" 70
+  | .Atomic (_, _, _, .ShadowStack, .ShadowStack) => (pure (E_SAMO_Addr_Align ()))
+  | .LoadReserved (_, _, p) =>
+    (internal_error "core/mem_type_utils.sail" 72
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
-  | .StoreConditional p =>
-    (internal_error "core/mem_type_utils.sail" 71
+  | .StoreConditional (_, _, p) =>
+    (internal_error "core/mem_type_utils.sail" 73
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
-  | .Atomic (_, rp, wp) =>
-    (internal_error "core/mem_type_utils.sail" 72
+  | .Atomic (_, _, _, rp, wp) =>
+    (internal_error "core/mem_type_utils.sail" 74
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)
           (HAppend.hAppend ", " (HAppend.hAppend (mem_payload_str_forwards wp) ") for Atomic.")))))

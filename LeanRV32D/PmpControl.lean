@@ -219,29 +219,29 @@ def pmpCheckRWX (ent : (BitVec 8)) (access : (MemoryAccessType mem_payload)) : S
   | .Load .Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
   | .Load .Vector => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
   | .Load .PageTableEntry => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
-  | .LoadReserved .Data => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
+  | .LoadReserved (_, _, .Data) => (pure ((_get_Pmpcfg_ent_R ent) == 1#1))
   | .Store .Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
   | .Store .Vector => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
   | .Store .PageTableEntry => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .StoreConditional .Data => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
-  | .Atomic (_, .Data, .Data) =>
+  | .StoreConditional (_, _, .Data) => (pure ((_get_Pmpcfg_ent_W ent) == 1#1))
+  | .Atomic (_, _, _, .Data, .Data) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
   | .InstructionFetch () => (pure ((_get_Pmpcfg_ent_X ent) == 1#1))
   | .Load .ShadowStack =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
   | .Store .ShadowStack =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .Atomic (_, .ShadowStack, .ShadowStack) =>
+  | .Atomic (_, _, _, .ShadowStack, .ShadowStack) =>
     (pure (((_get_Pmpcfg_ent_R ent) == 1#1) && ((_get_Pmpcfg_ent_W ent) == 1#1)))
-  | .LoadReserved p =>
+  | .LoadReserved (_, _, p) =>
     (internal_error "pmp/pmp_control.sail" 32
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for LoadReserved.")))
-  | .StoreConditional p =>
+  | .StoreConditional (_, _, p) =>
     (internal_error "pmp/pmp_control.sail" 33
       (HAppend.hAppend "Invalid payload ("
         (HAppend.hAppend (mem_payload_name_forwards p) ") for StoreConditional.")))
-  | .Atomic (_, rp, wp) =>
+  | .Atomic (_, _, _, rp, wp) =>
     (internal_error "pmp/pmp_control.sail" 34
       (HAppend.hAppend "Invalid payloads ("
         (HAppend.hAppend (mem_payload_name_forwards rp)

@@ -331,14 +331,14 @@ def pma_misaligned_exception (pma : PMA) (access : (MemoryAccessType mem_payload
   | .Store .ShadowStack => (pure exceptions.load_store)
   | .Load .Vector => (pure exceptions.vector)
   | .Store .Vector => (pure exceptions.vector)
-  | .Atomic (_, _, _) => (pure (some exceptions.amo))
+  | .Atomic _ => (pure (some exceptions.amo))
   | .InstructionFetch () =>
     (internal_error "sys/pma.sail" 153 "PMA: Invalid misaligned instruction fetch.")
-  | .LoadReserved p =>
+  | .LoadReserved (_, _, p) =>
     (internal_error "sys/pma.sail" 154
       (HAppend.hAppend "PMA: Invalid misaligned load-reserved ("
         (HAppend.hAppend (mem_payload_name_forwards p) ").")))
-  | .StoreConditional p =>
+  | .StoreConditional (_, _, p) =>
     (internal_error "sys/pma.sail" 155
       (HAppend.hAppend "PMA: Invalid misaligned store-conditional ("
         (HAppend.hAppend (mem_payload_name_forwards p) ").")))
