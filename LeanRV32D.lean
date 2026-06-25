@@ -27,11 +27,15 @@ set_option linter.unusedVariables false
 set_option match.ignoreUnusedAlts true
 
 open Sail
-open ConcurrencyInterfaceV1
+open Sail.ConcurrencyInterfaceV1
 
 noncomputable section
+namespace LeanRV32D
 
-namespace LeanRV32D.Functions
+open ConcurrencyInterfaceV1
+
+open Defs
+namespace Functions
 
 open zvk_vsm4r_funct6
 open zvk_vsha2_funct6
@@ -471,7 +475,9 @@ def sail_model_init (x_0 : Unit) : SailM Unit := do
 
 end LeanRV32D.Functions
 
+open LeanRV32D
 open LeanRV32D.Functions
+open Defs
 
 def main (_ : List String) : IO UInt32 := do
   main_of_sail_main ⟨default, (), default, default, default, default⟩ (sail_model_init >=> sail_main)

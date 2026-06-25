@@ -7,7 +7,12 @@ set_option linter.unusedVariables false
 set_option match.ignoreUnusedAlts true
 
 open Sail
-open ConcurrencyInterfaceV1
+open Sail.ConcurrencyInterfaceV1
+
+noncomputable section
+namespace LeanRV32D
+
+namespace Defs
 
 /-- Type quantifiers: k_a : Type -/
 inductive option (k_a : Type) where
