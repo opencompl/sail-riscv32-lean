@@ -1470,6 +1470,8 @@ abbrev MemoryOpResult k_a := (Result k_a ExceptionType)
 
 abbrev htif_cmd := (BitVec 64)
 
+
+
 abbrev pte_flags_bits := (BitVec 8)
 
 abbrev pte_ext_bits := (BitVec 10)
@@ -1539,8 +1541,6 @@ inductive ExecutionResult where
   | Ext_XRET_Priv_Failure (_ : Unit)
   deriving Inhabited, Repr
   open ExecutionResult
-
-
 
 inductive seed_opst where | BIST | ES16 | WAIT | DEAD
   deriving BEq, Inhabited, Repr

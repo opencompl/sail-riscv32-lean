@@ -3,6 +3,7 @@ import LeanRV32D.Prelude
 import LeanRV32D.PlatformConfig
 import LeanRV32D.Regs
 import LeanRV32D.AddrChecks
+import LeanRV32D.SplitAccessUtils
 import LeanRV32D.Mem
 import LeanRV32D.Vmem
 import LeanRV32D.FetchRvfi

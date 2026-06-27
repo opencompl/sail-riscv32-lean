@@ -1,4 +1,5 @@
-import LeanRV32D.Common
+import LeanRV32D.MemAddrtype
+import LeanRV32D.MemUtils
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
@@ -211,8 +212,42 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex928281_ : Nat, k_ex928281_ ∈ {16, 32, 64, 128} -/
-def float_is_inf (op : (BitVec k_ex928281_)) : Bool :=
-  let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
-  ((is_all_ones exp) && (is_all_zeros mantissa))
+/-- Type quantifiers: width : Nat, width > 0 -/
+def is_aligned_paddr (typ_0 : physaddr) (width : Nat) : Bool :=
+  let .Physaddr addr : physaddr := typ_0
+  ((Int.tmod (BitVec.toNatInt addr) width) == 0)
+
+/-- Type quantifiers: width : Nat, width > 0 -/
+def is_aligned_vaddr (typ_0 : virtaddr) (width : Nat) : Bool :=
+  let .Virtaddr addr : virtaddr := typ_0
+  ((Int.tmod (BitVec.toNatInt addr) width) == 0)
+
+def sys_misaligned_order_decreasing : Bool := false
+
+def sys_misaligned_byte_by_byte : Bool := false
+
+def sys_misaligned_allowed_within_exp : Nat := 0
+
+/-- Type quantifiers: width : Nat, is_mem_width(width) -/
+def split_misaligned (vaddr : virtaddr) (width : Nat) : SailM (Int × Int) := do
+  let vaddr_bits := (bits_of_virtaddr vaddr)
+  if (((is_aligned_vaddr vaddr width) || (allowed_misaligned vaddr_bits width
+         sys_misaligned_allowed_within_exp)) : Bool)
+  then (pure (1, width))
+  else
+    (do
+      if (sys_misaligned_byte_by_byte : Bool)
+      then (pure (width, 1))
+      else
+        (do
+          let bytes_per_access := (2 ^i (BitVec.countTrailingZeros vaddr_bits))
+          let num_accesses := (Int.tdiv width bytes_per_access)
+          assert (width == (num_accesses *i bytes_per_access)) "sys/split_access_utils.sail:60.51-60.52"
+          (pure (num_accesses, bytes_per_access))))
+
+/-- Type quantifiers: n : Int -/
+def misaligned_order (n : Int) : (Int × Int × Int) :=
+  if (sys_misaligned_order_decreasing : Bool)
+  then ((n -i 1), 0, (Neg.neg 1))
+  else (0, (n -i 1), 1)
 
