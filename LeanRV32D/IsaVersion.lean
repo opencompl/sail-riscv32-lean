@@ -227,3 +227,5 @@ def isa_version : IsaVersion := Isa_Latest
 
 def pte_reserved_bits_must_be_zero := (isa_version_ge isa_version Isa_Draft_20211102)
 
+def xenvcfg_csrs_are_defined := (isa_version_ge isa_version Isa_20211203)
+

@@ -1,6 +1,7 @@
 import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Errors
+import LeanRV32D.IsaVersion
 import LeanRV32D.Xlen
 import LeanRV32D.PlatformConfig
 import LeanRV32D.Types
@@ -302,9 +303,10 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
               Ext_Smmpm)))))
   | (0x757, g__32, g__33) =>
     (pure (((← (currentlyEnabled Ext_Zkr)) || (hartSupports Ext_Zicfilp)) && (xlen == 32)))
-  | (0x30A, g__34, g__35) => (currentlyEnabled Ext_U)
-  | (0x31A, g__36, g__37) => (pure ((← (currentlyEnabled Ext_U)) && (xlen == 32)))
-  | (0x10A, g__38, g__39) => (currentlyEnabled Ext_S)
+  | (0x30A, g__34, g__35) => (pure ((← (currentlyEnabled Ext_U)) && xenvcfg_csrs_are_defined))
+  | (0x31A, g__36, g__37) =>
+    (pure ((← (currentlyEnabled Ext_U)) && ((xlen == 32) && xenvcfg_csrs_are_defined)))
+  | (0x10A, g__38, g__39) => (pure ((← (currentlyEnabled Ext_S)) && xenvcfg_csrs_are_defined))
   | (0x342, g__40, g__41) => (pure true)
   | (0x343, g__42, g__43) => (pure true)
   | (0x340, g__44, g__45) => (pure true)
@@ -616,7 +618,7 @@ def tval (excinfo : (Option (BitVec 32))) : (BitVec 32) :=
   | .some e => e
   | none => (zeros (n := 32))
 
-/-- Type quantifiers: k_ex930256_ : Bool -/
+/-- Type quantifiers: k_ex930334_ : Bool -/
 def track_trap (p : Privilege) (is_interrupt : Bool) (cause : (BitVec 6)) : SailM Unit := do
   (long_csr_write_callback "mstatus" "mstatush" (← readReg mstatus))
   match p with
