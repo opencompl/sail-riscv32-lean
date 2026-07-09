@@ -423,7 +423,7 @@ def legalize_mie (o : (BitVec 32)) (v : (BitVec 32)) : SailM (BitVec 32) := do
         else (pure 0#1))))
 
 def legalize_mideleg (o : (BitVec 32)) (v : (BitVec 32)) : SailM (BitVec 32) := do
-  let v := (Mk_Minterrupts v)
+  let v := (Mk_Minterrupts (v &&& plat_mideleg_delegatable_bits))
   (pure (_update_Minterrupts_SSI
       (_update_Minterrupts_STI
         (_update_Minterrupts_SEI
@@ -595,7 +595,7 @@ def _set_Medeleg_UEnvCall (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) :
   writeRegRef r_ref (_update_Medeleg_UEnvCall r v)
 
 def legalize_medeleg (_o : (BitVec 64)) (v : (BitVec 64)) : (BitVec 64) :=
-  (_update_Medeleg_MEnvCall (Mk_Medeleg v) 0#1)
+  (_update_Medeleg_MEnvCall (Mk_Medeleg (v &&& plat_medeleg_delegatable_bits)) 0#1)
 
 def undefined_XipReadType (_ : Unit) : SailM XipReadType := do
   (internal_pick [IncludePlatformInterrupts, ExcludePlatformInterrupts])

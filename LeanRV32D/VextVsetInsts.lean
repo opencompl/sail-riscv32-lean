@@ -339,7 +339,7 @@ def calculate_new_vl (AVL : (BitVec 32)) (VLMAX : Nat) : Nat :=
       else VLMAX)
     else VLMAX)
 
-/-- Type quantifiers: k_ex930620_ : Bool -/
+/-- Type quantifiers: k_ex931190_ : Bool -/
 def execute_vsetvl_type (ma : (BitVec 1)) (ta : (BitVec 1)) (sew : (BitVec 3)) (lmul : (BitVec 3)) (avl : (BitVec 32)) (requires_fixed_vlmax : Bool) (rd : regidx) : SailM ExecutionResult := do
   if (((is_invalid_lmul_pow lmul) || (is_invalid_sew_pow sew)) : Bool)
   then (handle_illegal_vtype rd)
@@ -349,8 +349,8 @@ def execute_vsetvl_type (ma : (BitVec 1)) (ta : (BitVec 1)) (sew : (BitVec 3)) (
       let SEW_pow_new := ((BitVec.toNatInt sew) +i 3)
       let lmul_sew_ratio ← do (pure ((← (get_lmul_pow ())) -i (← (get_sew_pow ()))))
       let lmul_sew_ratio_new := (LMUL_pow_new -i SEW_pow_new)
-      if (((SEW_pow_new >b (LMUL_pow_new +i elen_exp)) || (requires_fixed_vlmax && ((lmul_sew_ratio != lmul_sew_ratio_new) || (not
-                 (← (valid_vtype ())))))) : Bool)
+      if (((SEW_pow_new >b elen_exp) || ((SEW_pow_new >b (LMUL_pow_new +i elen_exp)) || (requires_fixed_vlmax && ((lmul_sew_ratio != lmul_sew_ratio_new) || (not
+                   (← (valid_vtype ()))))))) : Bool)
       then (handle_illegal_vtype rd)
       else
         (do
