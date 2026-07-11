@@ -193,6 +193,7 @@ open SATPMode
 open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
+open Privileged_ISA_Version
 open Privilege
 open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
@@ -203,11 +204,11 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
-open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
+open FflagsDirtyPolicy
 open FetchResult
 open FetchBytes_Result
 open FeatureEnabledResult
@@ -1445,7 +1446,7 @@ def itype_mnemonic_forwards (arg_ : iop) : String :=
   | .ORI => "ori"
   | .ANDI => "andi"
 
-/-- Type quantifiers: k_ex929292_ : Bool -/
+/-- Type quantifiers: k_ex929325_ : Bool -/
 def maybe_u_forwards (arg_ : Bool) : String :=
   match arg_ with
   | true => "u"
@@ -6735,7 +6736,7 @@ def validDoubleRegs {n : _} (regs : (Vector fregidx n)) : SailM Bool := SailME.r
   else (pure ())
   (pure true)
 
-/-- Type quantifiers: k_ex930674_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
+/-- Type quantifiers: k_ex930707_ : Bool, width : Nat, width ∈ {1, 2, 4, 8} -/
 def valid_load_encdec (width : Nat) (is_unsigned : Bool) : Bool :=
   ((width <b xlen_bytes) || ((not is_unsigned) && (width ≤b xlen_bytes)))
 
@@ -11355,4 +11356,22 @@ def pmp_write_only_reserved_behavior : PmpWriteOnlyReservedBehavior := PMP_Clear
 def xtvec_mode_reserved_behavior : XtvecModeReservedBehavior := Xtvec_Ignore
 
 def illegal_vtype_reserved_behavior : IllegalVtypeReservedBehavior := IllegalVtype_SetVill
+
+def undefined_FflagsDirtyPolicy (_ : Unit) : SailM FflagsDirtyPolicy := do
+  (internal_pick [Fflags_Dirty_Precise, Fflags_Dirty_Flag, Fflags_Dirty_Instruction])
+
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
+def FflagsDirtyPolicy_of_num (arg_ : Nat) : FflagsDirtyPolicy :=
+  match arg_ with
+  | 0 => Fflags_Dirty_Precise
+  | 1 => Fflags_Dirty_Flag
+  | _ => Fflags_Dirty_Instruction
+
+def num_of_FflagsDirtyPolicy (arg_ : FflagsDirtyPolicy) : Int :=
+  match arg_ with
+  | .Fflags_Dirty_Precise => 0
+  | .Fflags_Dirty_Flag => 1
+  | .Fflags_Dirty_Instruction => 2
+
+def fflags_dirty_policy : FflagsDirtyPolicy := Fflags_Dirty_Precise
 

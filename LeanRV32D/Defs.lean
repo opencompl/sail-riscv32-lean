@@ -23,13 +23,13 @@ inductive option (k_a : Type) where
 
 abbrev bit := (BitVec 1)
 
-inductive IsaVersion where | Isa_20191213 | Isa_Draft_20211102 | Isa_20211203 | Isa_20240411 | Isa_Latest
-  deriving BEq, Inhabited, Repr
-  open IsaVersion
-
 inductive AtomicSupport where | AMONone | AMOSwap | AMOLogical | AMOArithmetic | AMOCASW | AMOCASD | AMOCASQ
   deriving BEq, Inhabited, Repr
   open AtomicSupport
+
+inductive Privileged_ISA_Version where | Privileged_ISA_1_11 | Privileged_ISA_1_12 | Privileged_ISA_1_13
+  deriving BEq, Inhabited, Repr
+  open Privileged_ISA_Version
 
 inductive vector_support where | Disabled | Integer | Float_single | Float_double | Full
   deriving BEq, Inhabited, Repr
@@ -1262,6 +1262,10 @@ inductive XtvecModeReservedBehavior where | Xtvec_Fatal | Xtvec_Ignore
 inductive IllegalVtypeReservedBehavior where | IllegalVtype_SetVill | IllegalVtype_Illegal | IllegalVtype_Fatal
   deriving BEq, Inhabited, Repr
   open IllegalVtypeReservedBehavior
+
+inductive FflagsDirtyPolicy where | Fflags_Dirty_Precise | Fflags_Dirty_Flag | Fflags_Dirty_Instruction
+  deriving BEq, Inhabited, Repr
+  open FflagsDirtyPolicy
 
 abbrev exc_code := (BitVec 6)
 

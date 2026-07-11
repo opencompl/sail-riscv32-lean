@@ -181,6 +181,7 @@ open SATPMode
 open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
+open Privileged_ISA_Version
 open Privilege
 open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
@@ -191,11 +192,11 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
-open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
+open FflagsDirtyPolicy
 open FetchResult
 open FetchBytes_Result
 open FeatureEnabledResult
@@ -211,21 +212,20 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def undefined_IsaVersion (_ : Unit) : SailM IsaVersion := do
-  (internal_pick [Isa_20191213, Isa_Draft_20211102, Isa_20211203, Isa_20240411, Isa_Latest])
+def undefined_Privileged_ISA_Version (_ : Unit) : SailM Privileged_ISA_Version := do
+  (internal_pick [Privileged_ISA_1_11, Privileged_ISA_1_12, Privileged_ISA_1_13])
 
-/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 4 -/
-def IsaVersion_of_num (arg_ : Nat) : IsaVersion :=
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 2 -/
+def Privileged_ISA_Version_of_num (arg_ : Nat) : Privileged_ISA_Version :=
   match arg_ with
-  | 0 => Isa_20191213
-  | 1 => Isa_Draft_20211102
-  | 2 => Isa_20211203
-  | 3 => Isa_20240411
-  | _ => Isa_Latest
+  | 0 => Privileged_ISA_1_11
+  | 1 => Privileged_ISA_1_12
+  | _ => Privileged_ISA_1_13
 
-def isa_version : IsaVersion := Isa_Latest
+def priv_isa_version : Privileged_ISA_Version := Privileged_ISA_1_13
 
-def pte_reserved_bits_must_be_zero := (isa_version_ge isa_version Isa_Draft_20211102)
+def pte_reserved_bits_must_be_zero :=
+  (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
 
-def xenvcfg_csrs_are_defined := (isa_version_ge isa_version Isa_20211203)
+def xenvcfg_csrs_are_defined := (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
 

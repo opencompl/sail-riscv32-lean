@@ -183,6 +183,7 @@ open SATPMode
 open Reservability
 open Register
 open RV32ZdinxOddRegisterReservedBehavior
+open Privileged_ISA_Version
 open Privilege
 open PointerMaskingMode
 open PmpWriteOnlyReservedBehavior
@@ -193,11 +194,11 @@ open PM_Ext
 open OOBVstartReservedBehavior
 open MemoryRegionType
 open MemoryAccessType
-open IsaVersion
 open InterruptType
 open IllegalVtypeReservedBehavior
 open ISA_Format
 open HartState
+open FflagsDirtyPolicy
 open FetchResult
 open FetchBytes_Result
 open FeatureEnabledResult
@@ -243,11 +244,11 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 32)
 def redirect_callback (x_0 : (BitVec 32)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex930762_ : Bool -/
+/-- Type quantifiers: k_ex930795_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex930763_ : Bool -/
+/-- Type quantifiers: k_ex930796_ : Bool -/
 def xret_callback (x_0 : Bool) : Unit :=
   ()
 
