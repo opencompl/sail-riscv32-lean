@@ -1,4 +1,4 @@
-import LeanRV32D.Flow
+import LeanRV32D.LeanRV32D
 import LeanRV32D.Prelude
 
 set_option maxHeartbeats 1_000_000_000

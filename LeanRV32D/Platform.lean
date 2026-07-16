@@ -1,3 +1,4 @@
+import LeanRV32D.LeanRV32D
 import LeanRV32D.Flow
 import LeanRV32D.Prelude
 import LeanRV32D.Errors

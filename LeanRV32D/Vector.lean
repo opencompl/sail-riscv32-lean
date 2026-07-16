@@ -1,4 +1,4 @@
-import LeanRV32D.Flow
+import LeanRV32D.LeanRV32D
 
 set_option maxHeartbeats 1_000_000_000
 set_option maxRecDepth 1_000_000
