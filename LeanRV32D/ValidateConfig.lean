@@ -1,10 +1,12 @@
 import LeanRV32D.Flow
+import LeanRV32D.Vector
 import LeanRV32D.Prelude
 import LeanRV32D.Xlen
 import LeanRV32D.Vlen
 import LeanRV32D.PlatformConfig
 import LeanRV32D.Types
 import LeanRV32D.SysRegs
+import LeanRV32D.InterruptRegs
 import LeanRV32D.PmpRegs
 import LeanRV32D.Pma
 
@@ -623,7 +625,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex931282_ : Bool -/
+/-- Type quantifiers: k_ex931441_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -824,7 +826,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931283_ : Bool -/
+/-- Type quantifiers: k_ex931442_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -1041,31 +1043,73 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
                 (HAppend.hAppend (Int.repr min_rss_exp) " for the LR/SC operands on this platform.")))))
       valid)
     else valid
-  if ((true : Bool) : Bool)
-  then
-    (let valid : Bool :=
+  let valid : Bool :=
+    if ((true : Bool) : Bool)
+    then
+      (let valid : Bool :=
+        if ((misaligned_exception_is_access_fault
+             ({ load_store := none
+                vector := none
+                lrsc := AccessFault
+                amo := AccessFault } : GlobalMisalignedExceptions).load_store) : Bool)
+        then
+          (let valid : Bool := false
+          let _ : Unit :=
+            (print_endline
+              "The Zicclsm extension is enabled, but misaligned scalar loads/stores raise access faults before address translation (as per `memory.misaligned.exceptions.load_store`); Zicclsm requires no exceptions or only misaligned exceptions for such accesses.")
+          valid)
+        else valid
       if ((misaligned_exception_is_access_fault
            ({ load_store := none
               vector := none
               lrsc := AccessFault
-              amo := AccessFault } : GlobalMisalignedExceptions).load_store) : Bool)
+              amo := AccessFault } : GlobalMisalignedExceptions).vector) : Bool)
       then
         (let valid : Bool := false
         let _ : Unit :=
           (print_endline
-            "The Zicclsm extension is enabled, but misaligned scalar loads/stores raise access faults before address translation (as per `memory.misaligned.exceptions.load_store`); Zicclsm requires no exceptions or only misaligned exceptions for such accesses.")
+            "The Zicclsm extension is enabled, but misaligned vector loads/stores raise access faults before address translation (as per `memory.misaligned.exceptions.vector`); Zicclsm requires no exceptions or only misaligned exceptions for such accesses.")
+        valid)
+      else valid)
+    else valid
+  if ((true : Bool) : Bool)
+  then
+    (let medelegation :=
+      (Mk_Medeleg 0b0000000000000000000000000000000000000000000011001011001111111111#64)
+    let valid : Bool :=
+      if (((_get_Medeleg_Double_Trap medelegation) != 0#1) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "Bit 16 (Double Trap) in `base.medeleg.delegatable_bits` is set; Double Trap cannot be delegated.")
         valid)
       else valid
-    if ((misaligned_exception_is_access_fault
-         ({ load_store := none
-            vector := none
-            lrsc := AccessFault
-            amo := AccessFault } : GlobalMisalignedExceptions).vector) : Bool)
+    let valid : Bool :=
+      if (((_get_Medeleg_MEnvCall medelegation) != 0#1) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline
+            "Bit 11 (Environment call from M-mode) in `base.medeleg.delegatable_bits` is set; this environment call cannot be delegated.")
+        valid)
+      else valid
+    let reserved_exception_mask : (BitVec 64) := (zero_extend (m := 64) 0x0FFFF00F24400#52)
+    let valid : Bool :=
+      if (((medelegation &&& reserved_exception_mask) != (zeros (n := 64))) : Bool)
+      then
+        (let valid : Bool := false
+        let _ : Unit :=
+          (print_endline "Bits for reserved exceptions are set in `base.medeleg.delegatable_bits`.")
+        valid)
+      else valid
+    let midelegation := (Mk_Minterrupts (sail_mask 32 0b00000000000000000010001000100010#32))
+    let reserved_interrupt_mask : xlenbits := (zero_extend (m := 32) 0xD555#16)
+    if (((midelegation &&& reserved_interrupt_mask) != (zeros (n := 32))) : Bool)
     then
       (let valid : Bool := false
       let _ : Unit :=
-        (print_endline
-          "The Zicclsm extension is enabled, but misaligned vector loads/stores raise access faults before address translation (as per `memory.misaligned.exceptions.vector`); Zicclsm requires no exceptions or only misaligned exceptions for such accesses.")
+        (print_endline "Bits for reserved interrupts are set in `base.mideleg.delegatable_bits`.")
       valid)
     else valid)
   else valid

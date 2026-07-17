@@ -423,19 +423,16 @@ def legalize_mie (o : (BitVec 32)) (v : (BitVec 32)) : SailM (BitVec 32) := do
         then (pure (_get_Minterrupts_SSI v))
         else (pure 0#1))))
 
-def legalize_mideleg (o : (BitVec 32)) (v : (BitVec 32)) : SailM (BitVec 32) := do
+def legalize_mideleg (_o : (BitVec 32)) (v : (BitVec 32)) : SailM (BitVec 32) := do
   let v := (Mk_Minterrupts (v &&& plat_mideleg_delegatable_bits))
   (pure (_update_Minterrupts_SSI
       (_update_Minterrupts_STI
         (_update_Minterrupts_SEI
-          (_update_Minterrupts_MSI
-            (_update_Minterrupts_MTI
-              (_update_Minterrupts_MEI
-                (_update_Minterrupts_LCOFI o
-                  (← do
-                    if ((← (currentlyEnabled Ext_Sscofpmf)) : Bool)
-                    then (pure (_get_Minterrupts_LCOFI v))
-                    else (pure 0#1))) 0#1) 0#1) 0#1)
+          (_update_Minterrupts_LCOFI v
+            (← do
+              if ((← (currentlyEnabled Ext_Sscofpmf)) : Bool)
+              then (pure (_get_Minterrupts_LCOFI v))
+              else (pure 0#1)))
           (← do
             if ((← (currentlyEnabled Ext_S)) : Bool)
             then (pure (_get_Minterrupts_SEI v))
@@ -464,6 +461,16 @@ def _update_Medeleg_Breakpoint (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) 
 def _set_Medeleg_Breakpoint (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_Medeleg_Breakpoint r v)
+
+def _get_Medeleg_Double_Trap (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 16 16)
+
+def _update_Medeleg_Double_Trap (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v 16 16 x)
+
+def _set_Medeleg_Double_Trap (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
+  let r ← do (reg_deref r_ref)
+  writeRegRef r_ref (_update_Medeleg_Double_Trap r v)
 
 def _get_Medeleg_Fetch_Access_Fault (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 1 1)
@@ -494,6 +501,16 @@ def _update_Medeleg_Fetch_Page_Fault (v : (BitVec 64)) (x : (BitVec 1)) : (BitVe
 def _set_Medeleg_Fetch_Page_Fault (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_Medeleg_Fetch_Page_Fault r v)
+
+def _get_Medeleg_Hardware_Error (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 19 19)
+
+def _update_Medeleg_Hardware_Error (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v 19 19 x)
+
+def _set_Medeleg_Hardware_Error (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
+  let r ← do (reg_deref r_ref)
+  writeRegRef r_ref (_update_Medeleg_Hardware_Error r v)
 
 def _get_Medeleg_Illegal_Instr (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 2 2)
@@ -585,6 +602,16 @@ def _set_Medeleg_SEnvCall (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) :
   let r ← do (reg_deref r_ref)
   writeRegRef r_ref (_update_Medeleg_SEnvCall r v)
 
+def _get_Medeleg_Software_Check (v : (BitVec 64)) : (BitVec 1) :=
+  (Sail.BitVec.extractLsb v 18 18)
+
+def _update_Medeleg_Software_Check (v : (BitVec 64)) (x : (BitVec 1)) : (BitVec 64) :=
+  (Sail.BitVec.updateSubrange v 18 18 x)
+
+def _set_Medeleg_Software_Check (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) : SailM Unit := do
+  let r ← do (reg_deref r_ref)
+  writeRegRef r_ref (_update_Medeleg_Software_Check r v)
+
 def _get_Medeleg_UEnvCall (v : (BitVec 64)) : (BitVec 1) :=
   (Sail.BitVec.extractLsb v 8 8)
 
@@ -596,7 +623,8 @@ def _set_Medeleg_UEnvCall (r_ref : (RegisterRef (BitVec 64))) (v : (BitVec 1)) :
   writeRegRef r_ref (_update_Medeleg_UEnvCall r v)
 
 def legalize_medeleg (_o : (BitVec 64)) (v : (BitVec 64)) : (BitVec 64) :=
-  (_update_Medeleg_MEnvCall (Mk_Medeleg (v &&& plat_medeleg_delegatable_bits)) 0#1)
+  (_update_Medeleg_MEnvCall
+    (_update_Medeleg_Double_Trap (Mk_Medeleg (v &&& plat_medeleg_delegatable_bits)) 0#1) 0#1)
 
 def undefined_XipReadType (_ : Unit) : SailM XipReadType := do
   (internal_pick [IncludePlatformInterrupts, ExcludePlatformInterrupts])

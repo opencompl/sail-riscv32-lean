@@ -214,12 +214,13 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-def sail_main (_ : Unit) : SailM Unit := do
-  sailTryCatch ((do
+def sail_main (_ : Unit) : SailM Unit := SailME.run do
+  sailTryCatchE ((do
       (init_model "")
       (pure (print_bits "PC = " (← readReg PC)))
       (cycle_count ())
-      (loop ()))) (fun the_exception => 
+      let _ ← do (loop ())
+      SailME.throw (() : Unit))) (fun the_exception => 
     match the_exception with
       | .Error_not_implemented s => (pure (print_string "Error: not implemented: " s))
       | .Error_internal_error s => (pure (print_string "Error: internal error: " s))
