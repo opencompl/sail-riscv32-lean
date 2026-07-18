@@ -1189,6 +1189,8 @@ inductive Reservability where | RsrvNone | RsrvNonEventual | RsrvEventual
   deriving BEq, Inhabited, Repr
   open Reservability
 
+abbrev mag_size_exp := Nat
+
 structure PMA where
   mem_type : MemoryRegionType
   cacheable : Bool
@@ -1204,6 +1206,8 @@ structure PMA where
   supports_cbo_zero : Bool
   supports_pte_read : Bool
   supports_pte_write : Bool
+  misaligned_atomicity_granule_size_exp : mag_size_exp
+  vector_misaligned_atomicity_granule_size_exp : mag_size_exp
   deriving BEq, Inhabited, Repr
 
 structure PMA_Region where
@@ -1239,8 +1243,8 @@ inductive WaitReason where | WAIT_WFI | WAIT_WRS_STO | WAIT_WRS_NTO
 structure GlobalMisalignedExceptions where
   load_store : (Option misaligned_exception)
   vector : (Option misaligned_exception)
+  amo : (Option misaligned_exception)
   lrsc : misaligned_exception
-  amo : misaligned_exception
   deriving BEq, Inhabited, Repr
 
 inductive ExtContextPolicy where | ExtContext_Off | ExtContext_TwoState | ExtContext_FourState
@@ -1293,6 +1297,10 @@ inductive CSRAccessType where | CSRRead | CSRWrite | CSRReadWrite
   open CSRAccessType
 
 
+
+abbrev max_mem_width_bytes_exp : Int := 3
+
+abbrev max_mem_width_bytes : Int := (2 ^ 3)
 
 inductive SWCheckCodes where | LANDING_PAD_FAULT
   deriving BEq, Inhabited, Repr
@@ -1474,7 +1482,16 @@ abbrev MemoryOpResult k_a := (Result k_a ExceptionType)
 
 abbrev htif_cmd := (BitVec 64)
 
+inductive Splittability where | CanSplit | CannotSplit
+  deriving BEq, Inhabited, Repr
+  open Splittability
 
+
+
+structure Phys_Mem_Access_Info where
+  splittable : Splittability
+  granule_size_exp : mag_size_exp
+  deriving BEq, Inhabited, Repr
 
 abbrev pte_flags_bits := (BitVec 8)
 

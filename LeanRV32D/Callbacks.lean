@@ -176,6 +176,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -244,11 +245,11 @@ def csr_full_read_callback (x_0 : String) (x_1 : (BitVec 12)) (x_2 : (BitVec 32)
 def redirect_callback (x_0 : (BitVec 32)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex930954_ : Bool -/
+/-- Type quantifiers: k_ex932548_ : Bool -/
 def trap_callback (x_0 : Bool) (x_1 : (BitVec 6)) : Unit :=
   ()
 
-/-- Type quantifiers: k_ex930955_ : Bool -/
+/-- Type quantifiers: k_ex932549_ : Bool -/
 def xret_callback (x_0 : Bool) : Unit :=
   ()
 

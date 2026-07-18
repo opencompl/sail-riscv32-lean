@@ -177,6 +177,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes

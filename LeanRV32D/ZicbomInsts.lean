@@ -183,6 +183,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -365,7 +366,7 @@ def process_clean_inval (rs1 : regidx) (cbop : cbop_zicbom) : SailM ExecutionRes
           let ep ← do
             (effectivePrivilege access (← readReg mstatus) (← readReg cur_privilege))
           match (← (phys_access_check access pbmt ep paddr cache_block_size false)) with
-          | .some e => (memory_exception vaddr_for_error e)
-          | none => (pure RETIRE_SUCCESS))
+          | .Err e => (memory_exception vaddr_for_error e)
+          | .Ok _ => (pure RETIRE_SUCCESS))
       | .Err (e, _) => (memory_exception vaddr_for_error e))
 

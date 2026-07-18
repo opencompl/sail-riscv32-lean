@@ -174,6 +174,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -212,8 +213,8 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex929016_ : Nat, k_ex929016_ ∈ {16, 32, 64, 128} -/
-def float_is_inf (op : (BitVec k_ex929016_)) : Bool :=
+/-- Type quantifiers: k_ex930610_ : Nat, k_ex930610_ ∈ {16, 32, 64, 128} -/
+def float_is_inf (op : (BitVec k_ex930610_)) : Bool :=
   let { exp := exp, mantissa := mantissa, sign := _ } := (float_decompose op)
   ((is_all_ones exp) && (is_all_zeros mantissa))
 

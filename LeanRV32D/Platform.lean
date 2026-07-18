@@ -184,6 +184,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -386,7 +387,7 @@ def clint_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (wid
                                 else ()
                               (pure (Err (← (accessFaultFromAccessType access)))))))))))
 
-/-- Type quantifiers: k_ex931101_ : Bool -/
+/-- Type quantifiers: k_ex932695_ : Bool -/
 def clint_dispatch (mip_was_written : Bool) : SailM Unit := do
   let old_mip ← do readReg mip
   writeReg mip (Sail.BitVec.updateSubrange (← readReg mip) 7 7

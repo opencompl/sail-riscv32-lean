@@ -174,6 +174,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -212,11 +213,11 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex929018_ : Nat, k_ex929018_ ∈ {16, 32, 64, 128} -/
-def float_is_positive (op : (BitVec k_ex929018_)) : Bool :=
+/-- Type quantifiers: k_ex930612_ : Nat, k_ex930612_ ∈ {16, 32, 64, 128} -/
+def float_is_positive (op : (BitVec k_ex930612_)) : Bool :=
   (is_highest_zero op)
 
-/-- Type quantifiers: k_ex929020_ : Nat, k_ex929020_ ∈ {16, 32, 64, 128} -/
-def float_is_negative (op : (BitVec k_ex929020_)) : Bool :=
+/-- Type quantifiers: k_ex930614_ : Nat, k_ex930614_ ∈ {16, 32, 64, 128} -/
+def float_is_negative (op : (BitVec k_ex930614_)) : Bool :=
   (is_highest_one op)
 

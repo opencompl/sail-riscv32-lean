@@ -1,4 +1,7 @@
-import LeanRV32D.MemAddrtype
+import LeanRV32D.Flow
+import LeanRV32D.Prelude
+import LeanRV32D.Xlen
+import LeanRV32D.Types
 import LeanRV32D.MemUtils
 
 set_option maxHeartbeats 1_000_000_000
@@ -175,6 +178,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -223,32 +227,94 @@ def is_aligned_vaddr (typ_0 : virtaddr) (width : Nat) : Bool :=
   let .Virtaddr addr : virtaddr := typ_0
   ((Int.tmod (BitVec.toNatInt addr) width) == 0)
 
+def sys_misaligned_allowed_within_exp : mag_size_exp := 0
+
 def sys_misaligned_order_decreasing : Bool := false
+
+/-- Type quantifiers: k_n : Nat, k_n ≥ 0, width : Nat, 13 ≤ k_n ∧ k_n ≤ 64 ∧
+  0 < width ∧ width ≤ max_mem_access -/
+def split_access (addr : (BitVec k_n)) (width : Nat) : SailM (Int × Int) := do
+  let addr_align := (BitVec.countTrailingZeros addr)
+  let width_align := (BitVec.countTrailingZeros (to_bits (l := (12 +i 1)) width))
+  let bytes_per_access := (2 ^i (Min.min addr_align width_align))
+  let num_accesses := (Int.tdiv width bytes_per_access)
+  assert (width == (num_accesses *i bytes_per_access)) "sys/split_access_utils.sail:53.49-53.50"
+  (pure (num_accesses, bytes_per_access))
+
+/-- Type quantifiers: width : Nat, 0 < width ∧ width ≤ max_mem_access -/
+def prop_split_access (addr : (BitVec 16)) (width : Nat) : SailM Bool := do
+  let (splits, split_width) ← do (split_access addr width)
+  (pure ((splits *i split_width) == width))
 
 def sys_misaligned_byte_by_byte : Bool := false
 
-def sys_misaligned_allowed_within_exp : Nat := 0
+def undefined_Splittability (_ : Unit) : SailM Splittability := do
+  (internal_pick [CanSplit, CannotSplit])
 
-/-- Type quantifiers: width : Nat, is_mem_width(width) -/
-def split_misaligned (vaddr : virtaddr) (width : Nat) : SailM (Int × Int) := do
-  let vaddr_bits := (bits_of_virtaddr vaddr)
-  if (((is_aligned_vaddr vaddr width) || (allowed_misaligned vaddr_bits width
-         sys_misaligned_allowed_within_exp)) : Bool)
+/-- Type quantifiers: arg_ : Nat, 0 ≤ arg_ ∧ arg_ ≤ 1 -/
+def Splittability_of_num (arg_ : Nat) : Splittability :=
+  match arg_ with
+  | 0 => CanSplit
+  | _ => CannotSplit
+
+def num_of_Splittability (arg_ : Splittability) : Int :=
+  match arg_ with
+  | .CanSplit => 0
+  | .CannotSplit => 1
+
+/-- Type quantifiers: allowed_within_exp : Nat, width : Nat, 0 < width ∧ width ≤ max_mem_access, 0
+  ≤ allowed_within_exp ∧ allowed_within_exp ≤ 12 -/
+def split_misaligned (app_0 : physaddr) (width : Nat) (allowed_within_exp : Nat) (splittable : Splittability) : SailM (Int × Int) := do
+  let .Physaddr addr := app_0
+  let do_not_split :=
+    ((splittable == CannotSplit) || ((((Int.tmod (BitVec.toNatInt addr) width) == 0) || (allowed_misaligned
+          (Sail.BitVec.extractLsb addr (xlen -i 1) 0) width allowed_within_exp)) : Bool))
+  if (do_not_split : Bool)
   then (pure (1, width))
   else
     (do
       if (sys_misaligned_byte_by_byte : Bool)
       then (pure (width, 1))
-      else
-        (do
-          let bytes_per_access := (2 ^i (BitVec.countTrailingZeros vaddr_bits))
-          let num_accesses := (Int.tdiv width bytes_per_access)
-          assert (width == (num_accesses *i bytes_per_access)) "sys/split_access_utils.sail:60.51-60.52"
-          (pure (num_accesses, bytes_per_access))))
+      else (split_access addr width))
 
 /-- Type quantifiers: n : Int -/
 def misaligned_order (n : Int) : (Int × Int × Int) :=
   if (sys_misaligned_order_decreasing : Bool)
   then ((n -i 1), 0, (Neg.neg 1))
   else (0, (n -i 1), 1)
+
+/-- Type quantifiers: k_n : Nat, k_n ≥ 0, width : Nat, 13 ≤ k_n ∧ k_n ≤ 64 ∧
+  is_mem_width(width) -/
+def split_on_page_boundary (addr : (BitVec k_n)) (width : Nat) : SailM (Int × Int) := do
+  let page_mask :=
+    (Sail.BitVec.updateSubrange ((ones (n := (Sail.BitVec.length addr))) : (BitVec k_n))
+      (pagesize_bits -i 1) 0 (zeros (n := ((12 -i 1) -i (0 -i 1)))))
+  let intra_page_access :=
+    ((addr &&& page_mask) == ((BitVec.subInt (BitVec.addInt addr width) 1) &&& page_mask))
+  if (intra_page_access : Bool)
+  then (pure (width, 0))
+  else
+    (do
+      let nbytes_to_boundary :=
+        ((2 ^i 3) -i (BitVec.toNatInt (Sail.BitVec.extractLsb addr (3 -i 1) 0)))
+      assert (nbytes_to_boundary <b width) "sys/split_access_utils.sail:111.37-111.38"
+      (pure (nbytes_to_boundary, (width -i nbytes_to_boundary))))
+
+/-- Type quantifiers: width : Nat, is_mem_width(width) -/
+def prop_access_in_same_page (addr : (BitVec 16)) (width : Nat) : SailM Bool := do
+  let (p, q) ← do (split_on_page_boundary addr width)
+  let page_mask : (BitVec 16) := 0xF000#16
+  (pure ((zopz0zJzJzK (q == 0)
+        ((addr &&& page_mask) == ((BitVec.subInt (BitVec.addInt addr width) 1) &&& page_mask))) && (zopz0zJzJzK
+        ((addr &&& page_mask) == ((BitVec.subInt (BitVec.addInt addr width) 1) &&& page_mask))
+        (q == 0))))
+
+/-- Type quantifiers: width : Nat, is_mem_width(width) -/
+def prop_access_across_page_boundary (addr : (BitVec 16)) (width : Nat) : SailM Bool := do
+  let (p, q) ← do (split_on_page_boundary addr width)
+  let page_mask : (BitVec 16) := 0xF000#16
+  (pure ((zopz0zJzJzK (q != 0)
+        ((addr &&& page_mask) != ((BitVec.subInt (BitVec.addInt addr width) 1) &&& page_mask))) && (zopz0zJzJzK
+        ((addr &&& page_mask) != ((BitVec.subInt (BitVec.addInt addr width) 1) &&& page_mask))
+        (q != 0))))
 

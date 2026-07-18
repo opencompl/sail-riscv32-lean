@@ -184,6 +184,7 @@ open VectorHalf
 open TrapVectorMode
 open TrapCause
 open Step
+open Splittability
 open Software_Check_Code
 open Signedness
 open SWCheckCodes
@@ -625,7 +626,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex931441_ : Bool -/
+/-- Type quantifiers: k_ex933050_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -826,7 +827,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex931442_ : Bool -/
+/-- Type quantifiers: k_ex933051_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -1050,8 +1051,8 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
         if ((misaligned_exception_is_access_fault
              ({ load_store := none
                 vector := none
-                lrsc := AccessFault
-                amo := AccessFault } : GlobalMisalignedExceptions).load_store) : Bool)
+                amo := none
+                lrsc := AccessFault } : GlobalMisalignedExceptions).load_store) : Bool)
         then
           (let valid : Bool := false
           let _ : Unit :=
@@ -1062,8 +1063,8 @@ def check_extension_param_constraints (_ : Unit) : Bool :=
       if ((misaligned_exception_is_access_fault
            ({ load_store := none
               vector := none
-              lrsc := AccessFault
-              amo := AccessFault } : GlobalMisalignedExceptions).vector) : Bool)
+              amo := none
+              lrsc := AccessFault } : GlobalMisalignedExceptions).vector) : Bool)
       then
         (let valid : Bool := false
         let _ : Unit :=
