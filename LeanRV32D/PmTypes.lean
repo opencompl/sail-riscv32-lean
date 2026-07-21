@@ -1,6 +1,6 @@
 import Sail
 import LeanRV32D.Defs
-import LeanRV32D.Specialization
+import LeanRV32D.SpecializationV1
 import LeanRV32D.FakeReal
 import LeanRV32D.RiscvExtras
 

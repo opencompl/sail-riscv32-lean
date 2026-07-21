@@ -235,7 +235,10 @@ def fetch_bytes (fetch_start : (BitVec 32)) (granule_start : (BitVec 32)) (width
     | .Ok (paddr, pbmt, _) => (pure (paddr, pbmt)) ) : SailME (FetchBytes_Result width)
     (physaddr × page_based_mem_type) )
   match (← (mem_read (InstructionFetch ()) pbmt paddr width false false false)) with
-  | .Err e => (pure (FetchBytes_Exception e))
+  | .Err (exc_addr, e) =>
+    (do
+      assert (exc_addr == paddr) "postlude/fetch.sail:44.30-44.31"
+      (pure (FetchBytes_Exception e)))
   | .Ok bytes => (pure (FetchBytes_Success bytes))
 
 def fetch (_ : Unit) : SailM FetchResult := SailME.run do

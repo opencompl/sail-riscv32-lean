@@ -1,6 +1,6 @@
 import Sail
 import LeanRV32D.Defs
-import LeanRV32D.Specialization
+import LeanRV32D.SpecializationV1
 import LeanRV32D.FakeReal
 import LeanRV32D.RiscvExtras
 
@@ -217,7 +217,7 @@ open AtomicSupport
 open Architecture
 open AmocasOddRegisterReservedBehavior
 
-/-- Type quantifiers: k_ex930528_ : Bool, k_ex930527_ : Bool -/
+/-- Type quantifiers: k_ex1067446_ : Bool, k_ex1067445_ : Bool -/
 def neq_bool (x : Bool) (y : Bool) : Bool :=
   (! (x == y))
 

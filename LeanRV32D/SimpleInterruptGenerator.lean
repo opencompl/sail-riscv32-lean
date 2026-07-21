@@ -224,11 +224,11 @@ def SIG_VERSION_OFFSET := 0
 def SIG_PLATFORM_OFFSET := 4
 
 /-- Type quantifiers: width : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
-def sig_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (width : Nat) : SailM (Result (BitVec (8 * width)) ExceptionType) := do
-  let .Physaddr paddr := app_1
+def sig_load (access : (MemoryAccessType mem_payload)) (addr : physaddr) (width : Nat) : SailM (Result (BitVec (8 * width)) (physaddr × ExceptionType)) := do
+  let .Physaddr paddr := addr
   let VERSION := 0x00010000#32
   if (((width != 4) || ((Sail.BitVec.extractLsb paddr 1 0) != (zeros (n := ((1 -i 0) +i 1))))) : Bool)
-  then (pure (Err (← (accessFaultFromAccessType access))))
+  then (pure (Err (addr, (← (accessFaultFromAccessType access)))))
   else
     (do
       if ((paddr == (BitVec.addInt plat_sig_base SIG_VERSION_OFFSET)) : Bool)
@@ -237,13 +237,13 @@ def sig_load (access : (MemoryAccessType mem_payload)) (app_1 : physaddr) (width
         (do
           if ((paddr == (BitVec.addInt plat_sig_base SIG_PLATFORM_OFFSET)) : Bool)
           then (pure (Ok (zeros (n := (8 *i width)))))
-          else (pure (Err (← (accessFaultFromAccessType access))))))
+          else (pure (Err (addr, (← (accessFaultFromAccessType access)))))))
 
 /-- Type quantifiers: width : Nat, width ≥ 0, 0 < width ∧ width ≤ max_mem_access -/
-def sig_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) : SailM (Result Bool ExceptionType) := do
-  let .Physaddr paddr := app_0
+def sig_store (addr : physaddr) (width : Nat) (data : (BitVec (8 * width))) : SailM (Result Bool (physaddr × ExceptionType)) := do
+  let .Physaddr paddr := addr
   if (((width != 4) || ((Sail.BitVec.extractLsb paddr 1 0) != (zeros (n := ((1 -i 0) +i 1))))) : Bool)
-  then (pure (Err (E_SAMO_Access_Fault ())))
+  then (pure (Err (addr, (E_SAMO_Access_Fault ()))))
   else
     (do
       if ((paddr == (BitVec.addInt plat_sig_base SIG_VERSION_OFFSET)) : Bool)
@@ -260,7 +260,7 @@ def sig_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) : S
                        (_update_Minterrupts_MSI
                          (_update_Minterrupts_SEI (_update_Minterrupts_MEI data 0#1) 0#1) 0#1) 0#1)
                      30 0) != (zeros (n := ((30 -i 0) +i 1)))) : Bool)
-              then (pure (Err (E_SAMO_Access_Fault ())))
+              then (pure (Err (addr, (E_SAMO_Access_Fault ()))))
               else
                 (do
                   if (((_get_Minterrupts_MEI data) == 1#1) : Bool)
@@ -277,5 +277,5 @@ def sig_store (app_0 : physaddr) (width : Nat) (data : (BitVec (8 * width))) : S
                   else (pure ())
                   (csr_name_write_callback "mip" (← (read_mip IncludePlatformInterrupts)))
                   (pure (Ok true))))
-          else (pure (Err (E_SAMO_Access_Fault ())))))
+          else (pure (Err (addr, (E_SAMO_Access_Fault ()))))))
 

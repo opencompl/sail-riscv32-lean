@@ -386,7 +386,7 @@ inductive f_un_x_op_H where | FCLASS_H | FMV_X_H
   deriving BEq, Inhabited, Repr
   open f_un_x_op_H
 
-inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zibi | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicfiss | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Ziccamoa | Ext_Ziccamoc | Ext_Ziccif | Ext_Zicclsm | Ext_Ziccrse | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvabd | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Ssccptr | Ext_Sscofpmf | Ext_Sscounterenw | Ext_Ssnpm | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svade | Ext_Svadu | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Svvptc | Ext_Smcntrpmf | Ext_Smmpm | Ext_Smnpm | Ext_Smstateen | Ext_Ssqosid | Ext_Sspm | Ext_Supm
+inductive extension where | Ext_M | Ext_A | Ext_F | Ext_D | Ext_B | Ext_V | Ext_S | Ext_U | Ext_H | Ext_Zibi | Ext_Zic64b | Ext_Zicbom | Ext_Zicbop | Ext_Zicboz | Ext_Zicfilp | Ext_Zicfiss | Ext_Zicntr | Ext_Zicond | Ext_Zicsr | Ext_Zifencei | Ext_Zihintntl | Ext_Zihintpause | Ext_Zihpm | Ext_Zimop | Ext_Zmmul | Ext_Zaamo | Ext_Zabha | Ext_Zacas | Ext_Zalrsc | Ext_Zama16b | Ext_Zawrs | Ext_Za64rs | Ext_Za128rs | Ext_Zfa | Ext_Zfbfmin | Ext_Zfh | Ext_Zfhmin | Ext_Zfinx | Ext_Zdinx | Ext_Zca | Ext_Zcb | Ext_Zcd | Ext_Zcf | Ext_Zcmop | Ext_C | Ext_Zba | Ext_Zbb | Ext_Zbc | Ext_Zbkb | Ext_Zbkc | Ext_Zbkx | Ext_Zbs | Ext_Ziccamoa | Ext_Ziccamoc | Ext_Ziccif | Ext_Zicclsm | Ext_Ziccrse | Ext_Zknd | Ext_Zkne | Ext_Zknh | Ext_Zkr | Ext_Zksed | Ext_Zksh | Ext_Zkt | Ext_Zhinx | Ext_Zhinxmin | Ext_Zvl32b | Ext_Zvl64b | Ext_Zvl128b | Ext_Zvl256b | Ext_Zvl512b | Ext_Zvl1024b | Ext_Zve32f | Ext_Zve32x | Ext_Zve64d | Ext_Zve64f | Ext_Zve64x | Ext_Zvabd | Ext_Zvfbfmin | Ext_Zvfbfwma | Ext_Zvfh | Ext_Zvfhmin | Ext_Zvbb | Ext_Zvbc | Ext_Zvkb | Ext_Zvkg | Ext_Zvkned | Ext_Zvknha | Ext_Zvknhb | Ext_Zvksed | Ext_Zvksh | Ext_Zvkt | Ext_Zvkn | Ext_Zvknc | Ext_Zvkng | Ext_Zvks | Ext_Zvksc | Ext_Zvksg | Ext_Ssccptr | Ext_Sscofpmf | Ext_Sscounterenw | Ext_Ssnpm | Ext_Ssstateen | Ext_Sstc | Ext_Sstvala | Ext_Sstvecd | Ext_Ssu64xl | Ext_Svbare | Ext_Sv32 | Ext_Sv39 | Ext_Sv48 | Ext_Sv57 | Ext_Svade | Ext_Svadu | Ext_Svinval | Ext_Svnapot | Ext_Svpbmt | Ext_Svrsw60t59b | Ext_Svvptc | Ext_Smcntrpmf | Ext_Smmpm | Ext_Smnpm | Ext_Smstateen | Ext_Ssqosid | Ext_Sspm | Ext_Supm
   deriving BEq, Inhabited, Repr
   open extension
 
@@ -1478,7 +1478,7 @@ inductive CSRCheckResult where
   deriving Inhabited, BEq, Repr
   open CSRCheckResult
 
-abbrev MemoryOpResult k_a := (Result k_a ExceptionType)
+abbrev MemoryOpResult k_a := (Result k_a (physaddr × ExceptionType))
 
 abbrev htif_cmd := (BitVec 64)
 
@@ -1613,6 +1613,7 @@ inductive Step where
   open Step
 
 structure pma_check_opts where
+  zama16b : Bool
   ziccamoa : Bool
   ziccamoc : Bool
   ziccif : Bool
@@ -1992,6 +1993,34 @@ abbrev RegisterType : Register → Type
   | .rvfi_instruction => (BitVec 64)
   | .fp_rounding_global => (BitVec 5)
 
+/-- Type quantifiers: k_n : Nat, k_n ≥ 0, m : Nat, m ≥ 0, m ≥ k_n -/
+def zero_extend {m : _} (v : (BitVec k_n)) : (BitVec m) :=
+  (Sail.BitVec.zeroExtend v m)
+
+def physaddrbits_zero_extend (xs : (BitVec (if ( 32 = 32  : Bool) then 34 else 64))) : (BitVec 64) :=
+  (zero_extend (m := 64) xs)
+
+instance : Arch where
+  va_size := 64
+  pa := (BitVec (if ( 32 = 32  : Bool) then 34 else 64))
+  abort := Unit
+  translation := Unit
+  trans_start := Unit
+  trans_end := Unit
+  fault := Unit
+  tlb_op := Unit
+  cache_op := Unit
+  barrier := barrier_kind
+  arch_ak := RISCV_strong_access
+  sys_reg_id := Unit
+
+
+
+abbrev SailM := PreSailM RegisterType trivialChoiceSource exception
+abbrev SailME := PreSailME RegisterType trivialChoiceSource exception
+
+
+
 instance : Inhabited (RegisterRef RegisterType HartState) where
   default := .Reg hart_state
 instance : Inhabited (RegisterRef RegisterType Privilege) where
@@ -2032,27 +2061,3 @@ instance : Inhabited (RegisterRef RegisterType (Vector (BitVec 8) 64)) where
   default := .Reg pmpcfg_n
 instance : Inhabited (RegisterRef RegisterType (Vector (Option TLB_Entry) (2 ^ 6))) where
   default := .Reg tlb
-abbrev SailM := PreSailM RegisterType trivialChoiceSource exception
-abbrev SailME := PreSailME RegisterType trivialChoiceSource exception
-
-/-- Type quantifiers: k_n : Nat, k_n ≥ 0, m : Nat, m ≥ 0, m ≥ k_n -/
-def zero_extend {m : _} (v : (BitVec k_n)) : (BitVec m) :=
-  (Sail.BitVec.zeroExtend v m)
-
-def physaddrbits_zero_extend (xs : (BitVec (if ( 32 = 32  : Bool) then 34 else 64))) : (BitVec 64) :=
-  (zero_extend (m := 64) xs)
-
-instance : Arch where
-  va_size := 64
-  pa := (BitVec (if ( 32 = 32  : Bool) then 34 else 64))
-  abort := Unit
-  translation := Unit
-  trans_start := Unit
-  trans_end := Unit
-  fault := Unit
-  tlb_op := Unit
-  cache_op := Unit
-  barrier := barrier_kind
-  arch_ak := RISCV_strong_access
-  sys_reg_id := Unit
-

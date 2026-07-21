@@ -223,10 +223,47 @@ def Privileged_ISA_Version_of_num (arg_ : Nat) : Privileged_ISA_Version :=
   | 1 => Privileged_ISA_1_12
   | _ => Privileged_ISA_1_13
 
+def privileged_isa_version_name_forwards (arg_ : Privileged_ISA_Version) : String :=
+  match arg_ with
+  | .Privileged_ISA_1_11 => "1.11"
+  | .Privileged_ISA_1_12 => "1.12"
+  | .Privileged_ISA_1_13 => "1.13"
+
+def privileged_isa_version_name_backwards (arg_ : String) : SailM Privileged_ISA_Version := do
+  match arg_ with
+  | "1.11" => (pure Privileged_ISA_1_11)
+  | "1.12" => (pure Privileged_ISA_1_12)
+  | "1.13" => (pure Privileged_ISA_1_13)
+  | _ =>
+    (do
+      assert false "Pattern match failure at unknown location"
+      throw Error.Exit)
+
+def privileged_isa_version_name_forwards_matches (arg_ : Privileged_ISA_Version) : Bool :=
+  match arg_ with
+  | .Privileged_ISA_1_11 => true
+  | .Privileged_ISA_1_12 => true
+  | .Privileged_ISA_1_13 => true
+
+def privileged_isa_version_name_backwards_matches (arg_ : String) : Bool :=
+  match arg_ with
+  | "1.11" => true
+  | "1.12" => true
+  | "1.13" => true
+  | _ => false
+
 def priv_isa_version : Privileged_ISA_Version := Privileged_ISA_1_13
 
 def pte_reserved_bits_must_be_zero :=
   (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
 
 def xenvcfg_csrs_are_defined := (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
+
+def mconfigptr_is_defined := (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
+
+def mseccfg_csrs_are_defined := (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
+
+def mstatush_is_defined := (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_12)
+
+def delegh_csrs_are_defined := (privileged_isa_version_ge priv_isa_version Privileged_ISA_1_13)
 

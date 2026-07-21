@@ -299,12 +299,13 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
   match merge_var with
   | (0x301, g__24, g__25) => (pure true)
   | (0x300, g__26, g__27) => (pure true)
-  | (0x310, g__28, g__29) => (pure (xlen == 32))
+  | (0x310, g__28, g__29) => (pure (mstatush_is_defined && (xlen == 32)))
   | (0x747, g__30, g__31) =>
-    (pure ((← (currentlyEnabled Ext_Zkr)) || ((hartSupports Ext_Zicfilp) || (← (currentlyEnabled
-              Ext_Smmpm)))))
+    (pure (mseccfg_csrs_are_defined && ((← (currentlyEnabled Ext_Zkr)) || ((hartSupports
+              Ext_Zicfilp) || (← (currentlyEnabled Ext_Smmpm))))))
   | (0x757, g__32, g__33) =>
-    (pure (((← (currentlyEnabled Ext_Zkr)) || (hartSupports Ext_Zicfilp)) && (xlen == 32)))
+    (pure (mseccfg_csrs_are_defined && (((← (currentlyEnabled Ext_Zkr)) || (hartSupports
+              Ext_Zicfilp)) && (xlen == 32))))
   | (0x30A, g__34, g__35) => (pure ((← (currentlyEnabled Ext_U)) && xenvcfg_csrs_are_defined))
   | (0x31A, g__36, g__37) =>
     (pure ((← (currentlyEnabled Ext_U)) && ((xlen == 32) && xenvcfg_csrs_are_defined)))
@@ -319,7 +320,7 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
   | (0xF12, g__54, g__55) => (pure true)
   | (0xF13, g__56, g__57) => (pure true)
   | (0xF14, g__58, g__59) => (pure true)
-  | (0xF15, g__60, g__61) => (pure true)
+  | (0xF15, g__60, g__61) => (pure mconfigptr_is_defined)
   | (0x100, g__62, g__63) => (currentlyEnabled Ext_S)
   | (0x140, g__64, g__65) => (currentlyEnabled Ext_S)
   | (0x142, g__66, g__67) => (currentlyEnabled Ext_S)
@@ -328,7 +329,8 @@ def is_CSR_accessible (arg0 : (BitVec 12)) (arg1 : Privilege) (arg2 : CSRAccessT
   | (0x304, g__72, g__73) => (pure true)
   | (0x344, g__74, g__75) => (pure true)
   | (0x302, g__76, g__77) => (currentlyEnabled Ext_S)
-  | (0x312, g__78, g__79) => (pure ((← (currentlyEnabled Ext_S)) && (xlen == 32)))
+  | (0x312, g__78, g__79) =>
+    (pure (delegh_csrs_are_defined && ((← (currentlyEnabled Ext_S)) && (xlen == 32))))
   | (0x303, g__80, g__81) => (currentlyEnabled Ext_S)
   | (0x144, g__82, g__83) => (currentlyEnabled Ext_S)
   | (0x104, g__84, g__85) => (currentlyEnabled Ext_S)
@@ -623,7 +625,7 @@ def tval (excinfo : (Option (BitVec 32))) : (BitVec 32) :=
   | .some e => e
   | none => (zeros (n := 32))
 
-/-- Type quantifiers: k_ex932690_ : Bool -/
+/-- Type quantifiers: k_ex1069612_ : Bool -/
 def track_trap (p : Privilege) (is_interrupt : Bool) (cause : (BitVec 6)) : SailM Unit := do
   (long_csr_write_callback "mstatus" "mstatush" (← readReg mstatus))
   match p with
@@ -829,13 +831,13 @@ def reset_sys (_ : Unit) : SailM Unit := do
   writeReg vtype (Sail.BitVec.updateSubrange (← readReg vtype) 2 0 0b000#3)
 
 /-- Type quantifiers: k_t : Type -/
-def MemoryOpResult_add_meta (r : (Result k_t ExceptionType)) (m : Unit) : (Result (k_t × Unit) ExceptionType) :=
+def MemoryOpResult_add_meta (r : (Result k_t (physaddr × ExceptionType))) (m : Unit) : (Result (k_t × Unit) (physaddr × ExceptionType)) :=
   match r with
   | .Ok v => (Ok (v, m))
   | .Err e => (Err e)
 
 /-- Type quantifiers: k_t : Type -/
-def MemoryOpResult_drop_meta (r : (Result (k_t × Unit) ExceptionType)) : (Result k_t ExceptionType) :=
+def MemoryOpResult_drop_meta (r : (Result (k_t × Unit) (physaddr × ExceptionType))) : (Result k_t (physaddr × ExceptionType)) :=
   match r with
   | .Ok (v, _m) => (Ok v)
   | .Err e => (Err e)
