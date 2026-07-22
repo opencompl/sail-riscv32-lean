@@ -2,6 +2,7 @@ import LeanRV32D.LeanRV32D
 import LeanRV32D.Prelude
 import LeanRV32D.Errors
 import LeanRV32D.Xlen
+import LeanRV32D.MemAddrtype
 import LeanRV32D.PlatformConfig
 import LeanRV32D.SysRegs
 
@@ -352,11 +353,11 @@ def pmpWriteCfgReg (n : Nat) (v : (BitVec 32)) : SailM Unit := do
       else (pure ())
   (pure loop_vars)
 
-/-- Type quantifiers: k_ex1069530_ : Bool, k_ex1069529_ : Bool -/
+/-- Type quantifiers: k_ex1155759_ : Bool, k_ex1155758_ : Bool -/
 def pmpWriteAddr (locked : Bool) (tor_locked : Bool) (reg : (BitVec 32)) (v : (BitVec 32)) : (BitVec 32) :=
   if ((locked || tor_locked) : Bool)
   then reg
-  else v
+  else (zero_extend (m := 32) (Sail.BitVec.extractLsb v (physaddr_bits -i 3) 0))
 
 /-- Type quantifiers: n : Nat, 0 ≤ n ∧ n ≤ 63 -/
 def pmpWriteAddrReg (n : Nat) (v : (BitVec 32)) : SailM Unit := do

@@ -4,6 +4,7 @@ import LeanRV32D.Prelude
 import LeanRV32D.IsaVersion
 import LeanRV32D.Xlen
 import LeanRV32D.Vlen
+import LeanRV32D.MemAddrtype
 import LeanRV32D.PlatformConfig
 import LeanRV32D.Types
 import LeanRV32D.SysRegs
@@ -628,7 +629,7 @@ def undefined_pma_check_opts (_ : Unit) : SailM pma_check_opts := do
           ssccptr := ← (undefined_bool ())
           svadu := ← (undefined_bool ()) })
 
-/-- Type quantifiers: k_ex1069972_ : Bool -/
+/-- Type quantifiers: k_ex1156201_ : Bool -/
 def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (prev_size : (BitVec 64)) (check_opts : pma_check_opts) (found_valid_svadu_pma : Bool) : Bool := ExceptM.run do
   match regions with
   | [] =>
@@ -654,34 +655,30 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
         (pure false))
       else
         (do
-          if ((not (check_pma_region region)) : Bool)
-          then (pure false)
+          if ((((BitVec.toNatInt region.base) +i (BitVec.toNatInt region.size)) >b (2 ^i physaddr_bits)) : Bool)
+          then
+            (let _ : Unit :=
+              (print_endline
+                (HAppend.hAppend "Memory region starting at "
+                  (HAppend.hAppend (BitVec.toFormatted region.base)
+                    (HAppend.hAppend " ends at "
+                      (HAppend.hAppend (BitVec.toFormatted (region.base + region.size))
+                        (HAppend.hAppend
+                          " which is above the representable limit of the physical address bit size (i.e. "
+                          (HAppend.hAppend (Int.repr physaddr_bits) " from `memory.physaddr_bits`).")))))))
+            (pure false))
           else
             (do
-              let attributes := region.attributes
-              if (((attributes.mem_type == MainMemory) && (attributes.cacheable && attributes.coherent)) : Bool)
-              then
+              if ((not (check_pma_region region)) : Bool)
+              then (pure false)
+              else
                 (do
-                  let mag := attributes.misaligned_atomicity_granule_size_exp
-                  if ((check_opts.zama16b && (mag != 4)) : Bool)
+                  let attributes := region.attributes
+                  if (((attributes.mem_type == MainMemory) && (attributes.cacheable && attributes.coherent)) : Bool)
                   then
-                    throw (let _ : Unit :=
-                        (print_endline
-                          (HAppend.hAppend "Main memory region starting at "
-                            (HAppend.hAppend (BitVec.toFormatted region.base)
-                              (HAppend.hAppend " is coherent and cacheable with "
-                                (HAppend.hAppend
-                                  (if ((mag == 0) : Bool)
-                                  then "no specified misaligned atomicity granule PMA"
-                                  else
-                                    (HAppend.hAppend "a misaligned atomicity granule size of 2^"
-                                      (Int.repr mag)))
-                                  ", but Zama16b is enabled which requires granule size of 2^4 bytes.")))))
-                      false : Bool)
-                  else
                     (do
-                      if ((check_opts.ziccamoa && (pma_atomicity_support_lt
-                             attributes.atomic_support AMOArithmetic)) : Bool)
+                      let mag := attributes.misaligned_atomicity_granule_size_exp
+                      if ((check_opts.zama16b && (mag != 4)) : Bool)
                       then
                         throw (let _ : Unit :=
                             (print_endline
@@ -689,12 +686,17 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                                 (HAppend.hAppend (BitVec.toFormatted region.base)
                                   (HAppend.hAppend " is coherent and cacheable with "
                                     (HAppend.hAppend
-                                      (atomic_support_str_forwards attributes.atomic_support)
-                                      " atomicity support, but Ziccamoa is enabled which requires AMOArithmetic support.")))))
+                                      (if ((mag == 0) : Bool)
+                                      then "no specified misaligned atomicity granule PMA"
+                                      else
+                                        (HAppend.hAppend "a misaligned atomicity granule size of 2^"
+                                          (Int.repr mag)))
+                                      ", but Zama16b is enabled which requires granule size of 2^4 bytes.")))))
                           false : Bool)
                       else
                         (do
-                          if ((check_opts.ziccamoc && (bne attributes.atomic_support AMOCASQ)) : Bool)
+                          if ((check_opts.ziccamoa && (pma_atomicity_support_lt
+                                 attributes.atomic_support AMOArithmetic)) : Bool)
                           then
                             throw (let _ : Unit :=
                                 (print_endline
@@ -703,74 +705,93 @@ def check_pma_regions (regions : (List PMA_Region)) (prev_base : (BitVec 64)) (p
                                       (HAppend.hAppend " is coherent and cacheable with "
                                         (HAppend.hAppend
                                           (atomic_support_str_forwards attributes.atomic_support)
-                                          " atomicity support, but Ziccamoc is enabled which requires AMOCASQ support.")))))
+                                          " atomicity support, but Ziccamoa is enabled which requires AMOArithmetic support.")))))
                               false : Bool)
                           else
                             (do
-                              if ((check_opts.ziccif && (not attributes.executable)) : Bool)
+                              if ((check_opts.ziccamoc && (bne attributes.atomic_support AMOCASQ)) : Bool)
                               then
                                 throw (let _ : Unit :=
                                     (print_endline
-                                      (HAppend.hAppend "Memory region starting at "
+                                      (HAppend.hAppend "Main memory region starting at "
                                         (HAppend.hAppend (BitVec.toFormatted region.base)
-                                          " is coherent and cacheable with no instruction fetch support, but Ziccif is enabled which requires this support.")))
+                                          (HAppend.hAppend " is coherent and cacheable with "
+                                            (HAppend.hAppend
+                                              (atomic_support_str_forwards attributes.atomic_support)
+                                              " atomicity support, but Ziccamoc is enabled which requires AMOCASQ support.")))))
                                   false : Bool)
                               else
                                 (do
-                                  if (check_opts.zicclsm : Bool)
+                                  if ((check_opts.ziccif && (not attributes.executable)) : Bool)
                                   then
+                                    throw (let _ : Unit :=
+                                        (print_endline
+                                          (HAppend.hAppend "Memory region starting at "
+                                            (HAppend.hAppend (BitVec.toFormatted region.base)
+                                              " is coherent and cacheable with no instruction fetch support, but Ziccif is enabled which requires this support.")))
+                                      false : Bool)
+                                  else
                                     (do
-                                      if ((misaligned_exception_is_access_fault
-                                           attributes.misaligned_exceptions.load_store) : Bool)
+                                      if (check_opts.zicclsm : Bool)
                                       then
-                                        throw (let _ : Unit :=
-                                            (print_endline
-                                              (HAppend.hAppend "Main memory region starting at "
-                                                (HAppend.hAppend (BitVec.toFormatted region.base)
-                                                  " is coherent and cacheable with access faults for misaligned scalar loads/stores, but Zicclsm is enabled which requires no exceptions or only misaligned exceptions for such accesses.")))
-                                          false : Bool)
-                                      else
                                         (do
                                           if ((misaligned_exception_is_access_fault
-                                               attributes.misaligned_exceptions.vector) : Bool)
+                                               attributes.misaligned_exceptions.load_store) : Bool)
                                           then
                                             throw (let _ : Unit :=
                                                 (print_endline
                                                   (HAppend.hAppend "Main memory region starting at "
                                                     (HAppend.hAppend
                                                       (BitVec.toFormatted region.base)
-                                                      " is coherent and cacheable with access faults for misaligned vector loads/stores, but Zicclsm is enabled which requires no exceptions or only misaligned exceptions for such accesses.")))
+                                                      " is coherent and cacheable with access faults for misaligned scalar loads/stores, but Zicclsm is enabled which requires no exceptions or only misaligned exceptions for such accesses.")))
                                               false : Bool)
-                                          else (pure ())))
-                                  else (pure ())
-                                  if ((check_opts.ziccrse && (bne attributes.reservability
-                                         RsrvEventual)) : Bool)
-                                  then
-                                    throw (let _ : Unit :=
-                                        (print_endline
-                                          (HAppend.hAppend "Main memory region starting at "
-                                            (HAppend.hAppend (BitVec.toFormatted region.base)
-                                              (HAppend.hAppend " is coherent and cacheable with "
-                                                (HAppend.hAppend
-                                                  (reservability_str_forwards
-                                                    attributes.reservability)
-                                                  " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
-                                      false : Bool)
-                                  else
-                                    (do
-                                      if ((check_opts.ssccptr && (not attributes.supports_pte_read)) : Bool)
+                                          else
+                                            (do
+                                              if ((misaligned_exception_is_access_fault
+                                                   attributes.misaligned_exceptions.vector) : Bool)
+                                              then
+                                                throw (let _ : Unit :=
+                                                    (print_endline
+                                                      (HAppend.hAppend
+                                                        "Main memory region starting at "
+                                                        (HAppend.hAppend
+                                                          (BitVec.toFormatted region.base)
+                                                          " is coherent and cacheable with access faults for misaligned vector loads/stores, but Zicclsm is enabled which requires no exceptions or only misaligned exceptions for such accesses.")))
+                                                  false : Bool)
+                                              else (pure ())))
+                                      else (pure ())
+                                      if ((check_opts.ziccrse && (bne attributes.reservability
+                                             RsrvEventual)) : Bool)
                                       then
                                         throw (let _ : Unit :=
                                             (print_endline
                                               (HAppend.hAppend "Main memory region starting at "
                                                 (HAppend.hAppend (BitVec.toFormatted region.base)
-                                                  " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                                                  (HAppend.hAppend
+                                                    " is coherent and cacheable with "
+                                                    (HAppend.hAppend
+                                                      (reservability_str_forwards
+                                                        attributes.reservability)
+                                                      " reservability support, but Ziccrse is enabled which requires RsrvEventual support.")))))
                                           false : Bool)
-                                      else (pure ())))))))
-              else (pure ())
-              let found_valid_svadu_pma :=
-                (found_valid_svadu_pma || (attributes.supports_pte_write && (attributes.reservability == RsrvEventual)))
-              (pure (check_pma_regions rest region.base region.size check_opts found_valid_svadu_pma)))))
+                                      else
+                                        (do
+                                          if ((check_opts.ssccptr && (not
+                                                 attributes.supports_pte_read)) : Bool)
+                                          then
+                                            throw (let _ : Unit :=
+                                                (print_endline
+                                                  (HAppend.hAppend "Main memory region starting at "
+                                                    (HAppend.hAppend
+                                                      (BitVec.toFormatted region.base)
+                                                      " is coherent and cacheable without hardware page-table read support, but Ssccptr is enabled which requires this support.")))
+                                              false : Bool)
+                                          else (pure ())))))))
+                  else (pure ())
+                  let found_valid_svadu_pma :=
+                    (found_valid_svadu_pma || (attributes.supports_pte_write && (attributes.reservability == RsrvEventual)))
+                  (pure (check_pma_regions rest region.base region.size check_opts
+                      found_valid_svadu_pma))))))
 
 def within_configured_pma_memory (component : String) (mem_type_opt : (Option MemoryRegionType)) (addr : (BitVec 64)) (size : (BitVec 64)) : SailM Bool := do
   let valid : Bool := true
@@ -851,7 +872,7 @@ def check_pmp (_ : Unit) : Bool :=
     valid)
   else valid
 
-/-- Type quantifiers: k_ex1069973_ : Bool -/
+/-- Type quantifiers: k_ex1156202_ : Bool -/
 def check_required_sstvala_option (name : String) (value : Bool) : Bool :=
   if ((not value) : Bool)
   then
@@ -1233,6 +1254,43 @@ def check_mstatus_fields (_ : Unit) : Bool :=
       else valid)
     else valid)
 
+def check_physaddr_bits (_ : Unit) : Bool :=
+  let physaddr_bits_nat : Nat := physaddr_bits
+  if ((physaddr_bits_nat >b 64) : Bool)
+  then
+    (let _ : Unit :=
+      (print_endline
+        (HAppend.hAppend "`memory.physaddr_bits` is "
+          (HAppend.hAppend (Int.repr physaddr_bits) " but cannot be greater than 64.")))
+    false)
+  else
+    (if (((physaddr_bits_nat >b 34) && (xlen == 32)) : Bool)
+    then
+      (let _ : Unit :=
+        (print_endline
+          (HAppend.hAppend "`memory.physaddr_bits` is "
+            (HAppend.hAppend (Int.repr physaddr_bits) " but cannot be greater than 34 for RV32.")))
+      false)
+    else
+      (if (((physaddr_bits_nat >b 32) && ((xlen == 32) && (not (true : Bool)))) : Bool)
+      then
+        (let _ : Unit :=
+          (print_endline
+            (HAppend.hAppend "`memory.physaddr_bits` is "
+              (HAppend.hAppend (Int.repr physaddr_bits)
+                " but Sv32 is disabled: values greater than 32 requires Sv32 to be enabled.")))
+        false)
+      else
+        (if ((physaddr_bits_nat <b 13) : Bool)
+        then
+          (let _ : Unit :=
+            (print_endline
+              (HAppend.hAppend "`memory.physaddr_bits` is "
+                (HAppend.hAppend (Int.repr physaddr_bits)
+                  " but values smaller than 13 are not supported.")))
+          false)
+        else true)))
+
 def check_version_constraints (_ : Unit) : Bool :=
   let valid : Bool := true
   if (((sys_pmp_count >b 16) && (privileged_isa_version_lt priv_isa_version Privileged_ISA_1_12)) : Bool)
@@ -1248,9 +1306,9 @@ def check_version_constraints (_ : Unit) : Bool :=
   else valid
 
 def config_is_valid (_ : Unit) : SailM Bool := do
-  (pure ((check_privs ()) && ((check_tvecs ()) && ((check_mstatus_fields ()) && ((← (check_mmu_config
-                ())) && ((← (check_mem_layout ())) && ((← (check_mmio_devices ())) && ((check_vlen_elen
-                    ()) && ((check_vext_config ()) && ((check_pmp ()) && ((check_misc_extension_dependencies
-                          ()) && ((check_extension_param_constraints ()) && ((check_version_constraints
-                              ()) && (check_stateen_config ()))))))))))))))
+  (pure ((check_privs ()) && ((check_tvecs ()) && ((check_mstatus_fields ()) && ((check_physaddr_bits
+              ()) && ((← (check_mmu_config ())) && ((← (check_mem_layout ())) && ((← (check_mmio_devices
+                      ())) && ((check_vlen_elen ()) && ((check_vext_config ()) && ((check_pmp ()) && ((check_misc_extension_dependencies
+                            ()) && ((check_extension_param_constraints ()) && ((check_version_constraints
+                                ()) && (check_stateen_config ())))))))))))))))
 

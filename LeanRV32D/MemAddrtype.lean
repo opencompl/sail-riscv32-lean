@@ -227,3 +227,5 @@ def bits_of_virtaddr (app_0 : virtaddr) : (BitVec 32) :=
   let .Virtaddr vaddr := app_0
   vaddr
 
+def physaddr_bits := 34
+
