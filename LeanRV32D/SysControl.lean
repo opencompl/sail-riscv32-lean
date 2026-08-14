@@ -31,7 +31,6 @@ namespace LeanRV32D
 
 open ConcurrencyInterfaceV1
 
-open Defs
 namespace Functions
 
 open zvk_vsm4r_funct6

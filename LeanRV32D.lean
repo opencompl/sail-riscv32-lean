@@ -34,7 +34,6 @@ namespace LeanRV32D
 
 open ConcurrencyInterfaceV1
 
-open Defs
 namespace Functions
 
 open zvk_vsm4r_funct6
@@ -485,7 +484,6 @@ end LeanRV32D.Functions
 
 open LeanRV32D
 open LeanRV32D.Functions
-open Defs
 
 def main (_ : List String) : IO UInt32 := do
   main_of_sail_main ⟨default, (), default, default, default, default⟩ (sail_model_init >=> sail_main)

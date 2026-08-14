@@ -12,8 +12,6 @@ open Sail.ConcurrencyInterfaceV1
 noncomputable section
 namespace LeanRV32D
 
-namespace Defs
-
 /-- Type quantifiers: k_a : Type -/
 inductive option (k_a : Type) where
   | Some (_ : k_a)
