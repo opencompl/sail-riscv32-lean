@@ -609,7 +609,7 @@ def getPendingSet (priv : Privilege) : SailM (Option ((BitVec 32) × Privilege))
     else (pure none))
 
 def shouldWakeForInterrupt (_ : Unit) : SailM Bool := do
-  (pure (((← readReg mip) &&& (← readReg mie)) != (zeros (n := 32))))
+  (pure (((← (read_mip IncludePlatformInterrupts)) &&& (← readReg mie)) != (zeros (n := 32))))
 
 def dispatchInterrupt (priv : Privilege) : SailM (Option (InterruptType × Privilege)) := do
   match (← (getPendingSet priv)) with
